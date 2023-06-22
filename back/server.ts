@@ -3,8 +3,13 @@ import { HOST, PORT } from './core/config';
 
 initApp()
   .then((app) => {
-    app.listen({ port: PORT, host: HOST }, () =>
-      app.log.info(`Council JS (Fastify) back API listening at ${HOST}:${PORT}`)
+    app.listen(
+      {
+        port: PORT,
+        host: HOST,
+        listenTextResolver: (address) => `Council JS (Fastify) back API listening at ${address}`,
+      },
+      () => null
     );
   })
   .catch((err: Error) => {
