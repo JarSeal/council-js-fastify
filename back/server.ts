@@ -1,5 +1,5 @@
 import initApp from './core/app';
-import { HOST, PORT } from './core/config'
+import { HOST, PORT } from './core/config';
 
 initApp()
   .then((app) => {
@@ -8,5 +8,6 @@ initApp()
     );
   })
   .catch((err: Error) => {
+    // eslint-disable-next-line no-console
     console.error({ err }, 'Council JS (Fastify) failed to start');
-  })
+  });

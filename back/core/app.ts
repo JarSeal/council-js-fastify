@@ -1,8 +1,8 @@
 import fastify from 'fastify';
-import type { FastifyInstance } from 'fastify'
-import fastifyCors from '@fastify/cors'
+import type { FastifyInstance } from 'fastify';
+import fastifyCors from '@fastify/cors';
 
-import { ENVIRONMENT, CLIENT_HOST_NAMES } from './config'
+import { ENVIRONMENT, CLIENT_HOST_NAMES } from './config';
 import type { Environment } from './config';
 
 const initApp = async (): Promise<FastifyInstance> => {
@@ -19,7 +19,8 @@ const initApp = async (): Promise<FastifyInstance> => {
     production: true,
     test: false,
   };
-  const curEnv = ['development', 'production', 'test'].find((env) => env === ENVIRONMENT) || 'development';
+  const curEnv =
+    ['development', 'production', 'test'].find((env) => env === ENVIRONMENT) || 'development';
   const app = fastify({
     logger: envToLogger[curEnv as Environment],
   });
@@ -41,6 +42,6 @@ const initApp = async (): Promise<FastifyInstance> => {
   });
 
   return app;
-}
+};
 
 export default initApp;

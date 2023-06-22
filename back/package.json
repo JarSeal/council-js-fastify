@@ -8,7 +8,8 @@
   "scripts": {
     "start": "node ./dist/server.js",
     "dev": "ts-node-dev --files server.ts",
-    "build": "rm -rf dist && tsc -p tsconfig.json"
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@fastify/cors": "8.3.0",
@@ -16,7 +17,16 @@
   },
   "devDependencies": {
     "@types/node": "20.3.1",
+    "@typescript-eslint/eslint-plugin": "5.60.0",
+    "@typescript-eslint/parser": "5.60.0",
+    "eslint": "8.43.0",
+    "eslint-config-import": "0.13.0",
+    "eslint-config-prettier": "8.8.0",
+    "eslint-plugin-babel": "5.3.1",
+    "eslint-plugin-import": "2.27.5",
+    "eslint-plugin-prettier": "4.2.1",
     "pino-pretty": "10.0.0",
+    "prettier": "2.8.8",
     "ts-node-dev": "2.0.0",
     "typescript": "5.1.3"
   }
