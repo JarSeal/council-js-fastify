@@ -1,3 +1,7 @@
+import { config } from 'dotenv';
+
+config();
+
 export type Environment = 'development' | 'production' | 'test';
 export const ENVIRONMENT =
   ['development', 'production', 'test'].find((env) => env === process.env.ENVIRONMENT) ||
