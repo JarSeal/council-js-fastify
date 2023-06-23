@@ -1,5 +1,5 @@
 {
-  "name": "council-js-fastify-back",
+  "name": "council-fastify-back",
   "version": "1.0.0",
   "main": "./dist/server.js",
   "author": "JarSeal",
