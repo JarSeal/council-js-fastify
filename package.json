@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "setup": "yarn && cd back && oneenv",
+    "setup": "yarn && oneenv && cd back && yarn",
     "env": "oneenv",
     "dev": "yarn --cwd ./back/ dev",
     "build": "yarn --cwd ./back/ build",
