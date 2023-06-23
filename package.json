@@ -1,0 +1,20 @@
+{
+  "name": "council-fastify",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/JarSeal/council-fastify.git",
+  "author": "JarSeal",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "setup": "yarn && cd back && oneenv",
+    "env": "oneenv",
+    "dev": "yarn --cwd ./back/ dev",
+    "build": "yarn --cwd ./back/ build",
+    "lint": "yarn --cwd ./back/ lint"
+  },
+  "devDependencies": {
+    "oneenv": "0.9.9",
+    "pino-pretty": "10.0.0"
+  }
+}

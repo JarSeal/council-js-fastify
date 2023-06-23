@@ -20,10 +20,8 @@ const initApp = async (): Promise<FastifyInstance> => {
     production: true,
     test: false,
   };
-  const curEnv =
-    ['development', 'production', 'test'].find((env) => env === ENVIRONMENT) || 'development';
   const app = fastify({
-    logger: envToLogger[curEnv as Environment],
+    logger: envToLogger[ENVIRONMENT as Environment],
   });
 
   await app.register(fastifyCors, {
