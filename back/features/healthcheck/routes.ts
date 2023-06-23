@@ -1,7 +1,10 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 
-import type { HealthCheckRoute } from './schemas';
 import { healthCheck } from './handlers';
+
+export interface HealthCheckRoute extends RouteGenericInterface {
+  readonly Reply: { ok: boolean };
+}
 
 const healthCheckRoute: FastifyPluginAsync = (instance) => {
   instance.route<HealthCheckRoute>({
