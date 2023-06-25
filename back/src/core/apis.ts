@@ -15,7 +15,7 @@ const apis: FastifyPluginAsync = async (instance) => {
 };
 
 const publicRoutes: FastifyPluginAsync = async (instance) => {
-  instance.addHook('onRequest', testHook(instance)); // @TODO: remove this example at some point
+  instance.addHook('onRequest', testHook(instance)); // @TODO: remove this example hook at some point
   await instance.register(healthCheckRoute, sysPrefixObj);
 };
 
