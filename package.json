@@ -13,6 +13,11 @@
     "build": "yarn --cwd ./back/ build",
     "lint": "yarn --cwd ./back/ lint"
   },
+  "packageManager": "yarn@1.22.15",
+  "engines": {
+    "node": ">=16.15.0",
+    "yarn": ">=1.22.15"
+  },
   "devDependencies": {
     "oneenv": "0.9.9",
     "pino-pretty": "10.0.0"
