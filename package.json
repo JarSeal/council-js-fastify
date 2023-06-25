@@ -11,7 +11,8 @@
     "env": "oneenv",
     "dev": "yarn --cwd ./back/ dev",
     "build": "yarn --cwd ./back/ build",
-    "lint": "yarn --cwd ./back/ lint"
+    "lint": "yarn --cwd ./back/ lint",
+    "test": "yarn --cwd ./back/ test"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {
