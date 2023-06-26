@@ -5,6 +5,7 @@ import fastifyCors from '@fastify/cors';
 import { ENVIRONMENT, CLIENT_HOST_NAMES } from './config';
 import type { Environment } from './config';
 import apis from './apis';
+import { initDB } from './db';
 
 const initApp = async (): Promise<FastifyInstance> => {
   const envToLogger = {
@@ -39,6 +40,8 @@ const initApp = async (): Promise<FastifyInstance> => {
       }
     },
   });
+
+  initDB(app);
 
   await app.register(apis, { prefix: '/api' });
 
