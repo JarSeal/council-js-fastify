@@ -1,6 +1,9 @@
+import path from 'path';
+import fs from 'fs';
 import fastify from 'fastify';
 import type { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
 
 import { ENVIRONMENT, CLIENT_HOST_NAMES } from './config';
 import type { Environment } from './config';
@@ -21,10 +24,13 @@ const initApp = async (): Promise<FastifyInstance> => {
     production: true,
     test: false,
   };
+
+  // Fastify
   const app = fastify({
     logger: envToLogger[ENVIRONMENT as Environment],
   });
 
+  // CORS
   await app.register(fastifyCors, {
     origin: (origin, cb) => {
       if (!origin) {
@@ -41,9 +47,25 @@ const initApp = async (): Promise<FastifyInstance> => {
     },
   });
 
+  // Database
   initDB(app);
 
+  // API routes
   await app.register(apis, { prefix: '/api' });
+
+  // Static files
+  let publicPath = path.join(__dirname, '../public');
+  if (!fs.existsSync(publicPath)) {
+    // For development
+    publicPath = path.join(__dirname, '../../../../shared/public');
+  }
+  await app.register(fastifyStatic, {
+    root: publicPath,
+    prefix: '/public/',
+  });
+
+  // Client routes (all GET routes, except the API routes)
+  app.get('*', (_, response) => response.sendFile('index.html'));
 
   return app;
 };
