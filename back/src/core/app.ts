@@ -48,7 +48,7 @@ const initApp = async (): Promise<FastifyInstance> => {
   });
 
   // Database
-  initDB(app);
+  await initDB(app);
 
   // API routes
   await app.register(apis, { prefix: '/api' });

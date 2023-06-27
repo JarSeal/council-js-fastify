@@ -12,3 +12,6 @@ export const PORT = parseInt(process.env.PORT || '4000');
 
 // comma separated host names
 export const CLIENT_HOST_NAMES = process.env.CLIENT_HOST_NAMES || '';
+
+export const MONGODB_URI = process.env.MONGODB_URI || '';
+export const MONGODB_URI_TEST = process.env.MONGODB_URI_TEST || '';

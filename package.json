@@ -12,7 +12,9 @@
     "dev": "yarn --cwd ./back/ dev",
     "build": "yarn --cwd ./back/ build",
     "lint": "yarn --cwd ./back/ lint",
-    "test": "yarn --cwd ./back/ test"
+    "test": "yarn --cwd ./back/ test",
+    "startdb": "yarn --cwd ./back/ startdb",
+    "stopdb": "yarn --cwd ./back/ stopdb"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {

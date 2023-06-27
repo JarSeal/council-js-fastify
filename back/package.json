@@ -12,7 +12,8 @@
     "build:public": "cp -a ./../shared/public/. ./dist/public",
     "lint": "eslint .",
     "test": "cross-env ENVIRONMENT=test TZ=UTC jest --verbose --runInBand --detectOpenHandles --logHeapUsage",
-    "test2": "TZ=UTC node --expose-gc --no-compilation-cache ./node_modules/.bin/jest --runInBand --detectOpenHandles --logHeapUsage"
+    "startdb": "cd ./db && docker-compose up -d",
+    "stopdb": "cd ./db && docker-compose down"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {
