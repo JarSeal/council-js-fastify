@@ -57,7 +57,7 @@ const initApp = async (): Promise<FastifyInstance> => {
   let publicPath = path.join(__dirname, '../public');
   if (!fs.existsSync(publicPath)) {
     // For development
-    publicPath = path.join(__dirname, '../../../../shared/public');
+    publicPath = path.join(__dirname, '../../../shared/public');
   }
   await app.register(fastifyStatic, {
     root: publicPath,
