@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "test": "cross-env NODE_ENV=test TZ=UTC jest --verbose --runInBand --detectOpenHandles --logHeapUsage",
     "startdb": "cd ./db && docker-compose up -d",
-    "stopdb": "cd ./db && docker-compose down"
+    "stopdb": "cd ./db && docker-compose down",
+    "devdb": "docker exec -it councildb mongo councildb"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {
