@@ -11,7 +11,7 @@
     "build": "rm -rf dist && tsc -p tsconfig.json && yarn build:public",
     "build:public": "cp -a ./../shared/public/. ./dist/public",
     "lint": "eslint .",
-    "test": "cross-env ENVIRONMENT=test TZ=UTC jest --verbose --runInBand --detectOpenHandles --logHeapUsage",
+    "test": "cross-env NODE_ENV=test TZ=UTC jest --verbose --runInBand --detectOpenHandles --logHeapUsage",
     "startdb": "cd ./db && docker-compose up -d",
     "stopdb": "cd ./db && docker-compose down"
   },
@@ -27,7 +27,9 @@
       "ts",
       "js"
     ],
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "globalSetup": "<rootDir>/test/globalSetup.ts",
+    "globalTeardown": "<rootDir>/test/globalTeardown.ts"
   },
   "dependencies": {
     "@fastify/cors": "8.3.0",
