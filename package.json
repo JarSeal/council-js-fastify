@@ -14,7 +14,8 @@
     "lint": "yarn --cwd ./back/ lint",
     "test": "yarn --cwd ./back/ test",
     "startdb": "yarn --cwd ./back/ startdb",
-    "stopdb": "yarn --cwd ./back/ stopdb"
+    "stopdb": "yarn --cwd ./back/ stopdb",
+    "devdb": "yarn --cwd ./back/ devdb"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {

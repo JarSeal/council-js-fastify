@@ -1,6 +1,6 @@
 module.exports = {
   root: true,
-  ignorePatterns: ['dist', 'node_modules', '.eslintrc.js', 'yarn.lock'],
+  ignorePatterns: ['dist', 'node_modules', '.eslintrc.js', 'yarn.lock', 'database'],
   rules: {
     'no-var': 1,
     'no-unused-vars': 1,
