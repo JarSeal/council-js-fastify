@@ -15,9 +15,11 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   }
 
   // Create new user
+  const email = body.email.trim();
   const passwordHash = await hash(body.pass, 10);
   const user = new User({
-    email: body.email.trim(),
+    simpleId: body.username.trim(),
+    emails: [{ email }],
     passwordHash,
     created: {
       by: null,

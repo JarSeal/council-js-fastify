@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 
-const emailType = {
+const simpleIdSchema = {
+  type: String,
+  required: true,
+  unique: true,
+};
+
+const emailSchema = {
   type: String,
   required: true,
   unique: true,
@@ -8,23 +14,44 @@ const emailType = {
   index: true,
 };
 
+const dateSchema = {
+  type: Date,
+  required: true,
+};
+
 const userSchema = new mongoose.Schema({
-  email: emailType,
+  simpleId: simpleIdSchema,
+  emails: [
+    {
+      _id: false,
+      email: emailSchema,
+      prevEmail: { ...emailSchema, required: false, unique: false },
+      verified: {
+        type: Boolean,
+        required: true,
+        default: false,
+      },
+      token: {
+        type: String,
+        default: null,
+      },
+    },
+  ],
   passwordHash: String,
   created: {
-    by: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
     },
     publicForm: Boolean,
-    date: Date,
+    date: dateSchema,
   },
   edited: [
     {
       _id: false,
-      by: {
+      user: {
         type: mongoose.Schema.Types.ObjectId,
       },
-      date: Date,
+      date: dateSchema,
     },
   ],
 });

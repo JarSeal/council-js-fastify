@@ -4,6 +4,7 @@ import type { ValidationError } from '../utils/validation';
 
 export interface PublicSignUpRoute extends RouteGenericInterface {
   readonly Body: {
+    username: string;
     email: string;
     pass: string;
   };
@@ -16,9 +17,14 @@ export interface PublicSignUpRoute extends RouteGenericInterface {
 export const bodySchema = {
   type: 'object',
   properties: {
+    username: { type: 'string' },
     email: { type: 'string' },
     pass: { type: 'string' },
   },
-  required: ['email', 'pass'],
+  required: ['username', 'email', 'pass'],
 };
-export const responseSchema = { type: 'object', properties: { ok: { type: 'boolean' } } };
+export const replySchema = {
+  type: 'object',
+  properties: { ok: { type: 'boolean' } },
+  required: ['ok'],
+};
