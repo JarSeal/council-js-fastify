@@ -8,14 +8,18 @@
   "private": false,
   "scripts": {
     "setup": "yarn && oneenv && cd back && yarn",
-    "env": "oneenv",
-    "dev": "yarn --cwd ./back/ dev",
-    "build": "yarn --cwd ./back/ build",
-    "lint": "yarn --cwd ./back/ lint",
-    "test": "yarn --cwd ./back/ test",
-    "startdb": "yarn --cwd ./back/ startdb",
-    "stopdb": "yarn --cwd ./back/ stopdb",
-    "devdb": "yarn --cwd ./back/ devdb"
+    "oneenv": "oneenv",
+    "dev": "yarn dev:back",
+    "dev:back": "yarn --cwd ./back/ dev",
+    "build": "yarn build:back",
+    "build:back": "yarn --cwd ./back/ build",
+    "lint": "yarn lint:back",
+    "lint:back": "yarn --cwd ./back/ lint",
+    "test": "yarn test:back",
+    "test:back": "yarn --cwd ./back/ test",
+    "dbstart": "yarn --cwd ./back/ dbstart",
+    "dbstop": "yarn --cwd ./back/ dbstop",
+    "dbcli": "yarn --cwd ./back/ dbcli"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {
