@@ -29,11 +29,11 @@
       "js"
     ],
     "testEnvironment": "node",
-    "globalSetup": "<rootDir>/test/globalSetup.ts",
-    "globalTeardown": "<rootDir>/test/globalTeardown.ts"
+    "testTimeout": 30000
   },
   "dependencies": {
     "@fastify/cors": "8.3.0",
+    "@fastify/error": "3.3.0",
     "@fastify/static": "6.10.2",
     "bcrypt": "5.1.0",
     "dotenv": "16.3.1",

@@ -3,7 +3,7 @@ module.exports = {
   ignorePatterns: ['dist', 'node_modules', '.eslintrc.js', 'yarn.lock', 'database'],
   rules: {
     'no-var': 1,
-    'no-unused-vars': 1,
+    'no-unused-vars': 0,
     camelcase: 1,
     'arrow-body-style': 1,
     semi: [2, 'always'],
@@ -12,7 +12,7 @@ module.exports = {
     'no-var': 'error',
     '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/no-unused-vars': [
-      'warn',
+      'error',
       {
         argsIgnorePattern: '^_',
       },

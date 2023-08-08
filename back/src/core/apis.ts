@@ -14,11 +14,13 @@ const apis: FastifyPluginAsync = async (instance) => {
   await instance.register(notSignedInRoutes);
 };
 
+// Public:
 const publicRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', testHook(instance)); // @TODO: remove this example hook at some point
   await instance.register(healthCheckRoute, sysPrefixObj);
 };
 
+// Not signed in:
 const notSignedInRoutes: FastifyPluginAsync = async (instance) => {
   // @TODO: Add a hook here to check that user is not signed to use these apis
   await instance.register(publicSignUpRoute, vPrefixObj);

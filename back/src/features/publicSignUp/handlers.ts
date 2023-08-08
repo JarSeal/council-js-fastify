@@ -1,31 +1,38 @@
 import type { RouteHandler } from 'fastify';
 import { hash } from 'bcrypt';
 
-import type { PublicSignUpRoute } from './schemas';
-import { validatePublicSignupBody, dbCreateNewUserError } from '../utils/validation';
+import { errors } from '../../core/errors';
+import { validatePublicSignup } from '../utils/validation';
 import User from '../../models/user';
+import type { DBUser } from '../../models/user';
+import type { PublicSignUpRoute } from './schemas';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
-  const validate = validatePublicSignupBody(body);
-  // @TODO: Check here if user is logged in
-  // @TODO: Check here if user already exists
-  if (validate.error) {
-    return res.status(validate.status).send({ ok: false, error: validate });
+  const email = body.email.trim();
+
+  // Check if email already exists
+
+  // Validate fields
+  const username = body.username.trim();
+  const foundUser = await User.findOne<DBUser>({ simpleId: username });
+  const validateError = validatePublicSignup(body, foundUser);
+  if (validateError) {
+    return res.send(validateError);
   }
 
   // Create new user
-  const email = body.email.trim();
   const passwordHash = await hash(body.pass, 10);
-  const user = new User({
-    simpleId: body.username.trim(),
-    emails: [{ email }],
+  const user = new User<DBUser>({
+    simpleId: username,
+    emails: [{ email, verified: false }],
     passwordHash,
     created: {
-      by: null,
+      user: null,
       publicForm: true,
       date: new Date(),
     },
+    edited: [],
   });
 
   const savedUser = await user.save();
@@ -33,8 +40,8 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   req.log.info(`savedUser: ${JSON.stringify(savedUser)}`); // @TEMP
 
   if (!savedUser) {
-    req.log.error(JSON.stringify(dbCreateNewUserError));
-    return res.status(dbCreateNewUserError.status).send({ ok: false, error: dbCreateNewUserError });
+    const createUserError = new errors.DB_CREATE_NEW_USER('public sign up user saving failed');
+    return res.send(createUserError);
   }
 
   return res.status(200).send({ ok: true });

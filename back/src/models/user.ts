@@ -1,25 +1,28 @@
-import mongoose from 'mongoose';
+import { Schema, model } from 'mongoose';
+import type { Types } from 'mongoose';
 
-const simpleIdSchema = {
-  type: String,
-  required: true,
-  unique: true,
-};
+import { simpleIdSchema, emailSchema, dateSchema } from './_partials';
+import type { Edited } from '../types/modelPartials';
 
-const emailSchema = {
-  type: String,
-  required: true,
-  unique: true,
-  minlength: 5,
-  index: true,
-};
+export interface DBUser {
+  simpleId: string;
+  emails: {
+    email: string;
+    verified: boolean;
+    prevEmail?: string | null;
+    token?: string | null;
+  }[];
+  passwordHash: string;
+  created: {
+    user: Types.ObjectId | null;
+    publicForm: boolean;
+    date: Date;
+  };
+  edited: Edited;
+  systemDocument?: boolean;
+}
 
-const dateSchema = {
-  type: Date,
-  required: true,
-};
-
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema<DBUser>({
   simpleId: simpleIdSchema,
   emails: [
     {
@@ -40,7 +43,7 @@ const userSchema = new mongoose.Schema({
   passwordHash: String,
   created: {
     user: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
     },
     publicForm: Boolean,
     date: dateSchema,
@@ -49,11 +52,12 @@ const userSchema = new mongoose.Schema({
     {
       _id: false,
       user: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
       },
       date: dateSchema,
     },
   ],
+  systemDocument: { type: Boolean, default: false },
 });
 
 userSchema.set('toJSON', {
@@ -65,6 +69,6 @@ userSchema.set('toJSON', {
   },
 });
 
-const User = mongoose.model('User', userSchema, 'users');
+const User = model<DBUser>('User', userSchema, 'users');
 
 export default User;

@@ -1,6 +1,4 @@
-import type { RouteGenericInterface } from 'fastify';
-
-import type { ValidationError } from '../utils/validation';
+import type { RouteGenericInterface, FastifyError } from 'fastify';
 
 export interface PublicSignUpRoute extends RouteGenericInterface {
   readonly Body: {
@@ -8,10 +6,7 @@ export interface PublicSignUpRoute extends RouteGenericInterface {
     email: string;
     pass: string;
   };
-  readonly Reply: {
-    ok: boolean;
-    error?: ValidationError;
-  };
+  readonly Reply: { ok: boolean } | FastifyError;
 }
 
 export const bodySchema = {
