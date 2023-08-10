@@ -1,8 +1,8 @@
 import type { RouteHandler } from 'fastify';
 
 import type { HealthCheckRoute } from './routes';
-import Monitor from '../../models/monitor';
-import type { DBMonitor } from '../../models/monitor';
+import DBMonitorModel from '../../dbModels/monitor';
+import type { DBMonitor } from '../../dbModels/monitor';
 import { errors } from '../../core/errors';
 
 export const healthCheck: RouteHandler<HealthCheckRoute> = async (_, res) => res.send({ ok: true });
@@ -12,14 +12,14 @@ type DBMonitorDBHealth = DBMonitor & {
 };
 
 export const healthCheckDB: RouteHandler<HealthCheckRoute> = async (_, res) => {
-  const simpleId = 'healthCheckDB';
-  const monitorDB = await Monitor.findOne<DBMonitorDBHealth>({ simpleId });
+  const simpleId = 'dbHealthCheck';
+  const monitorDB = await DBMonitorModel.findOne<DBMonitorDBHealth>({ simpleId });
 
   if (monitorDB?.data?.counter) {
     // Update counter
     const curCounter =
       monitorDB.data.counter + 1 > Number.MAX_SAFE_INTEGER ? 0 : monitorDB.data.counter;
-    const updatedMonitor = await Monitor.findOneAndUpdate<DBMonitorDBHealth>(
+    const updatedMonitor = await DBMonitorModel.findOneAndUpdate<DBMonitorDBHealth>(
       { simpleId },
       { data: { counter: curCounter + 1, updatedAt: new Date() } }
     );
@@ -29,7 +29,7 @@ export const healthCheckDB: RouteHandler<HealthCheckRoute> = async (_, res) => {
     }
   } else {
     // Create the document
-    const dbCheck = new Monitor<DBMonitorDBHealth>({
+    const dbCheck = new DBMonitorModel<DBMonitorDBHealth>({
       simpleId,
       data: { counter: 1, updatedAt: new Date() },
     });

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import { simpleIdSchema } from './_partials';
+import { simpleIdDBSchema } from './_partials';
 
 export interface DBMonitor {
   simpleId: string;
@@ -9,7 +9,7 @@ export interface DBMonitor {
 }
 
 const monitorSchema = new mongoose.Schema<DBMonitor>({
-  simpleId: simpleIdSchema,
+  simpleId: simpleIdDBSchema,
   systemDocument: { type: Boolean, default: true },
   data: { type: Object, required: true },
 });
@@ -22,6 +22,6 @@ monitorSchema.set('toJSON', {
   },
 });
 
-const Monitor = mongoose.model<DBMonitor>('Monitor', monitorSchema, 'monitors');
+const DBMonitorModel = mongoose.model<DBMonitor>('Monitor', monitorSchema, 'monitors');
 
-export default Monitor;
+export default DBMonitorModel;

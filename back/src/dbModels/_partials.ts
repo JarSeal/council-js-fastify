@@ -1,10 +1,10 @@
-export const simpleIdSchema = {
+export const simpleIdDBSchema = {
   type: String,
   required: true,
   unique: true,
 };
 
-export const emailSchema = {
+export const emailDBSchema = {
   type: String,
   required: true,
   unique: true,
@@ -12,7 +12,7 @@ export const emailSchema = {
   index: true,
 };
 
-export const dateSchema = {
+export const dateDBSchema = {
   type: Date,
   required: true,
 };

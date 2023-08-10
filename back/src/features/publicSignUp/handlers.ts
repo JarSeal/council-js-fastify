@@ -3,8 +3,8 @@ import { hash } from 'bcrypt';
 
 import { errors } from '../../core/errors';
 import { validatePublicSignup } from '../utils/validation';
-import User from '../../models/user';
-import type { DBUser } from '../../models/user';
+import DBUserModel from '../../dbModels/user';
+import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
@@ -15,7 +15,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
 
   // Validate fields
   const username = body.username.trim();
-  const foundUser = await User.findOne<DBUser>({ simpleId: username });
+  const foundUser = await DBUserModel.findOne<DBUser>({ simpleId: username });
   const validateError = validatePublicSignup(body, foundUser);
   if (validateError) {
     return res.send(validateError);
@@ -23,7 +23,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
 
   // Create new user
   const passwordHash = await hash(body.pass, 10);
-  const user = new User<DBUser>({
+  const user = new DBUserModel<DBUser>({
     simpleId: username,
     emails: [{ email, verified: false }],
     passwordHash,

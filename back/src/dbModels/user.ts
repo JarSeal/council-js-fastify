@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import type { Types } from 'mongoose';
 
-import { simpleIdSchema, emailSchema, dateSchema } from './_partials';
+import { simpleIdDBSchema, emailDBSchema, dateDBSchema } from './_partials';
 import type { Edited } from '../types/modelPartials';
 
 export interface DBUser {
@@ -23,12 +23,12 @@ export interface DBUser {
 }
 
 const userSchema = new Schema<DBUser>({
-  simpleId: simpleIdSchema,
+  simpleId: simpleIdDBSchema,
   emails: [
     {
       _id: false,
-      email: emailSchema,
-      prevEmail: { ...emailSchema, required: false, unique: false },
+      email: emailDBSchema,
+      prevEmail: { ...emailDBSchema, required: false, unique: false },
       verified: {
         type: Boolean,
         required: true,
@@ -46,7 +46,7 @@ const userSchema = new Schema<DBUser>({
       type: Schema.Types.ObjectId,
     },
     publicForm: Boolean,
-    date: dateSchema,
+    date: dateDBSchema,
   },
   edited: [
     {
@@ -54,7 +54,7 @@ const userSchema = new Schema<DBUser>({
       user: {
         type: Schema.Types.ObjectId,
       },
-      date: dateSchema,
+      date: dateDBSchema,
     },
   ],
   systemDocument: { type: Boolean, default: false },
@@ -69,6 +69,6 @@ userSchema.set('toJSON', {
   },
 });
 
-const User = model<DBUser>('User', userSchema, 'users');
+const DBUserModel = model<DBUser>('User', userSchema, 'users');
 
-export default User;
+export default DBUserModel;

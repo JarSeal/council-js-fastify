@@ -2,7 +2,7 @@ import type { FastifyError } from 'fastify';
 
 import type { PublicSignUpRoute } from '../publicSignUp/schemas';
 import { errors } from '../../core/errors';
-import type { DBUser } from '../../models/user';
+import type { DBUser } from '../../dbModels/user';
 
 export type ValidationError = FastifyError | null;
 
