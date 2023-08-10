@@ -4,6 +4,7 @@ import fastify from 'fastify';
 import type { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
+import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
 import { ENVIRONMENT, CLIENT_HOST_NAMES } from './config';
 import type { Environment } from './config';
@@ -28,7 +29,7 @@ const initApp = async (): Promise<FastifyInstance> => {
   // Fastify
   const app = fastify({
     logger: envToLogger[ENVIRONMENT as Environment],
-  });
+  }).withTypeProvider<TypeBoxTypeProvider>();
 
   // CORS
   await app.register(fastifyCors, {

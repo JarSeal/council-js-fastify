@@ -1,4 +1,5 @@
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
+import { Type } from '@sinclair/typebox';
 
 import { healthCheck, healthCheckDB } from './handlers';
 
@@ -11,12 +12,18 @@ const healthCheckRoute: FastifyPluginAsync = (instance) => {
     method: 'GET',
     url: '/health',
     handler: healthCheck,
+    schema: {
+      response: { 200: Type.Object({ ok: Type.Boolean() }) },
+    },
   });
 
   instance.route<HealthCheckRoute>({
     method: 'GET',
     url: '/health/db',
     handler: healthCheckDB,
+    schema: {
+      response: { 200: Type.Object({ ok: Type.Boolean() }) },
+    },
   });
 
   return Promise.resolve();

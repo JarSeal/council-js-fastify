@@ -1,25 +1,16 @@
+import { Type } from '@sinclair/typebox';
+import type { Static } from '@sinclair/typebox';
 import type { RouteGenericInterface, FastifyError } from 'fastify';
 
-export interface PublicSignUpRoute extends RouteGenericInterface {
-  readonly Body: {
-    username: string;
-    email: string;
-    pass: string;
-  };
-  readonly Reply: { ok: boolean } | FastifyError;
-}
+export const bodySchema = Type.Object({
+  username: Type.String(),
+  email: Type.String(),
+  pass: Type.String(),
+});
 
-export const bodySchema = {
-  type: 'object',
-  properties: {
-    username: { type: 'string' },
-    email: { type: 'string' },
-    pass: { type: 'string' },
-  },
-  required: ['username', 'email', 'pass'],
-};
-export const replySchema = {
-  type: 'object',
-  properties: { ok: { type: 'boolean' } },
-  required: ['ok'],
-};
+export const replySchema = Type.Object({ ok: Type.Boolean() });
+
+export interface PublicSignUpRoute extends RouteGenericInterface {
+  readonly Body: Static<typeof bodySchema>;
+  readonly Reply: Static<typeof replySchema> | FastifyError;
+}

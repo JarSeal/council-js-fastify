@@ -401,6 +401,11 @@
     p-limit "^3.1.0"
     readable-stream "^4.0.0"
 
+"@fastify/type-provider-typebox@3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@fastify/type-provider-typebox/-/type-provider-typebox-3.4.0.tgz#9a5ce55fed9a5d4bb89b9860c215c3fc881f6496"
+  integrity sha512-wy1ihi8WtH00sW4YlaA0lZ0nIz/mVVh4stQQ68AtNYTgXI9LPKWylNYDTP2lcXO9az9w902CvqRc8BBwOUTo7w==
+
 "@humanwhocodes/config-array@^0.11.10":
   version "0.11.10"
   resolved "https://registry.yarnpkg.com/@humanwhocodes/config-array/-/config-array-0.11.10.tgz#5a3ffe32cc9306365fb3fd572596cd602d5e12d2"
@@ -718,6 +723,11 @@
   dependencies:
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
+
+"@sinclair/typebox@0.30.4":
+  version "0.30.4"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.30.4.tgz#8c918bc127385272a9f988fa2bcf7d3259599e5e"
+  integrity sha512-wFuuDR+O1OAE2GL0q68h1Ty00RE6Ihcixr55A6TU5RCvOUHnwJw9LGuDVg9NxDiAp7m/YJpa+UaOuLAz0ziyOQ==
 
 "@sinclair/typebox@^0.25.16":
   version "0.25.24"
