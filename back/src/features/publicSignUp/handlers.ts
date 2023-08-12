@@ -11,8 +11,6 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   const body = req.body;
   const email = body.email.trim();
 
-  // Check if email already exists
-
   // Validate fields
   const username = body.username.trim();
   const foundUser = await DBUserModel.findOne<DBUser>({ simpleId: username }).lean();
@@ -22,11 +20,11 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   }
   const foundEmail = await DBUserModel.findOne<DBUser>({ 'emails.email': email }).lean();
   if (foundEmail) {
-    return new errors.EMAIL_TAKEN(email);
+    return res.send(new errors.EMAIL_TAKEN(email));
   }
 
   // Create new user
-  // @TODO: create email token
+  // @TODO: create email verificatio token
   const passwordHash = await hash(body.pass, 10);
   const user = new DBUserModel<DBUser>({
     simpleId: username,
