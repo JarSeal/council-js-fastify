@@ -15,13 +15,18 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
 
   // Validate fields
   const username = body.username.trim();
-  const foundUser = await DBUserModel.findOne<DBUser>({ simpleId: username });
+  const foundUser = await DBUserModel.findOne<DBUser>({ simpleId: username }).lean();
   const validateError = validatePublicSignup(body, foundUser);
   if (validateError) {
     return res.send(validateError);
   }
+  const foundEmail = await DBUserModel.findOne<DBUser>({ 'emails.email': email }).lean();
+  if (foundEmail) {
+    return new errors.EMAIL_TAKEN(email);
+  }
 
   // Create new user
+  // @TODO: create email token
   const passwordHash = await hash(body.pass, 10);
   const user = new DBUserModel<DBUser>({
     simpleId: username,
@@ -36,8 +41,6 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   });
 
   const savedUser = await user.save();
-
-  req.log.info(`savedUser: ${JSON.stringify(savedUser)}`); // @TEMP
 
   if (!savedUser) {
     const createUserError = new errors.DB_CREATE_NEW_USER('public sign up user saving failed');

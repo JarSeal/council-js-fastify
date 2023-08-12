@@ -7,9 +7,12 @@ import { errors } from '../../core/errors';
 
 export const healthCheck: RouteHandler<HealthCheckRoute> = async (_, res) => res.send({ ok: true });
 
-type DBMonitorDBHealth = DBMonitor & {
-  data: { counter: number; updatedAt: Date };
-};
+export interface DBMonitorDBHealth extends DBMonitor {
+  data: {
+    counter: number;
+    updatedAt: Date;
+  };
+}
 
 export const healthCheckDB: RouteHandler<HealthCheckRoute> = async (_, res) => {
   const simpleId = 'dbHealthCheck';

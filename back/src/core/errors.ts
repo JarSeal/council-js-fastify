@@ -3,7 +3,8 @@ import { default as createFastifyError } from '@fastify/error';
 export enum ErrorCodes {
   DB_CREATE_NEW_USER = 'DB_CREATE_NEW_USER',
   USERNAME_TAKEN = 'USERNAME_TAKEN',
-  VALIDATE_NEW_USER = 'VALIDATE_NEW_USER',
+  EMAIL_TAKEN = 'EMAIL_TAKEN',
+  CJS_ERR_VALIDATE = 'CJS_ERR_VALIDATE',
   DB_CREATE_MONITOR = 'DB_CREATE_MONITOR',
   DB_UPDATE_MONITOR = 'DB_UPDATE_MONITOR',
 }
@@ -18,11 +19,8 @@ const errors = {
     500
   ),
   USERNAME_TAKEN: createError(ErrorCodes.USERNAME_TAKEN, "Username '%s' is taken", 400),
-  VALIDATE_NEW_USER: createError(
-    ErrorCodes.VALIDATE_NEW_USER,
-    'New user validation failed: %s',
-    400
-  ),
+  EMAIL_TAKEN: createError(ErrorCodes.EMAIL_TAKEN, "Email '%s' is taken", 400),
+  CJS_ERR_VALIDATE: createError(ErrorCodes.CJS_ERR_VALIDATE, 'New user validation failed: %s', 400),
   DB_CREATE_MONITOR: createError(
     ErrorCodes.DB_CREATE_MONITOR,
     'Could not create new monitor: %s',

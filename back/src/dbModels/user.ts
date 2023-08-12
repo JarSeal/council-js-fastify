@@ -9,7 +9,6 @@ export interface DBUser {
   emails: {
     email: string;
     verified: boolean;
-    prevEmail?: string | null;
     token?: string | null;
   }[];
   passwordHash: string;
@@ -28,7 +27,6 @@ const userSchema = new Schema<DBUser>({
     {
       _id: false,
       email: emailDBSchema,
-      prevEmail: { ...emailDBSchema, required: false, unique: false },
       verified: {
         type: Boolean,
         required: true,

@@ -1,0 +1,8 @@
+{
+  "user": {
+    "minUsernameLength": 2,
+    "maxUsernameLength": 32,
+    "minPassLength": 8,
+    "maxPassLength": 128
+  }
+}

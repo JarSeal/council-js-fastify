@@ -12,6 +12,7 @@
     "build:public": "cp -a ./../shared/public/. ./dist/public",
     "lint": "eslint .",
     "test": "cross-env NODE_ENV=test TZ=UTC jest --verbose --runInBand --detectOpenHandles --logHeapUsage",
+    "test:watch": "cross-env NODE_ENV=test TZ=UTC jest --watchAll --runInBand --detectOpenHandles",
     "dbstart": "cd ./db && docker-compose up -d",
     "dbstop": "cd ./db && docker-compose down",
     "dbcli": "docker exec -it councildb mongo councildb"
@@ -27,6 +28,9 @@
     "moduleFileExtensions": [
       "ts",
       "js"
+    ],
+    "modulePathIgnorePatterns": [
+      "database"
     ],
     "testEnvironment": "node",
     "testTimeout": 30000

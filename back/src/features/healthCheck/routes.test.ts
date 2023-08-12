@@ -2,6 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
+import DBMonitorModel from '../../dbModels/monitor';
+import type { DBMonitorDBHealth } from './handlers';
 
 describe('healthCheck', () => {
   let app: FastifyInstance;
@@ -26,11 +28,26 @@ describe('healthCheck', () => {
   });
 
   it('should test the healthCheckDB api route', async () => {
+    const simpleId = 'dbHealthCheck';
+    let monitorDB = await DBMonitorModel.findOne<DBMonitorDBHealth>({ simpleId });
+    expect(monitorDB).toBe(null);
+
     const response = await app.inject({
       method: 'GET',
       path: '/api/v1/sys/health/db',
     });
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toEqual({ ok: true });
+
+    monitorDB = await DBMonitorModel.findOne<DBMonitorDBHealth>({ simpleId });
+    expect(monitorDB?.systemDocument).toBeTruthy();
+    expect(monitorDB?.data.counter).toEqual(1);
+
+    await app.inject({
+      method: 'GET',
+      path: '/api/v1/sys/health/db',
+    });
+    monitorDB = await DBMonitorModel.findOne<DBMonitorDBHealth>({ simpleId });
+    expect(monitorDB?.data.counter).toEqual(2);
   });
 });
