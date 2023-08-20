@@ -3,6 +3,7 @@
     "minUsernameLength": 2,
     "maxUsernameLength": 32,
     "minPassLength": 8,
-    "maxPassLength": 128
+    "maxPassLength": 128,
+    "emailVerificationLife": 21600
   }
 }
