@@ -20,6 +20,7 @@ export const MONGODB_URI = process.env.MONGODB_URI || '';
 export const MONGODB_URI_TEST = process.env.MONGODB_URI_TEST || '';
 
 export const SECRET = ENVIRONMENT === 'test' ? 'testsecret' : process.env.SECRET || '';
+export const TOKEN_SECRET = ENVIRONMENT === 'test' ? 'testsecret' : process.env.TOKEN_SECRET || '';
 
 const configFileSchema = Type.Object({
   user: Type.Object({

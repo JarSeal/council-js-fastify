@@ -6,7 +6,7 @@ import { validatePublicSignup } from '../utils/validation';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
-import { SECRET } from '../../core/config';
+import { createUserToken } from '../utils/token';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
@@ -26,9 +26,8 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
 
   // Create new user
   const passwordHash = await hash(body.pass, 10);
-  const partialHash = passwordHash.slice(-8);
   const dateEmailCreated = new Date().getTime() / 1000; // in seconds
-  const hashToken = await hash(`${username}__email0__${SECRET}__${partialHash}`, 4);
+  const hashToken = await createUserToken(username, 0);
   const emailVerificationToken = `${dateEmailCreated}---${hashToken}`;
   const user = new DBUserModel<DBUser>({
     simpleId: username,
