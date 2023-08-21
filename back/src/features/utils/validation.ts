@@ -20,31 +20,29 @@ export const validatePublicSignup = (
   }
 
   // Check lengths
-  let conf = Number(getConfig('user.minUsernameLength') && 2);
-  const minUserLength = options?.minUsernameLength || conf;
+  const minUserLength =
+    options?.minUsernameLength || getConfig<number>('user.minUsernameLength', 2);
   if (username.length < minUserLength) {
-    return new errors.CJS_ERR_VALIDATE(
+    return new errors.COUNCL_ERR_VALIDATE(
       `Username is too short, minimum is ${minUserLength} characters.`
     );
   }
-  conf = Number(getConfig('user.maxUsernameLength') && 32);
-  const maxUserLength = options?.maxUsernameLength || conf;
+  const maxUserLength =
+    options?.maxUsernameLength || getConfig<number>('user.maxUsernameLength', 32);
   if (username.length > maxUserLength) {
-    return new errors.CJS_ERR_VALIDATE(
+    return new errors.COUNCL_ERR_VALIDATE(
       `Username is too long, maximum is ${maxUserLength} characters.`
     );
   }
-  conf = Number(getConfig('user.minPassLength') && 8);
-  const minPassLength = options?.minPassLength || conf;
+  const minPassLength = options?.minPassLength || getConfig<number>('user.minPassLength', 8);
   if (pass.length < minPassLength) {
-    return new errors.CJS_ERR_VALIDATE(
+    return new errors.COUNCL_ERR_VALIDATE(
       `Password is too short, minimum is ${minPassLength} characters.`
     );
   }
-  conf = Number(getConfig('user.maxPassLength') && 128);
-  const maxPassLength = options?.maxPassLength || conf;
+  const maxPassLength = options?.maxPassLength || getConfig<number>('user.maxPassLength', 128);
   if (pass.length > maxPassLength) {
-    return new errors.CJS_ERR_VALIDATE(
+    return new errors.COUNCL_ERR_VALIDATE(
       `Password is too long, maximum is ${maxPassLength} characters.`
     );
   }

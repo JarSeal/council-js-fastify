@@ -3,6 +3,7 @@ import { Type } from '@sinclair/typebox';
 import type { Static } from '@sinclair/typebox';
 
 import * as CONFIG from '../../../CONFIG.json';
+import { convertStringTo24Bytes } from '../features/utils/helpers';
 
 config();
 
@@ -19,8 +20,12 @@ export const CLIENT_HOST_NAMES = process.env.CLIENT_HOST_NAMES || '';
 export const MONGODB_URI = process.env.MONGODB_URI || '';
 export const MONGODB_URI_TEST = process.env.MONGODB_URI_TEST || '';
 
-export const SECRET = ENVIRONMENT === 'test' ? 'testsecret' : process.env.SECRET || '';
-export const TOKEN_SECRET = ENVIRONMENT === 'test' ? 'testsecret' : process.env.TOKEN_SECRET || '';
+export const SECRET = convertStringTo24Bytes(
+  ENVIRONMENT === 'test' ? 'testsecret' : process.env.SECRET || '123'
+);
+export const TOKEN_SECRET = convertStringTo24Bytes(
+  ENVIRONMENT === 'test' ? 'testsecret' : process.env.TOKEN_SECRET || '123'
+);
 
 const configFileSchema = Type.Object({
   user: Type.Object({
@@ -28,18 +33,25 @@ const configFileSchema = Type.Object({
     maxUsernameLength: Type.Number(),
     minPassLength: Type.Number(),
     maxPassLength: Type.Number(),
+    // hashSaltRounds: Type.Number(),
   }),
 });
 export type ConfigFile = Static<typeof configFileSchema>;
 
-export const getConfig = (path?: string) => {
-  const conf = CONFIG ? (CONFIG as object) : {};
+export const getConfig = <T>(path?: string, defaultValue?: unknown): T => {
+  const conf = CONFIG ? (CONFIG as ConfigFile) : {};
   const returnWrapper = (returnConf: unknown) => {
-    if (returnConf === undefined) {
+    if (returnConf === undefined && defaultValue === undefined) {
       // eslint-disable-next-line no-console
-      console.warn(`Could not find getConfig path: ${path ? `'${path}'` : 'undefined'}`);
+      console.warn(
+        `Could not find getConfig path and defaultValue was undefined: ${
+          path ? `'${path}'` : 'undefined'
+        }`
+      );
+    } else if (returnConf === undefined) {
+      return defaultValue as T;
     }
-    return returnConf;
+    return returnConf as T;
   };
 
   if (path) {
@@ -60,12 +72,5 @@ export const getConfig = (path?: string) => {
     }
     return returnWrapper(returnConf);
   }
-
-  if (!CONFIG) {
-    // eslint-disable-next-line no-console
-    console.error(
-      'Could not find CONFIG.json at the root of the project or CONFIG.json is empty or invalid'
-    );
-  }
-  return conf;
+  return conf as T;
 };

@@ -32,13 +32,13 @@ describe('validation util', () => {
       validationOptions
     );
     expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('CJS_ERR_VALIDATE');
+    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
     expect(validation?.message).toBe(
       'New user validation failed: Username is too long, maximum is 12 characters.'
     );
   });
 
-  it('should validate the publicSignUp body and return username error', () => {
+  it('should validate the publicSignUp body and return username too short error', () => {
     const validation = validatePublicSignup(
       {
         username: 'm',
@@ -49,7 +49,7 @@ describe('validation util', () => {
       validationOptions
     );
     expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('CJS_ERR_VALIDATE');
+    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
     expect(validation?.message).toBe(
       'New user validation failed: Username is too short, minimum is 2 characters.'
     );
@@ -66,7 +66,7 @@ describe('validation util', () => {
       validationOptions
     );
     expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('CJS_ERR_VALIDATE');
+    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
     expect(validation?.message).toBe(
       'New user validation failed: Password is too long, maximum is 12 characters.'
     );
@@ -83,7 +83,7 @@ describe('validation util', () => {
       validationOptions
     );
     expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('CJS_ERR_VALIDATE');
+    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
     expect(validation?.message).toBe(
       'New user validation failed: Password is too short, minimum is 8 characters.'
     );

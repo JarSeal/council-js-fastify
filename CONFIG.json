@@ -4,6 +4,7 @@
     "maxUsernameLength": 32,
     "minPassLength": 8,
     "maxPassLength": 128,
-    "emailVerificationLife": 21600
+    "emailVerificationLife": 21600,
+    "hashSaltRounds": 10
   }
 }
