@@ -1,13 +1,14 @@
 import type { RouteHandler } from 'fastify';
 import { hash } from 'bcrypt';
+import crypto from 'crypto';
 
 import { errors } from '../../core/errors';
 import { validatePublicSignup } from '../utils/validation';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
-import { createToken } from '../utils/token';
 import { getConfig } from '../../core/config';
+import { createUrlToken } from '../utils/token';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
@@ -25,15 +26,21 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
     return res.send(new errors.EMAIL_TAKEN(email));
   }
 
+  // Create email verification token and id
+  const emailVerificationTokenId = crypto.randomUUID();
+  const emailVerificationToken = await createUrlToken({ emailVerificationTokenId });
+  if (typeof emailVerificationToken !== 'string') {
+    return res.status(500).send({ ok: false, message: emailVerificationToken.code }); // @TODO: return a proper error
+  }
+
   // Create new user
   const saltRounds = getConfig<number>('user.hashSaltRounds', 10);
   const passwordHash = await hash(body.pass, saltRounds);
-  const dateEmailCreated = new Date().getTime() / 1000; // in seconds
-  const hashToken = await createToken([username, email], 0);
-  const emailVerificationToken = `${dateEmailCreated}---${hashToken}`;
   const user = new DBUserModel<DBUser>({
     simpleId: username,
-    emails: [{ email, verified: false, token: emailVerificationToken }],
+    emails: [
+      { email, verified: false, token: emailVerificationToken, tokenId: emailVerificationTokenId },
+    ],
     passwordHash,
     created: {
       user: null,

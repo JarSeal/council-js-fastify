@@ -1,5 +1,7 @@
+// @TODO: Check if needed
 export const getStringByteSize = (str: string) => new Blob([str]).size;
 
+// @TODO: Check if needed
 export const convertStringTo24Bytes = (str: string) => {
   if (!str) return 'dummyStringOf24bytes1234';
 

@@ -10,6 +10,7 @@ export interface DBUser {
     email: string;
     verified: boolean;
     token: string | null;
+    tokenId: string | null;
   }[];
   passwordHash: string;
   created: {
@@ -33,6 +34,11 @@ const userSchema = new Schema<DBUser>({
         default: false,
       },
       token: {
+        type: String,
+        required: true,
+        default: null,
+      },
+      tokenId: {
         type: String,
         required: true,
         default: null,

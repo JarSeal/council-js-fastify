@@ -3,7 +3,6 @@ import { Type } from '@sinclair/typebox';
 import type { Static } from '@sinclair/typebox';
 
 import * as CONFIG from '../../../CONFIG.json';
-import { convertStringTo24Bytes } from '../features/utils/helpers';
 
 config();
 
@@ -20,12 +19,8 @@ export const CLIENT_HOST_NAMES = process.env.CLIENT_HOST_NAMES || '';
 export const MONGODB_URI = process.env.MONGODB_URI || '';
 export const MONGODB_URI_TEST = process.env.MONGODB_URI_TEST || '';
 
-export const SECRET = convertStringTo24Bytes(
-  ENVIRONMENT === 'test' ? 'testsecret' : process.env.SECRET || '123'
-);
-export const TOKEN_SECRET = convertStringTo24Bytes(
-  ENVIRONMENT === 'test' ? 'testsecret' : process.env.TOKEN_SECRET || '123'
-);
+export const URL_TOKEN_SECRET =
+  ENVIRONMENT === 'test' ? 'testsecret' : process.env.URL_TOKEN_SECRET || '123';
 
 const configFileSchema = Type.Object({
   user: Type.Object({
