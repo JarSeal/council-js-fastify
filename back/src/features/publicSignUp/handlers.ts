@@ -30,7 +30,9 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   const emailVerificationTokenId = crypto.randomUUID();
   const emailVerificationToken = await createUrlToken({ emailVerificationTokenId });
   if (typeof emailVerificationToken !== 'string') {
-    return res.status(500).send({ ok: false, message: emailVerificationToken.code }); // @TODO: return a proper error
+    return res.send(
+      new errors.FAST_JWT_ERR(`${emailVerificationToken.code}: ${emailVerificationToken.message}`)
+    );
   }
 
   // Create new user
