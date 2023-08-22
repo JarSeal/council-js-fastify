@@ -1,16 +1,15 @@
 import { Schema, model } from 'mongoose';
 import type { Types } from 'mongoose';
 
-import { simpleIdDBSchema, emailDBSchema, dateDBSchema } from './_partials';
-import type { Edited } from '../types/modelPartials';
+import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './_partials';
+import type { Edited, Token } from '../types/modelPartials';
 
 export interface DBUser {
   simpleId: string;
   emails: {
     email: string;
     verified: boolean;
-    token: string | null;
-    tokenId: string | null;
+    token: Token;
   }[];
   passwordHash: string;
   created: {
@@ -33,16 +32,7 @@ const userSchema = new Schema<DBUser>({
         required: true,
         default: false,
       },
-      token: {
-        type: String,
-        required: true,
-        default: null,
-      },
-      tokenId: {
-        type: String,
-        required: true,
-        default: null,
-      },
+      token: tokenDbSchema,
     },
   ],
   passwordHash: String,

@@ -12,6 +12,19 @@ export const emailDBSchema = {
   index: true,
 };
 
+export const tokenDbSchema = {
+  token: {
+    type: String,
+    required: true,
+    default: null,
+  },
+  tokenId: {
+    type: String,
+    required: true,
+    default: null,
+  },
+};
+
 export const dateDBSchema = {
   type: Date,
   required: true,

@@ -41,7 +41,11 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   const user = new DBUserModel<DBUser>({
     simpleId: username,
     emails: [
-      { email, verified: false, token: emailVerificationToken, tokenId: emailVerificationTokenId },
+      {
+        email,
+        verified: false,
+        token: { token: emailVerificationToken, tokenId: emailVerificationTokenId },
+      },
     ],
     passwordHash,
     created: {
