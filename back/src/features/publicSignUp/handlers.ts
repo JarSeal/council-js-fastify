@@ -60,6 +60,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   try {
     savedUser = await user.save();
   } catch (err) {
+    error = true;
     req.log.error(`PublicSignUp: saving user model failed: ${JSON.stringify(err)}`);
   }
   if (!savedUser || error) {
