@@ -19,6 +19,7 @@ export const CLIENT_HOST_NAMES = process.env.CLIENT_HOST_NAMES || '';
 export const MONGODB_URI = process.env.MONGODB_URI || '';
 export const MONGODB_URI_TEST = process.env.MONGODB_URI_TEST || '';
 
+export const HASH_SALT_ROUNDS = process.env.HASH_SALT_ROUNDS || 10;
 export const URL_TOKEN_SECRET =
   ENVIRONMENT === 'test' ? 'testsecret' : process.env.URL_TOKEN_SECRET || '123';
 
@@ -28,7 +29,7 @@ const configFileSchema = Type.Object({
     maxUsernameLength: Type.Number(),
     minPassLength: Type.Number(),
     maxPassLength: Type.Number(),
-    // hashSaltRounds: Type.Number(),
+    maxEmails: Type.Number(),
   }),
 });
 export type ConfigFile = Static<typeof configFileSchema>;

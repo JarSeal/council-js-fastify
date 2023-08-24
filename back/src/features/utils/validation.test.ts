@@ -103,6 +103,7 @@ describe('validation util', () => {
             email: 'a@a.com',
             verified: false,
             token: { token: null, tokenId: null },
+            added: new Date(),
           },
         ],
         passwordHash: 'jkfasjkfsajkfs',

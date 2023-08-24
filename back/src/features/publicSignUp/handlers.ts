@@ -7,7 +7,7 @@ import { validatePublicSignup } from '../utils/validation';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
-import { getConfig } from '../../core/config';
+import { HASH_SALT_ROUNDS } from '../../core/config';
 import { createUrlToken } from '../utils/token';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
@@ -39,7 +39,8 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   }
 
   // Create new user
-  const saltRounds = getConfig<number>('user.hashSaltRounds', 10);
+  const dateNow = new Date();
+  const saltRounds = HASH_SALT_ROUNDS;
   const passwordHash = await hash(body.pass, saltRounds);
   const user = new DBUserModel<DBUser>({
     simpleId: username,
@@ -48,20 +49,26 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
         email,
         verified: false,
         token: { token: emailVerificationToken, tokenId: emailVerificationTokenId },
+        added: dateNow,
       },
     ],
     passwordHash,
     created: {
       user: null,
       publicForm: true,
-      date: new Date(),
+      date: dateNow,
     },
     edited: [],
   });
 
-  const savedUser = await user.save();
-
-  if (!savedUser) {
+  let savedUser, error;
+  try {
+    savedUser = await user.save();
+  } catch (err) {
+    req.log.error(`PublicSignUp: saving user model failed: ${JSON.stringify(err)}`);
+  }
+  if (!savedUser || error) {
+    if (!savedUser) req.log.error(`PublicSignUp: savedUser was empty`);
     const createUserError = new errors.DB_CREATE_NEW_USER('public sign up user saving failed');
     return res.send(createUserError);
   }
