@@ -1,6 +1,5 @@
 import type { RouteHandler } from 'fastify';
 import { hash } from 'bcrypt';
-import crypto from 'crypto';
 
 import { errors } from '../../core/errors';
 import { validatePublicSignup } from '../utils/validation';
@@ -8,7 +7,7 @@ import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
 import { HASH_SALT_ROUNDS } from '../../core/config';
-import { createUrlToken } from '../utils/token';
+import { createUrlIdToken } from '../utils/token';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
@@ -26,15 +25,11 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
     return res.send(new errors.EMAIL_TAKEN(email));
   }
 
-  // Create email verification token and id
-  const emailVerificationTokenId = crypto.randomUUID();
-  const emailVerificationToken = await createUrlToken({
-    tokenType: 'EMAIL_VERIFICATION',
-    tokenId: emailVerificationTokenId,
-  });
-  if (typeof emailVerificationToken !== 'string') {
+  // Create email verification URL ID token
+  const tokenAndId = await createUrlIdToken('EMAIL_VERIFICATION');
+  if (tokenAndId.error) {
     return res.send(
-      new errors.FAST_JWT_ERR(`${emailVerificationToken.code}: ${emailVerificationToken.message}`)
+      new errors.FAST_JWT_ERR(`${tokenAndId.error.code}: ${tokenAndId.error.message}`)
     );
   }
 
@@ -48,7 +43,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
       {
         email,
         verified: false,
-        token: { token: emailVerificationToken, tokenId: emailVerificationTokenId },
+        token: { token: tokenAndId.token, tokenId: tokenAndId.tokenId },
         added: dateNow,
       },
     ],

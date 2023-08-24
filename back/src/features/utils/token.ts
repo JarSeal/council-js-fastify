@@ -7,6 +7,7 @@ import type {
   TokenError,
   VerifierOptions,
 } from 'fast-jwt';
+import crypto from 'crypto';
 
 import { URL_TOKEN_SECRET } from '../../core/config';
 
@@ -14,6 +15,19 @@ const ALGORITHM = 'HS512';
 const ISSUER = 'Council-Fastify';
 const AUDIENCE = 'Council-Fastify users';
 const SUBJECT_URL_TOKEN = 'Signed Council-Fastify URL token';
+
+// CREATE URL ID TOKEN
+// @TODO: create a test for this
+export const createUrlIdToken = async (
+  tokenType: string
+): Promise<{ tokenId: string | null; token: string | null; error?: TokenError | null }> => {
+  const tokenId = crypto.randomUUID();
+  const token = await createUrlToken({ tokenType, tokenId });
+  if (typeof token !== 'string') {
+    return { tokenId: null, token: null, error: token };
+  }
+  return { tokenId, token };
+};
 
 // CREATE URL TOKEN
 export const createUrlToken = async (
