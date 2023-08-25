@@ -17,14 +17,13 @@ const AUDIENCE = 'Council-Fastify users';
 const SUBJECT_URL_TOKEN = 'Signed Council-Fastify URL token';
 
 // CREATE URL ID TOKEN
-// @TODO: create a test for this
-export const createUrlIdToken = async (
+export const createUrlTokenAndId = async (
   tokenType: string
-): Promise<{ tokenId: string | null; token: string | null; error?: TokenError | null }> => {
+): Promise<{ tokenId: string; token: string; error?: TokenError }> => {
   const tokenId = crypto.randomUUID();
   const token = await createUrlToken({ tokenType, tokenId });
   if (typeof token !== 'string') {
-    return { tokenId: null, token: null, error: token };
+    return { tokenId: '', token: '', error: token };
   }
   return { tokenId, token };
 };

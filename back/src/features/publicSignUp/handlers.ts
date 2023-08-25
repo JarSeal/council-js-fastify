@@ -7,7 +7,7 @@ import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
 import { HASH_SALT_ROUNDS } from '../../core/config';
-import { createUrlIdToken } from '../utils/token';
+import { createUrlTokenAndId } from '../utils/token';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
@@ -26,7 +26,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   }
 
   // Create email verification URL ID token
-  const tokenAndId = await createUrlIdToken('EMAIL_VERIFICATION');
+  const tokenAndId = await createUrlTokenAndId('EMAIL_VERIFICATION');
   if (tokenAndId.error) {
     return res.send(
       new errors.FAST_JWT_ERR(`${tokenAndId.error.code}: ${tokenAndId.error.message}`)

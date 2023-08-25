@@ -1,10 +1,26 @@
-import { createUrlToken, decodeUrlToken, verifyUrlToken } from './token';
+import { createUrlToken, createUrlTokenAndId, decodeUrlToken, verifyUrlToken } from './token';
 import type { CompleteTokenContents } from './token';
 
-describe('token utils', () => {
+it('should create a valid URL token and tokenId', async () => {
+  const { token, tokenId, error } = await createUrlTokenAndId('EMAIL_VERIFICATION');
+  expect(
+    token?.startsWith(
+      'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0b2tlblR5cGUiOiJFTUFJTF9WRVJJRklDQVRJT04iLCJ0b2tlbklkIjoi'
+    )
+  ).toBeTruthy();
+  expect(tokenId).toHaveLength(36);
+  expect(error).toBe(undefined);
+
+  const verification = await verifyUrlToken(token);
+  expect(verification.tokenId).toBe(tokenId);
+  expect(verification.aud).toBe('Council-Fastify users');
+  expect(verification.iss).toBe('Council-Fastify');
+  expect(verification.sub).toBe('Signed Council-Fastify URL token');
+});
+
+describe('URL token utils', () => {
   it('should create a valid URL token, verify it, and decode it', async () => {
-    let token = await createUrlToken({ myKey: 'myPayload3' });
-    token = String(token);
+    const token = (await createUrlToken({ myKey: 'myPayload3' })) as string;
     const verification = await verifyUrlToken(token);
     const verificationComplete = (await verifyUrlToken(token, {
       complete: true,
