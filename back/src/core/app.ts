@@ -4,9 +4,11 @@ import fastify from 'fastify';
 import type { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
+import type { FastifyCookieOptions } from '@fastify/cookie';
+import cookie from '@fastify/cookie';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
-import { ENVIRONMENT, CLIENT_HOST_NAMES } from './config';
+import { ENVIRONMENT, CLIENT_HOST_NAMES, COOKIE_SECRET } from './config';
 import type { Environment } from './config';
 import apis from './apis';
 import { initDB } from './db';
@@ -51,6 +53,12 @@ const initApp = async (): Promise<FastifyInstance> => {
   // Database
   await initDB(app);
 
+  // Cookies
+  await app.register(cookie, {
+    secret: COOKIE_SECRET,
+    hook: 'onRequest',
+  } as FastifyCookieOptions);
+
   // API routes
   await app.register(apis, { prefix: '/api' });
 
@@ -65,7 +73,7 @@ const initApp = async (): Promise<FastifyInstance> => {
     prefix: '/public/',
   });
 
-  // Client routes (all GET routes, except the API routes)
+  // Client routes (all GET routes, except the GET API routes)
   app.get('*', (_, response) => response.sendFile('index.html'));
 
   return app;

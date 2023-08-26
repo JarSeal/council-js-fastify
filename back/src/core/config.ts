@@ -22,6 +22,7 @@ export const MONGODB_URI_TEST = process.env.MONGODB_URI_TEST || '';
 export const HASH_SALT_ROUNDS = process.env.HASH_SALT_ROUNDS || 10;
 export const URL_TOKEN_SECRET =
   ENVIRONMENT === 'test' ? 'testsecret' : process.env.URL_TOKEN_SECRET || '123';
+export const COOKIE_SECRET = process.env.COOKIE_SECRET || 'cookiesecret';
 
 const configFileSchema = Type.Object({
   user: Type.Object({

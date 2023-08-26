@@ -1,7 +1,7 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
-export const testHook = (instance: FastifyInstance) => () => {
-  instance.log.info('Test');
+export const testHook = (req: FastifyRequest, _res: FastifyReply) => () => {
+  req.log.info('Test');
 
   return Promise.resolve();
 };

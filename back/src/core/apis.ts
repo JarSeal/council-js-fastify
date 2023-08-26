@@ -4,6 +4,7 @@ import { testHook } from '../hooks/testHook/testHook';
 import healthCheckRoute from '../features/healthCheck/routes';
 import publicSignUpRoute from '../features/publicSignUp/routes';
 import loginRoute from '../features/login/routes';
+import { notSignedInHook } from '../hooks/notSignedIn';
 
 const apiVersion = '/v1';
 const vPrefixObj = { prefix: apiVersion };
@@ -17,13 +18,13 @@ const apis: FastifyPluginAsync = async (instance) => {
 
 // Public:
 const publicRoutes: FastifyPluginAsync = async (instance) => {
-  instance.addHook('onRequest', testHook(instance)); // @TODO: remove this example hook at some point
+  instance.addHook('onRequest', testHook); // @TODO: remove this example hook at some point
   await instance.register(healthCheckRoute, sysPrefixObj);
 };
 
 // Not signed in:
 const notSignedInRoutes: FastifyPluginAsync = async (instance) => {
-  // @TODO: Add a hook here to check that user is not signed to use these apis
+  instance.addHook('onRequest', notSignedInHook);
   await instance.register(publicSignUpRoute, vPrefixObj);
   await instance.register(loginRoute, vPrefixObj);
 };

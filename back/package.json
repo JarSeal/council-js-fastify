@@ -36,6 +36,7 @@
     "testTimeout": 30000
   },
   "dependencies": {
+    "@fastify/cookie": "9.0.4",
     "@fastify/cors": "8.3.0",
     "@fastify/error": "3.3.0",
     "@fastify/static": "6.10.2",
