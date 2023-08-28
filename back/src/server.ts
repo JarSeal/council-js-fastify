@@ -1,6 +1,8 @@
 import initApp from './core/app';
 import { HOST, PORT } from './core/config';
 
+process.env.TZ = 'UTC';
+
 initApp()
   .then((app) => {
     app.listen(

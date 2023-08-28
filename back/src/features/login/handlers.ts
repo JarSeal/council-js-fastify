@@ -10,6 +10,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
 
   req.session.isSignedIn = true;
   req.session.username = usernameOrEmail;
+  await req.session.save();
 
   return res.status(200).send({ ok: true });
 };

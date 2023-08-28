@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import fastify from 'fastify';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, Session } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import cookie from '@fastify/cookie';
@@ -62,12 +62,29 @@ const initApp = async (): Promise<FastifyInstance> => {
     maxAge: 3600 * 1000, // @TODO: add session length as a system setting
   };
   await app.register(cookie);
+  const sessionStore: { [k: string]: unknown } = {};
   await app.register(fastifySession, {
     secret: 'a secret with minimum length of 32 characters', // @TODO: add SESSION_SECRET
     cookieName: SESSION_COOKIE_NAME,
     cookie: cookieSharedConfig,
     rolling: true,
-    // store: { set: () => null, get: () => null, destroy: () => null }, // @TODO: add session store
+    // @TODO: add session store
+    store: {
+      set: (sessionId, session, callback) => {
+        console.log('SET TO SESSION STORE', sessionId, session.cookie.expires);
+        sessionStore[sessionId] = session;
+        callback();
+      },
+      get: (sessionId, callback) => {
+        console.log('GET FROM SESSION STORE', sessionId);
+        callback(null, sessionStore[sessionId] as Session);
+      },
+      destroy: (sessionId, callback) => {
+        console.log('DESTROY SESSION STORE', sessionId);
+        delete sessionStore[sessionId];
+        callback();
+      },
+    },
   });
 
   // API routes
