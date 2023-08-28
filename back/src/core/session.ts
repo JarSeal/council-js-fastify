@@ -1,15 +1,14 @@
 import type { FastifyError, FastifyReply } from 'fastify';
 
 import type { ErrorCodes } from './errors';
+import { IS_PRODUCTION } from './config';
 
-const isProd = process.env.ENVIRONMENT === 'prod';
-
-export const cookieName = (name: string) => (isProd ? `__Host-${name}` : name);
+export const cookieName = (name: string) => (IS_PRODUCTION ? `__Host-${name}` : name);
 
 export const SESSION_COOKIE_OPTIONS = {
   path: '/',
-  httpOnly: isProd,
-  secure: isProd,
+  httpOnly: IS_PRODUCTION,
+  secure: IS_PRODUCTION,
   signed: true,
   maxAge: 60 * 60,
 };

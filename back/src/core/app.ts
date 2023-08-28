@@ -4,14 +4,15 @@ import fastify from 'fastify';
 import type { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
-import type { FastifyCookieOptions } from '@fastify/cookie';
 import cookie from '@fastify/cookie';
+import fastifySession from '@fastify/session';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
-import { ENVIRONMENT, CLIENT_HOST_NAMES, COOKIE_SECRET } from './config';
+import { ENVIRONMENT, CLIENT_HOST_NAMES, IS_PRODUCTION } from './config';
 import type { Environment } from './config';
 import apis from './apis';
 import { initDB } from './db';
+import { SESSION_COOKIE_NAME } from './session';
 
 const initApp = async (): Promise<FastifyInstance> => {
   const envToLogger = {
@@ -54,10 +55,20 @@ const initApp = async (): Promise<FastifyInstance> => {
   await initDB(app);
 
   // Cookies
-  await app.register(cookie, {
-    secret: COOKIE_SECRET,
-    hook: 'onRequest',
-  } as FastifyCookieOptions);
+  const cookieSharedConfig = {
+    httpOnly: IS_PRODUCTION,
+    secure: IS_PRODUCTION,
+    path: '/',
+    expires: new Date(Math.floor(Date.now() / 1000 + 3600) * 1000), // @TODO: add session length as a system setting
+  };
+  await app.register(cookie);
+  await app.register(fastifySession, {
+    secret: 'a secret with minimum length of 32 characters', // @TODO: add SESSION_SECRET
+    cookieName: SESSION_COOKIE_NAME,
+    cookie: cookieSharedConfig,
+    rolling: true,
+    // store: { set: () => null, get: () => null, destroy: () => null }, // @TODO: add session store
+  });
 
   // API routes
   await app.register(apis, { prefix: '/api' });

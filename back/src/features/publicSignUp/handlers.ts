@@ -12,6 +12,7 @@ import { createUrlTokenAndId } from '../utils/token';
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
   const email = body.email.trim();
+  console.log('PUBLICSIGNUP', req.session.sessionId);
 
   // Validate fields
   const username = body.username.trim();
