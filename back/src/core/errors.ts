@@ -9,6 +9,7 @@ export enum ErrorCodes {
   DB_UPDATE_MONITOR = 'DB_UPDATE_MONITOR',
   FAST_JWT_ERR = 'FAST_JWT_ERROR',
   FAST_JWT_ERR_VALIDATE = 'FAST_JWT_VALIDATION_ERROR',
+  SESSION_CANNOT_BE_SIGNED_IN = 'SESSION_CANNOT_BE_SIGNED_IN',
 }
 
 const createError = (code: ErrorCodes, message: string, statusCode?: number) =>
@@ -35,6 +36,11 @@ const errors = {
   DB_UPDATE_MONITOR: createError(ErrorCodes.DB_UPDATE_MONITOR, 'Could not update monitor: %s', 500),
   FAST_JWT_ERR: createError(ErrorCodes.FAST_JWT_ERR, '%s', 500),
   FAST_JWT_ERR_VALIDATE: createError(ErrorCodes.FAST_JWT_ERR_VALIDATE, '%s', 400),
+  SESSION_CANNOT_BE_SIGNED_IN: createError(
+    ErrorCodes.SESSION_CANNOT_BE_SIGNED_IN,
+    'Cannot be signed in to access this route',
+    400
+  ),
 };
 
 export { errors };

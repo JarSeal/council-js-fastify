@@ -1,9 +1,10 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-// import { SESSION_COOKIE_NAME } from '../core/session';
+import { errors } from '../core/errors';
 
-export const notSignedInHook = (req: FastifyRequest, _res: FastifyReply) => {
-  console.log('HERE', req.cookies);
-
+export const notSignedInHook = (req: FastifyRequest, res: FastifyReply) => {
+  if (req.session.isSignedIn) {
+    return res.send(new errors.SESSION_CANNOT_BE_SIGNED_IN());
+  }
   return Promise.resolve();
 };
