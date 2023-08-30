@@ -12,7 +12,6 @@ import { createUrlTokenAndId } from '../utils/token';
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
   const email = body.email.trim();
-  console.log('PUBLICSIGNUP', req.session.sessionId);
 
   // Validate fields
   const username = body.username.trim();
@@ -36,7 +35,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
 
   // Create new user
   const dateNow = new Date();
-  const saltRounds = HASH_SALT_ROUNDS;
+  const saltRounds = Number(HASH_SALT_ROUNDS);
   const passwordHash = await hash(body.pass, saltRounds);
   const user = new DBUserModel<DBUser>({
     simpleId: username,

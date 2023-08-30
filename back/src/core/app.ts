@@ -1,18 +1,25 @@
 import path from 'path';
 import fs from 'fs';
 import fastify from 'fastify';
-import type { FastifyInstance, Session } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import cookie from '@fastify/cookie';
 import fastifySession from '@fastify/session';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
-import { ENVIRONMENT, CLIENT_HOST_NAMES, IS_PRODUCTION } from './config';
+import {
+  ENVIRONMENT,
+  CLIENT_HOST_NAMES,
+  IS_PRODUCTION,
+  SESSION_SECRET,
+  SESSION_COOKIE_NAME,
+  getConfig,
+} from './config';
 import type { Environment } from './config';
 import apis from './apis';
 import { initDB } from './db';
-import { SESSION_COOKIE_NAME } from './session';
+import { sessionStore } from './sessionStore';
 
 const initApp = async (): Promise<FastifyInstance> => {
   const envToLogger = {
@@ -59,32 +66,33 @@ const initApp = async (): Promise<FastifyInstance> => {
     httpOnly: IS_PRODUCTION,
     secure: IS_PRODUCTION,
     path: '/',
-    maxAge: 3600 * 1000, // @TODO: add session length as a system setting
+    maxAge: getConfig<number>('user.sessionMaxAge'), // @TODO: add session length as a system setting
   };
   await app.register(cookie);
-  const sessionStore: { [k: string]: unknown } = {};
+  // const sessionStore: { [k: string]: unknown } = {};
   await app.register(fastifySession, {
-    secret: 'a secret with minimum length of 32 characters', // @TODO: add SESSION_SECRET
+    secret: SESSION_SECRET,
     cookieName: SESSION_COOKIE_NAME,
     cookie: cookieSharedConfig,
     rolling: true,
-    // @TODO: add session store
-    store: {
-      set: (sessionId, session, callback) => {
-        console.log('SET TO SESSION STORE', sessionId, session.cookie.expires);
-        sessionStore[sessionId] = session;
-        callback();
-      },
-      get: (sessionId, callback) => {
-        console.log('GET FROM SESSION STORE', sessionId);
-        callback(null, sessionStore[sessionId] as Session);
-      },
-      destroy: (sessionId, callback) => {
-        console.log('DESTROY SESSION STORE', sessionId);
-        delete sessionStore[sessionId];
-        callback();
-      },
-    },
+    store: sessionStore,
+    // @TODO: add real session store (Redis or write to Mongo Sessions collection)
+    // store: {
+    //   set: (sessionId, session, callback) => {
+    //     console.log('SET TO SESSION STORE', sessionId, session.username);
+    //     sessionStore[sessionId] = session;
+    //     callback();
+    //   },
+    //   get: (sessionId, callback) => {
+    //     console.log('GET FROM SESSION STORE', sessionId);
+    //     callback(null, sessionStore[sessionId] as Session);
+    //   },
+    //   destroy: (sessionId, callback) => {
+    //     console.log('DESTROY SESSION STORE', sessionId);
+    //     delete sessionStore[sessionId];
+    //     callback();
+    //   },
+    // },
   });
 
   // API routes

@@ -14,6 +14,8 @@ const sysPrefixObj = { prefix: apiVersion + '/sys' };
 // All routes:
 const apis: FastifyPluginAsync = async (instance) => {
   await instance.register(publicRoutes);
+
+  instance.addHook('preHandler', checkSessionHook);
   await instance.register(notSignedInRoutes);
 };
 
@@ -25,7 +27,6 @@ const publicRoutes: FastifyPluginAsync = async (instance) => {
 
 // Not signed in routes:
 const notSignedInRoutes: FastifyPluginAsync = async (instance) => {
-  instance.addHook('preHandler', checkSessionHook);
   instance.addHook('onRequest', notSignedInHook);
   await instance.register(publicSignUpRoute, vPrefixObj);
   await instance.register(loginRoute, vPrefixObj);

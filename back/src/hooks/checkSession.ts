@@ -8,7 +8,7 @@ export const checkSessionHook = async (req: FastifyRequest, _res: FastifyReply) 
     if (req.session.isSignedIn === undefined) {
       // Create new session
       req.session.isSignedIn = false;
-      delete req.session.username;
+      req.session.username = '';
     }
   }
   return Promise.resolve();

@@ -1,6 +1,8 @@
 import { default as createFastifyError } from '@fastify/error';
 
 export enum ErrorCodes {
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
   DB_CREATE_NEW_USER = 'DB_CREATE_NEW_USER',
   USERNAME_TAKEN = 'USERNAME_TAKEN',
   EMAIL_TAKEN = 'EMAIL_TAKEN',
@@ -10,12 +12,16 @@ export enum ErrorCodes {
   FAST_JWT_ERR = 'FAST_JWT_ERROR',
   FAST_JWT_ERR_VALIDATE = 'FAST_JWT_VALIDATION_ERROR',
   SESSION_CANNOT_BE_SIGNED_IN = 'SESSION_CANNOT_BE_SIGNED_IN',
+  SESSION_SET_TO_STORE_ERR = 'SESSION_SET_TO_STORE_ERR',
+  SESSION_GET_FROM_STORE_ERR = 'SESSION_GET_FROM_STORE_ERR',
 }
 
 const createError = (code: ErrorCodes, message: string, statusCode?: number) =>
   createFastifyError(code, message, statusCode);
 
 const errors = {
+  UNAUTHORIZED: createError(ErrorCodes.UNAUTHORIZED, '%s', 401),
+  FORBIDDEN: createError(ErrorCodes.FORBIDDEN, '%s', 403),
   DB_CREATE_NEW_USER: createError(
     ErrorCodes.DB_CREATE_NEW_USER,
     'Could not create new user: %s',
@@ -40,6 +46,16 @@ const errors = {
     ErrorCodes.SESSION_CANNOT_BE_SIGNED_IN,
     'Cannot be signed in to access this route',
     400
+  ),
+  SESSION_SET_TO_STORE_ERR: createError(
+    ErrorCodes.SESSION_SET_TO_STORE_ERR,
+    'Setting session to store failed: %s',
+    500
+  ),
+  SESSION_GET_FROM_STORE_ERR: createError(
+    ErrorCodes.SESSION_GET_FROM_STORE_ERR,
+    'Setting session to store failed: %s',
+    500
   ),
 };
 
