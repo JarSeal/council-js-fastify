@@ -7,7 +7,9 @@ export const bodySchema = Type.Object({
   pass: Type.String(),
 });
 
-export const replySchema = Type.Object({ ok: Type.Boolean() });
+export const replySchema = Type.Object({
+  ok: Type.Boolean(),
+});
 
 export interface LoginRoute extends RouteGenericInterface {
   readonly Body: Static<typeof bodySchema>;

@@ -5,7 +5,6 @@ import healthCheckRoute from '../features/healthCheck/routes';
 import publicSignUpRoute from '../features/publicSignUp/routes';
 import loginRoute from '../features/login/routes';
 import { notSignedInHook } from '../hooks/notSignedIn';
-import { checkSessionHook } from '../hooks/checkSession';
 
 const apiVersion = '/v1';
 const vPrefixObj = { prefix: apiVersion };
@@ -14,8 +13,6 @@ const sysPrefixObj = { prefix: apiVersion + '/sys' };
 // All routes:
 const apis: FastifyPluginAsync = async (instance) => {
   await instance.register(publicRoutes);
-
-  instance.addHook('preHandler', checkSessionHook);
   await instance.register(notSignedInRoutes);
 };
 

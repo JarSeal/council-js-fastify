@@ -60,12 +60,10 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   try {
     savedUser = await user.save();
   } catch (err) {
-    error = true;
-    req.log.error(`PublicSignUp: saving user model failed: ${JSON.stringify(err)}`);
+    error = `PublicSignUp: saving user model failed: ${JSON.stringify(err)}`;
   }
   if (!savedUser || error) {
-    if (!savedUser) req.log.error(`PublicSignUp: savedUser was empty`);
-    const createUserError = new errors.DB_CREATE_NEW_USER('public sign up user saving failed');
+    const createUserError = new errors.DB_CREATE_NEW_USER(error || 'savedUser returned empty');
     return res.send(createUserError);
   }
 

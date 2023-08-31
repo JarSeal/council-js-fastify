@@ -12,28 +12,24 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const loginMethod = 'username'; // @TODO: add option to log with primary email
   const pass = body.pass.trim();
 
-  const getUsernameOrPassWrongError = () =>
-    new errors.UNAUTHORIZED('Username and/or password wrong');
-
   // Find user
   const user =
     loginMethod === 'username'
-      ? await DBUserModel.findOne<DBUser>({ simpleId: usernameOrEmail }).lean()
+      ? await DBUserModel.findOne<DBUser>({ simpleId: usernameOrEmail })
       : null;
   if (!user) {
-    return res.send(getUsernameOrPassWrongError());
+    return res.send(new errors.LOGIN_USER_OR_PASS_WRONG());
   }
 
   // Check password
   const passCorrect = await bcrypt.compare(pass, user.passwordHash);
   if (!passCorrect) {
-    return res.send(getUsernameOrPassWrongError());
+    return res.send(new errors.LOGIN_USER_OR_PASS_WRONG());
   }
 
   req.session.isSignedIn = true;
-  req.session.username = usernameOrEmail;
-  console.log('SESS COOKIE', req.session.cookie);
-  // await req.session.save();
+  req.session.username = user.simpleId;
+  req.session.userId = String(user.id);
 
   return res.status(200).send({ ok: true });
 };

@@ -5,6 +5,7 @@ import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './
 import type { Edited, Token } from '../types/modelPartials';
 
 export interface DBUser {
+  id?: string;
   simpleId: string;
   emails: {
     email: string;
@@ -37,7 +38,7 @@ const userSchema = new Schema<DBUser>({
       added: dateDBSchema,
     },
   ],
-  passwordHash: String,
+  passwordHash: { type: String, required: true },
   created: {
     user: {
       type: Schema.Types.ObjectId,

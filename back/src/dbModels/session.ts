@@ -8,13 +8,13 @@ export interface Session {
   username: string;
   userId: string;
   cookie: {
-    path: string;
-    secure: boolean;
+    path?: string;
+    secure?: boolean | 'auto';
+    httpOnly?: boolean;
+    originalMaxAge: number | null;
     sameSite?: 'strict' | 'lax' | 'none' | boolean;
-    domain: string;
-    httpOnly: boolean;
-    _expires: Date;
-    originalMaxAge: number;
+    domain?: string;
+    expires?: Date | null;
   };
 }
 
@@ -22,8 +22,8 @@ export interface DBSession {
   sessionId: string;
   username: string;
   expires: Date;
-  systemDocument?: boolean;
   session: Session;
+  systemDocument?: boolean;
 }
 
 const sessionSchema = new mongoose.Schema<DBSession>({
