@@ -9,7 +9,7 @@ export const sessionStore = {
   set: async (sessionId: string, session: Session, callback: (err?: unknown) => void) => {
     if (!session?.isSignedIn || !session?.username) callback();
     try {
-      await DBSessionModel.deleteOne({ sessionId }).lean();
+      await DBSessionModel.deleteOne({ username: session.username }).lean();
     } catch (err) {
       const error = new errors.SESSION_DEL_ERR(`Set session error: ${JSON.stringify(err)}`);
       return callback(error);
@@ -44,17 +44,17 @@ export const sessionStore = {
     sessionId: string,
     callback: (err: unknown, result?: Session | null | undefined) => void
   ) => {
-    let foundSession;
+    let result;
     try {
-      foundSession = await DBSessionModel.findOne<DBSession>({ sessionId }).lean();
+      result = await DBSessionModel.findOne<DBSession>({ sessionId }).lean();
     } catch (err) {
       const error = new errors.SESSION_GET_FROM_STORE_ERR(JSON.stringify(err));
       return callback(error, null);
     }
-    if (!foundSession) {
+    if (!result) {
       return callback(null, null);
     }
-    callback(null, foundSession.session);
+    callback(null, result.session);
   },
 
   // *****************************************

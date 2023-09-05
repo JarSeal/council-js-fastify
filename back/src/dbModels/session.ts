@@ -15,6 +15,7 @@ export interface Session {
     sameSite?: 'strict' | 'lax' | 'none' | boolean;
     domain?: string;
     expires?: Date | null;
+    _expires?: Date | null;
   };
 }
 

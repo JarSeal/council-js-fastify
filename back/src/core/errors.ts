@@ -47,7 +47,7 @@ const errors = {
   FAST_JWT_ERR_VALIDATE: createError(ErrorCodes.FAST_JWT_ERR_VALIDATE, '%s', 400),
   SESSION_CANNOT_BE_SIGNED_IN: createError(
     ErrorCodes.SESSION_CANNOT_BE_SIGNED_IN,
-    'Cannot be signed in to access this route',
+    'Cannot be signed in to access route',
     400
   ),
   SESSION_SET_TO_STORE_ERR: createError(

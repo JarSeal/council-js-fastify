@@ -69,30 +69,12 @@ const initApp = async (): Promise<FastifyInstance> => {
     maxAge: getConfig<number>('user.sessionMaxAge'), // @TODO: add session length as a system setting
   };
   await app.register(cookie);
-  // const sessionStore: { [k: string]: unknown } = {};
   await app.register(fastifySession, {
     secret: SESSION_SECRET,
     cookieName: SESSION_COOKIE_NAME,
     cookie: cookieSharedConfig,
     rolling: true,
     store: sessionStore,
-    // @TODO: add real session store (Redis or write to Mongo Sessions collection)
-    // store: {
-    //   set: (sessionId, session, callback) => {
-    //     console.log('SET TO SESSION STORE', sessionId, session.username);
-    //     sessionStore[sessionId] = session;
-    //     callback();
-    //   },
-    //   get: (sessionId, callback) => {
-    //     console.log('GET FROM SESSION STORE', sessionId);
-    //     callback(null, sessionStore[sessionId] as Session);
-    //   },
-    //   destroy: (sessionId, callback) => {
-    //     console.log('DESTROY SESSION STORE', sessionId);
-    //     delete sessionStore[sessionId];
-    //     callback();
-    //   },
-    // },
   });
 
   // API routes
