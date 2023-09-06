@@ -7,11 +7,11 @@ export const sessionStore = {
   // *****************************************
   // SET SESSION
   set: async (sessionId: string, session: Session, callback: (err?: unknown) => void) => {
-    if (!session?.isSignedIn || !session?.username) callback();
+    if (!session?.isSignedIn || !session?.username) return callback();
     try {
       await DBSessionModel.deleteOne({ username: session.username }).lean();
     } catch (err) {
-      const error = new errors.SESSION_DEL_ERR(`Set session error: ${JSON.stringify(err)}`);
+      const error = new errors.SESSION_DEL_ERR(`In set session: ${JSON.stringify(err)}`);
       return callback(error);
     }
 
@@ -33,7 +33,7 @@ export const sessionStore = {
       const error = new errors.SESSION_SET_TO_STORE_ERR(
         `Save session error: ${JSON.stringify(err)}`
       );
-      callback(error);
+      return callback(error);
     }
     callback();
   },

@@ -54,6 +54,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
       date: dateNow,
     },
     edited: [],
+    security: { lastLogins: [], lastLoginAttempts: [] },
   });
 
   let savedUser, error;

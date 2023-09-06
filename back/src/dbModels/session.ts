@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import { simpleIdDBSchema } from './_partials';
+import { simpleIdDBSchema } from './_shemaPartials';
 import { getConfig } from '../core/config';
 
 export interface Session {

@@ -1,8 +1,8 @@
 import { Schema, model } from 'mongoose';
 import type { Types } from 'mongoose';
 
-import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './_partials';
-import type { Edited, Token } from '../types/modelPartials';
+import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './_shemaPartials';
+import type { Edited, Token } from './_modelTypePartials';
 
 export interface DBUser {
   id?: string;
@@ -21,6 +21,20 @@ export interface DBUser {
   };
   edited: Edited;
   systemDocument?: boolean;
+  security: {
+    forcePassChange?: boolean;
+    loginAttempts?: number;
+    coolDownStarted?: Date | null;
+    isUnderCoolDown?: boolean;
+    lastLoginAttempts: {
+      date: Date;
+      agentId: string;
+    }[];
+    lastLogins: {
+      date: Date;
+      agentId: string;
+    }[];
+  };
 }
 
 const userSchema = new Schema<DBUser>({
@@ -56,6 +70,26 @@ const userSchema = new Schema<DBUser>({
     },
   ],
   systemDocument: { type: Boolean, default: false },
+  security: {
+    forcePassChange: { type: Boolean, required: true, default: false },
+    loginAttempts: { type: Number, default: 0 },
+    coolDownStarted: { ...dateDBSchema, required: false, default: null },
+    isUnderCoolDown: { type: Boolean, required: true, default: false },
+    lastLoginAttempts: [
+      {
+        _id: false,
+        date: dateDBSchema,
+        agentId: { type: String, required: true, minlength: 32, maxlength: 32 },
+      },
+    ],
+    lastLogins: [
+      {
+        _id: false,
+        date: dateDBSchema,
+        agentId: { type: String, required: true, minlength: 32, maxlength: 32 },
+      },
+    ],
+  },
 });
 
 userSchema.set('toJSON', {

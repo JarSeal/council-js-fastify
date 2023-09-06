@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import { simpleIdDBSchema } from './_partials';
+import { simpleIdDBSchema } from './_shemaPartials';
 
 export interface DBMonitor {
   simpleId: string;
