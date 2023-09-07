@@ -7,6 +7,7 @@ export interface Session {
   isSignedIn: boolean;
   username: string;
   userId: string;
+  agentId: string;
   cookie: {
     path?: string;
     secure?: boolean | 'auto';

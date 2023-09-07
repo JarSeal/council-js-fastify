@@ -28,7 +28,7 @@ const errors = {
   FORBIDDEN: createError(ErrorCodes.FORBIDDEN, '%s', 403),
   LOGIN_USER_OR_PASS_WRONG: createError(
     ErrorCodes.LOGIN_USER_OR_PASS_WRONG,
-    'Password or username wrong',
+    'Password or %s wrong',
     401
   ),
   LOGIN_USER_UNDER_COOLDOWN: createError(

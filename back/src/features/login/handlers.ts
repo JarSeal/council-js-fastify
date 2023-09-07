@@ -12,6 +12,8 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const body = req.body;
   const usernameOrEmail = body.usernameOrEmail.trim();
   const loginMethod = body.loginMethod;
+  // @TODO: add a system setting to set the login method
+  // and check that the used method is allowed ('username', 'email', or 'both')!
   let username = loginMethod === 'username' ? usernameOrEmail : null;
   const email = loginMethod === 'email' ? usernameOrEmail : null;
   const pass = body.pass.trim();
@@ -42,7 +44,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
     if (isUnderCoolDown) {
       return res.send(isUnderCoolDown);
     }
-    return res.send(new errors.LOGIN_USER_OR_PASS_WRONG());
+    return res.send(new errors.LOGIN_USER_OR_PASS_WRONG(loginMethod));
   } else {
     const isUnderCoolDown = await checkCoolDown(user, agentId);
     if (isUnderCoolDown) {
@@ -56,9 +58,11 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
     return res.send(logAndResetLoginAttemptsError);
   }
 
+  // Create session
   req.session.isSignedIn = true;
   req.session.username = user.simpleId;
   req.session.userId = String(user.id);
+  req.session.agentId = agentId;
 
   return res.status(200).send({ ok: true });
 };
@@ -97,7 +101,10 @@ const checkCoolDown = async (user: DBUser, agentId: string): Promise<null | Fast
     // User is under cool down period
     return new errors.LOGIN_USER_UNDER_COOLDOWN(
       `loginAttempts: ${user.security.loginAttempts || 'undefined'}, ` +
-        `coolDownStarted: ${user.security.coolDownStarted.toDateString()}`
+        `coolDownStarted: ${user.security.coolDownStarted.toDateString()} ${
+          process.env.TZ || ''
+        }, ` +
+        `coolDownTime: ${coolDownAge}, userId: ${user.id || ''}`
     );
   } else {
     // User is not anymore under cool down,

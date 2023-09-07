@@ -24,6 +24,7 @@ export const sessionStore = {
         isSignedIn: session.isSignedIn,
         username: session.username,
         userId: session.userId,
+        agentId: session.agentId,
         cookie: session.cookie,
       },
     });
