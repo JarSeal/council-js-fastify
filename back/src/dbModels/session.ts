@@ -37,6 +37,7 @@ const sessionSchema = new mongoose.Schema<DBSession>({
     isSignedIn: Boolean,
     username: String,
     userId: String,
+    agentId: String,
     cookie: {
       path: { type: String, default: '/' },
       secure: { type: Boolean, default: true },
