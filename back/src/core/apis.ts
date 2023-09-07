@@ -1,6 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import { testHook } from '../hooks/testHook/testHook';
 import healthCheckRoute from '../features/healthCheck/routes';
 import publicSignUpRoute from '../features/publicSignUp/routes';
 import loginRoute from '../features/login/routes';
@@ -21,7 +20,6 @@ const apis: FastifyPluginAsync = async (instance) => {
 
 // Public routes:
 const publicRoutes: FastifyPluginAsync = async (instance) => {
-  instance.addHook('onRequest', testHook); // @TODO: remove this example hook at some point
   await instance.register(healthCheckRoute, sysPrefixObj);
 };
 
