@@ -44,7 +44,7 @@ const sessionSchema = new mongoose.Schema<DBSession>({
       domain: { type: String, default: null },
       httpOnly: { type: Boolean, default: true },
       _expires: { type: Date, required: true },
-      originalMaxAge: { type: Number, default: getConfig<number>('user.sessionMaxAge') },
+      originalMaxAge: { type: Number, default: getConfig<number>('user.sessionMaxAge') * 1000 },
     },
   },
 });

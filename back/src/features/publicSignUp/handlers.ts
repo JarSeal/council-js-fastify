@@ -12,9 +12,9 @@ import { createUrlTokenAndId } from '../utils/token';
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
   const email = body.email.trim();
+  const username = body.username.trim();
 
   // Validate fields
-  const username = body.username.trim();
   const foundUser = await DBUserModel.findOne<DBUser>({ simpleId: username }).lean();
   const validateError = validatePublicSignup(body, foundUser);
   if (validateError) {

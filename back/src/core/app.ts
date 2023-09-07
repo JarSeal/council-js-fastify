@@ -48,6 +48,8 @@ const initApp = async (): Promise<FastifyInstance> => {
         cb(null, true);
       } else {
         const hostnameFromRequest = new URL(origin).hostname;
+        // @TODO: research if this is something that could be also set from the system configuration setting
+        // so that the host names could be added to the system during run time
         const hostnameArray = CLIENT_HOST_NAMES.split(',').map((h) => h.trim());
         if (hostnameArray.includes(hostnameFromRequest)) {
           cb(null, true);
@@ -66,7 +68,7 @@ const initApp = async (): Promise<FastifyInstance> => {
     httpOnly: IS_PRODUCTION,
     secure: IS_PRODUCTION,
     path: '/',
-    maxAge: getConfig<number>('user.sessionMaxAge'), // @TODO: add session length as a system setting
+    maxAge: getConfig<number>('user.sessionMaxAge') * 1000, // @TODO: add session length as a system setting
   };
   await app.register(cookie);
   await app.register(fastifySession, {
@@ -92,7 +94,7 @@ const initApp = async (): Promise<FastifyInstance> => {
   });
 
   // Client routes (all GET routes, except the GET API routes)
-  app.get('*', (_, response) => response.sendFile('index.html'));
+  app.get('*', (_, res) => res.sendFile('index.html'));
 
   return app;
 };

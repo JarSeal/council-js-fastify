@@ -2,11 +2,13 @@ import type { FastifyError, FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
-import { getConfig } from '../../core/config';
+import { SESSION_COOKIE_NAME, getConfig } from '../../core/config';
+import type { LoginRoute } from './schemas';
+import type { LogoutRoute } from '../logout/schemas';
 
 const validAgentId = '726616f4bb878fab94f1f1dbc8c6ed79';
 
-describe('login and logout', () => {
+describe('login', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
@@ -162,7 +164,7 @@ describe('login and logout', () => {
   });
 
   it('should set the user to a cooldown period when giving wrong password too many times', async () => {
-    const user = await createUser();
+    const user = await createUser('cooldownuser', 'aa@aa.aa');
     let response;
     for (let i = 0; i < getConfig<number>('user.maxLoginAttempts'); i++) {
       response = await app.inject({
@@ -184,5 +186,106 @@ describe('login and logout', () => {
     ).toBeTruthy();
   });
 
-  // @TODO: add a successfull login with username and email
+  it('should successfully login with a username and fail if tried again without logging out', async () => {
+    const user = await createUser('myusername2', 'bb@bb.bb');
+    let response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: user.username,
+        pass: user.pass,
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+    });
+    const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+    let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
+    expect(response?.statusCode).toBe(200);
+    expect(body).toStrictEqual({ ok: true });
+
+    response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: user.username,
+        pass: user.pass,
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+    });
+    body = JSON.parse(response?.body || '') as FastifyError;
+    expect(response?.statusCode).toBe(400);
+    expect(body.code).toEqual('SESSION_CANNOT_BE_SIGNED_IN');
+    expect(body.message).toStrictEqual('Cannot be signed in to access route');
+  });
+
+  it('should successfully login with an email and fail if tried again without logging out', async () => {
+    const user = await createUser('myusername3', 'cc@cc.cc');
+    let response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: user.email,
+        pass: user.pass,
+        loginMethod: 'email',
+        agentId: validAgentId,
+      },
+    });
+    const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+    let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
+    expect(response?.statusCode).toBe(200);
+    expect(body).toStrictEqual({ ok: true });
+
+    response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: user.email,
+        pass: user.pass,
+        loginMethod: 'email',
+        agentId: validAgentId,
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+    });
+    body = JSON.parse(response?.body || '') as FastifyError;
+    expect(response?.statusCode).toBe(400);
+    expect(body.code).toEqual('SESSION_CANNOT_BE_SIGNED_IN');
+    expect(body.message).toStrictEqual('Cannot be signed in to access route');
+  });
+
+  it('should fail a logout if not signed in', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/logout',
+    });
+    const body = JSON.parse(response?.body || '') as FastifyError;
+    expect(response?.statusCode).toBe(401);
+    expect(body.code).toEqual('UNAUTHORIZED');
+    expect(body.message).toStrictEqual('Must be signed in');
+  });
+
+  it('should successfully logout', async () => {
+    const user = await createUser('myusername4', 'dd@dd.dd');
+    let response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: user.email,
+        pass: user.pass,
+        loginMethod: 'email',
+        agentId: validAgentId,
+      },
+    });
+    const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/logout',
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+    });
+    const body = JSON.parse(response?.body || '') as LogoutRoute['Reply'];
+    expect(response?.statusCode).toBe(200);
+    expect(body).toStrictEqual({ ok: true });
+  });
 });

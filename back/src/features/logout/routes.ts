@@ -6,7 +6,7 @@ import { logout } from './handlers';
 
 const logoutRoute: FastifyPluginAsync = (instance) => {
   instance.route<LogoutRoute>({
-    method: 'GET',
+    method: 'POST',
     url: '/logout',
     handler: logout,
     schema: { response: { 200: replySchema } },
