@@ -8,7 +8,7 @@
   "scripts": {
     "migrate:create": "migrate-mongo create",
     "migrate:status": "migrate-mongo status",
-    "migrate": "migrate-mongo up",
+    "migrate": "migrate-mongo up && migrate-mongo status",
     "migrate:down": "migrate-mongo down"
   },
   "devDependencies": {

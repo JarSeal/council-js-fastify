@@ -4,7 +4,7 @@ dotEnvConfig({ path: '../.env' });
 if (!process.env.MONGODB_URI) {
   dotEnvConfig();
   if (!process.env.MONGODB_URI) {
-    throw new Error("Mongo-migrate's config file not found!");
+    throw new Error('MONGODB_URI env variable not found!');
   }
 }
 
