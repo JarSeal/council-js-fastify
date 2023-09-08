@@ -17,8 +17,8 @@
     "skipLibCheck": true
   },
   "include": ["**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules"],
   "ts-node": {
     "files": true
-  },
-  "exclude": ["node_modules"]
+  }
 }
