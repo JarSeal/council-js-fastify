@@ -6,6 +6,7 @@ import loginRoute from '../features/login/routes';
 import logoutRoute from '../features/logout/routes';
 import { notSignedInHook } from '../hooks/notSignedIn';
 import { signedInHook } from '../hooks/signedIn';
+import { csrfHook } from '../hooks/csrf';
 
 const apiVersion = '/v1';
 const vPrefixObj = { prefix: apiVersion };
@@ -14,6 +15,12 @@ const sysPrefixObj = { prefix: apiVersion + '/sys' };
 // All routes:
 const apis: FastifyPluginAsync = async (instance) => {
   await instance.register(publicRoutes);
+  await instance.register(stateAlteringRoutes);
+};
+
+// All state altering routes (check CSRF header)
+const stateAlteringRoutes: FastifyPluginAsync = async (instance) => {
+  instance.addHook('onRequest', csrfHook);
   await instance.register(notSignedInRoutes);
   await instance.register(signedInRoutes);
 };

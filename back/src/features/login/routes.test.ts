@@ -5,6 +5,7 @@ import initApp from '../../core/app';
 import { SESSION_COOKIE_NAME, getConfig } from '../../core/config';
 import type { LoginRoute } from './schemas';
 import type { LogoutRoute } from '../logout/schemas';
+import { csrfHeader } from '../../test/utils';
 
 const validAgentId = '726616f4bb878fab94f1f1dbc8c6ed79';
 
@@ -29,14 +30,34 @@ describe('login', () => {
       method: 'POST',
       path: '/api/v1/publicsignup',
       body: { username, pass, email },
+      ...csrfHeader,
     });
     return { username, pass, email };
   };
+
+  it('should fail without the CSRF header', async () => {
+    const user = await createUser('csrfUser', 'csrfPassword');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: user.username,
+        pass: user.pass,
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(401);
+    expect(body.code).toEqual('UNAUTHORIZED');
+    expect(body.message).toEqual('CSRF-header is required');
+  });
 
   it('should fail the login without proper payload', async () => {
     let response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
+      ...csrfHeader,
     });
     let body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -47,6 +68,7 @@ describe('login', () => {
       method: 'POST',
       path: '/api/v1/login',
       body: { usernameOrEmail: 'myusername' },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -57,6 +79,7 @@ describe('login', () => {
       method: 'POST',
       path: '/api/v1/login',
       body: { pass: 'mypassword' },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -67,6 +90,7 @@ describe('login', () => {
       method: 'POST',
       path: '/api/v1/login',
       body: { usernameOrEmail: 'myusername', pass: 'mypassword' },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -77,6 +101,7 @@ describe('login', () => {
       method: 'POST',
       path: '/api/v1/login',
       body: { usernameOrEmail: 'myusername', pass: 'mypassword', loginMethod: 'username' },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -94,6 +119,7 @@ describe('login', () => {
         loginMethod: 'username',
         agentId: '',
       },
+      ...csrfHeader,
     });
     let body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -109,6 +135,7 @@ describe('login', () => {
         loginMethod: 'username',
         agentId: '726616f4bb878fab94f1f1dbc8c6ed79_45',
       },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -124,6 +151,7 @@ describe('login', () => {
         loginMethod: 'unknown',
         agentId: validAgentId,
       },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -141,6 +169,7 @@ describe('login', () => {
         loginMethod: 'username',
         agentId: validAgentId,
       },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(401);
@@ -156,6 +185,7 @@ describe('login', () => {
         loginMethod: 'email',
         agentId: validAgentId,
       },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(401);
@@ -176,6 +206,7 @@ describe('login', () => {
           loginMethod: 'username',
           agentId: validAgentId,
         },
+        ...csrfHeader,
       });
     }
     const body = JSON.parse(response?.body || '') as FastifyError;
@@ -197,6 +228,7 @@ describe('login', () => {
         loginMethod: 'username',
         agentId: validAgentId,
       },
+      ...csrfHeader,
     });
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
     let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
@@ -213,6 +245,7 @@ describe('login', () => {
         agentId: validAgentId,
       },
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
     });
     body = JSON.parse(response?.body || '') as FastifyError;
     expect(response?.statusCode).toBe(400);
@@ -231,6 +264,7 @@ describe('login', () => {
         loginMethod: 'email',
         agentId: validAgentId,
       },
+      ...csrfHeader,
     });
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
     let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
@@ -247,6 +281,7 @@ describe('login', () => {
         agentId: validAgentId,
       },
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
     });
     body = JSON.parse(response?.body || '') as FastifyError;
     expect(response?.statusCode).toBe(400);
@@ -258,6 +293,7 @@ describe('login', () => {
     const response = await app.inject({
       method: 'POST',
       path: '/api/v1/logout',
+      ...csrfHeader,
     });
     const body = JSON.parse(response?.body || '') as FastifyError;
     expect(response?.statusCode).toBe(401);
@@ -276,6 +312,7 @@ describe('login', () => {
         loginMethod: 'email',
         agentId: validAgentId,
       },
+      ...csrfHeader,
     });
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
 
@@ -283,6 +320,7 @@ describe('login', () => {
       method: 'POST',
       path: '/api/v1/logout',
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
     });
     const body = JSON.parse(response?.body || '') as LogoutRoute['Reply'];
     expect(response?.statusCode).toBe(200);

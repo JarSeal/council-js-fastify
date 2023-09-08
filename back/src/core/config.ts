@@ -20,6 +20,10 @@ export const CLIENT_HOST_NAMES = process.env.CLIENT_HOST_NAMES || '';
 export const MONGODB_URI = process.env.MONGODB_URI || '';
 export const MONGODB_URI_TEST = process.env.MONGODB_URI_TEST || '';
 
+// @TODO: move these constants to the shared package when it is implemented
+export const CSRF_HEADER_NAME = 'x-council-csrf';
+export const CSRF_HEADER_VALUE = '1';
+
 export const HASH_SALT_ROUNDS = process.env.HASH_SALT_ROUNDS || 10;
 export const URL_TOKEN_SECRET =
   ENVIRONMENT === 'test' ? 'testsecret' : process.env.URL_TOKEN_SECRET || '123';

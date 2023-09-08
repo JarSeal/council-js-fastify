@@ -5,6 +5,7 @@ import initApp from '../../core/app';
 import type { PublicSignUpRoute } from './schemas';
 import DBUserModel, { type DBUser } from '../../dbModels/user';
 import { getTimestamp, getTimestampFromDate } from '../utils/timeAndDate';
+import { csrfHeader } from '../../test/utils';
 
 describe('publicSignUp', () => {
   let app: FastifyInstance;
@@ -19,10 +20,26 @@ describe('publicSignUp', () => {
     await mongoose.connection.close();
   });
 
+  it('should fail without the CSRF header', async () => {
+    const username = 'myusername';
+    const pass = 'somepass';
+    const email = 'myusername@somedomain.nl';
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/publicsignup',
+      body: { username, pass, email },
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(401);
+    expect(body.code).toEqual('UNAUTHORIZED');
+    expect(body.message).toEqual('CSRF-header is required');
+  });
+
   it('should fail the publicSignUp without proper payload', async () => {
     let response = await app.inject({
       method: 'POST',
       path: '/api/v1/publicsignup',
+      ...csrfHeader,
     });
     let body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -33,6 +50,7 @@ describe('publicSignUp', () => {
       method: 'POST',
       path: '/api/v1/publicsignup',
       body: { username: 'myusername' },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -43,6 +61,7 @@ describe('publicSignUp', () => {
       method: 'POST',
       path: '/api/v1/publicsignup',
       body: { email: 'my.email@server.com' },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -53,6 +72,7 @@ describe('publicSignUp', () => {
       method: 'POST',
       path: '/api/v1/publicsignup',
       body: { email: 'my.email@server.com', username: 'myusername' },
+      ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -65,6 +85,7 @@ describe('publicSignUp', () => {
       method: 'POST',
       path: '/api/v1/publicsignup',
       body: { username: 'myusername', pass: 'somepass', email: 'not_email' },
+      ...csrfHeader,
     });
     const body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -77,6 +98,7 @@ describe('publicSignUp', () => {
       method: 'POST',
       path: '/api/v1/publicsignup',
       body: { username: '', pass: 'somepass', email: 'aa@aa.aa' },
+      ...csrfHeader,
     });
     const body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -91,6 +113,7 @@ describe('publicSignUp', () => {
       method: 'POST',
       path: '/api/v1/publicsignup',
       body: { username: 'myusername', pass: '', email: 'aa@aa.aa' },
+      ...csrfHeader,
     });
     const body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(400);
@@ -108,6 +131,7 @@ describe('publicSignUp', () => {
       method: 'POST',
       path: '/api/v1/publicsignup',
       body: { username, pass, email },
+      ...csrfHeader,
     });
     const timeNow = getTimestamp();
     const body = JSON.parse(response.body) as PublicSignUpRoute['Body'];
