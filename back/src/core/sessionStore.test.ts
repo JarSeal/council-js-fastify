@@ -20,8 +20,9 @@ describe('sessionStore', () => {
     await mongoose.connection.close();
   });
 
-  it('should set session to session store successfully', async () => {
-    const sessionId = 'mySessionId';
+  const sessionId = 'mySessionId';
+
+  it('should set to, get from, and destroy from sessionStore successfully', async () => {
     const username = 'myusername';
     const userId = 'userId';
     const expires = new Date(Date.now() + 20000);
@@ -39,8 +40,11 @@ describe('sessionStore', () => {
         _expires: expires,
       },
     } as Session;
+
+    // Set session
     await sessionStore.set(sessionId, session, () => null);
-    const savedSession = await DBSessionModel.findOne<DBSession>({ sessionId });
+
+    let savedSession = await DBSessionModel.findOne<DBSession>({ sessionId });
     expect(savedSession?.sessionId).toBe(sessionId);
     expect(savedSession?.username).toBe(username);
     expect((savedSession?.expires.getTime() || 0) + 20000).toBeCloseTo(expires.getTime(), -3);
@@ -53,5 +57,36 @@ describe('sessionStore', () => {
     expect((savedSession?.session.cookie._expires || new Date()).getTime()).toBeCloseTo(
       expires.getTime()
     );
+
+    // Get session
+    await sessionStore.get(sessionId, (_, fetchedSession) => {
+      expect(fetchedSession?.isSignedIn).toBeTruthy();
+      expect(fetchedSession?.username).toBe(username);
+      expect(fetchedSession?.userId).toBe(userId);
+      expect(fetchedSession?.agentId).toBe(validAgentId);
+      expect(fetchedSession?.cookie).toBeTruthy();
+      expect(fetchedSession?.cookie.path).toBe('/');
+      expect(fetchedSession?.cookie.secure).toBeFalsy();
+      expect(fetchedSession?.cookie.sameSite).toBe('lax');
+      expect(fetchedSession?.cookie.httpOnly).toBeFalsy();
+      expect(fetchedSession?.cookie.originalMaxAge).toBe(20000);
+      expect(fetchedSession?.cookie.domain).toBe(null);
+    });
+
+    await sessionStore.destroy(sessionId, () => null);
+
+    // Destroy session
+    savedSession = await DBSessionModel.findOne<DBSession>({ sessionId });
+    expect(savedSession).toBe(null);
+  });
+
+  it('should not find a session with non-existing sessionId with get from sessionStore', async () => {
+    await sessionStore.get(sessionId, (_, fetchedSession) => {
+      expect(fetchedSession).toBe(null);
+    });
+
+    await sessionStore.get('someNonExistingSessionId', (_, fetchedSession) => {
+      expect(fetchedSession).toBe(null);
+    });
   });
 });
