@@ -8,7 +8,7 @@ export const emailDBSchema = {
   type: String,
   required: true,
   unique: true,
-  minlength: 5,
+  minlength: 6,
   index: true,
 };
 

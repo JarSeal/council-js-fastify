@@ -4,14 +4,22 @@ import fastify from 'fastify';
 import type { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
-import type { FastifyCookieOptions } from '@fastify/cookie';
 import cookie from '@fastify/cookie';
+import fastifySession from '@fastify/session';
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
-import { ENVIRONMENT, CLIENT_HOST_NAMES, COOKIE_SECRET } from './config';
+import {
+  ENVIRONMENT,
+  CLIENT_HOST_NAMES,
+  IS_PRODUCTION,
+  SESSION_SECRET,
+  SESSION_COOKIE_NAME,
+  getConfig,
+} from './config';
 import type { Environment } from './config';
 import apis from './apis';
 import { initDB } from './db';
+import { sessionStore } from './sessionStore';
 
 const initApp = async (): Promise<FastifyInstance> => {
   const envToLogger = {
@@ -40,6 +48,8 @@ const initApp = async (): Promise<FastifyInstance> => {
         cb(null, true);
       } else {
         const hostnameFromRequest = new URL(origin).hostname;
+        // @TODO: research if this is something that could be also set from the system configuration setting
+        // so that the host names could be added to the system during run time
         const hostnameArray = CLIENT_HOST_NAMES.split(',').map((h) => h.trim());
         if (hostnameArray.includes(hostnameFromRequest)) {
           cb(null, true);
@@ -54,10 +64,20 @@ const initApp = async (): Promise<FastifyInstance> => {
   await initDB(app);
 
   // Cookies
-  await app.register(cookie, {
-    secret: COOKIE_SECRET,
-    hook: 'onRequest',
-  } as FastifyCookieOptions);
+  const cookieSharedConfig = {
+    httpOnly: IS_PRODUCTION,
+    secure: IS_PRODUCTION,
+    path: '/',
+    maxAge: getConfig<number>('user.sessionMaxAge') * 1000, // @TODO: add session length as a system setting
+  };
+  await app.register(cookie);
+  await app.register(fastifySession, {
+    secret: SESSION_SECRET,
+    cookieName: SESSION_COOKIE_NAME,
+    cookie: cookieSharedConfig,
+    rolling: true,
+    store: sessionStore,
+  });
 
   // API routes
   await app.register(apis, { prefix: '/api' });
@@ -74,7 +94,7 @@ const initApp = async (): Promise<FastifyInstance> => {
   });
 
   // Client routes (all GET routes, except the GET API routes)
-  app.get('*', (_, response) => response.sendFile('index.html'));
+  app.get('*', (_, res) => res.sendFile('index.html'));
 
   return app;
 };

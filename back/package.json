@@ -6,16 +6,20 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "cross-env node ./dist/server.js",
-    "dev": "cross-env ts-node-dev --files ./src/server.ts",
+    "start": "yarn migrate && cross-env node ./dist/server.js",
+    "dev": "yarn migrate && cross-env ts-node-dev --files ./src/server.ts",
     "build": "rm -rf dist && tsc -p tsconfig.json && yarn build:public",
     "build:public": "cp -a ./../shared/public/. ./dist/public",
     "lint": "eslint .",
-    "test": "cross-env NODE_ENV=test TZ=UTC jest --verbose --runInBand --detectOpenHandles --logHeapUsage",
+    "test": "yarn migrate && cross-env NODE_ENV=test TZ=UTC jest --verbose --runInBand --detectOpenHandles --logHeapUsage",
     "test:watch": "cross-env NODE_ENV=test TZ=UTC jest --watchAll --runInBand --detectOpenHandles",
     "dbstart": "cd ./db && docker-compose up -d",
     "dbstop": "cd ./db && docker-compose down",
-    "dbcli": "docker exec -it councildb mongo councildb"
+    "dbcli": "docker exec -it councildb mongo councildb",
+    "migrate:create": "yarn --cwd ./migrate/ migrate:create",
+    "migrate:status": "yarn --cwd ./migrate/ migrate:status",
+    "migrate": "yarn --cwd ./migrate/ migrate",
+    "migrate:down": "yarn --cwd ./migrate/ migrate:down"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {
@@ -39,6 +43,7 @@
     "@fastify/cookie": "9.0.4",
     "@fastify/cors": "8.3.0",
     "@fastify/error": "3.3.0",
+    "@fastify/session": "10.4.0",
     "@fastify/static": "6.10.2",
     "@fastify/type-provider-typebox": "3.4.0",
     "@sinclair/typebox": "0.30.4",

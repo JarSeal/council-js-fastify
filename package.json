@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "setup": "yarn && oneenv && cd back && yarn",
+    "setup": "yarn && oneenv && cd back && yarn && cd migrate && yarn && cd .. && yarn migrate",
     "oneenv": "oneenv",
     "dev": "yarn dev:back",
     "dev:back": "yarn --cwd ./back/ dev",
@@ -19,7 +19,11 @@
     "test:back": "yarn --cwd ./back/ test",
     "dbstart": "yarn --cwd ./back/ dbstart",
     "dbstop": "yarn --cwd ./back/ dbstop",
-    "dbcli": "yarn --cwd ./back/ dbcli"
+    "dbcli": "yarn --cwd ./back/ dbcli",
+    "migrate:create": "yarn --cwd ./back/migrate/ migrate:create",
+    "migrate:status": "yarn --cwd ./back/migrate/ migrate:status",
+    "migrate": "yarn --cwd ./back/migrate/ migrate",
+    "migrate:down": "yarn --cwd ./back/migrate/ migrate:down"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {

@@ -113,6 +113,7 @@ describe('validation util', () => {
           date: new Date(),
         },
         edited: [],
+        security: { lastLoginAttempts: [], lastLogins: [] },
       },
       validationOptions
     );

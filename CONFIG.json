@@ -4,6 +4,11 @@
     "maxUsernameLength": 32,
     "minPassLength": 8,
     "maxPassLength": 128,
-    "maxEmails": 2
+    "maxEmails": 2,
+    "maxLoginAttempts": 4,
+    "sessionMaxAge": 3600,
+    "coolDownAge": 240,
+    "maxLoginLogs": 5,
+    "maxLoginAttemptLogs": 5
   }
 }
