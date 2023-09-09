@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { type Types, Schema, model } from 'mongoose';
 
 import { simpleIdDBSchema, dateDBSchema } from './_schemaPartials';
 import type { Edited } from './_modelTypePartials';
@@ -6,7 +6,7 @@ import type { Edited } from './_modelTypePartials';
 export interface DBPrivilege {
   id?: string;
   simpleId: string;
-  priGroupId: string;
+  priCategoryId: string;
   priOwnerId: string;
   priAccessId: string;
   name: string;
@@ -14,11 +14,30 @@ export interface DBPrivilege {
   created: Date;
   edited: Edited;
   systemDocument?: boolean;
+  privilegeViewAccess: {
+    users: Types.ObjectId[];
+    groups: Types.ObjectId[];
+    excludeUsers: Types.ObjectId[];
+    excludeGroups: Types.ObjectId[];
+  };
+  privilegeEditAccess: {
+    users: Types.ObjectId[];
+    groups: Types.ObjectId[];
+    excludeUsers: Types.ObjectId[];
+    excludeGroups: Types.ObjectId[];
+  };
+  privilegeAccess: {
+    public: boolean;
+    users: Types.ObjectId[];
+    groups: Types.ObjectId[];
+    excludeUsers: Types.ObjectId[];
+    excludeGroups: Types.ObjectId[];
+  };
 }
 
 const privilegeSchema = new Schema<DBPrivilege>({
   simpleId: simpleIdDBSchema,
-  priGroupId: { type: String, required: true },
+  priCategoryId: { type: String, required: true },
   priOwnerId: { type: String, required: true },
   priAccessId: { type: String, required: true },
   name: { type: String, required: true },
@@ -34,6 +53,61 @@ const privilegeSchema = new Schema<DBPrivilege>({
     },
   ],
   systemDocument: { type: Boolean, default: false },
+  privilegeViewAccess: {
+    users: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    groups: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    excludeUsers: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    excludeGroups: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+  },
+  privilegeEditAccess: {
+    users: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    groups: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    excludeUsers: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    excludeGroups: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+  },
+  privilegeAccess: {
+    public: { type: Boolean, required: true, default: false },
+    users: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    groups: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    excludeUsers: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+    excludeGroups: {
+      _id: false,
+      type: Schema.Types.ObjectId,
+    },
+  },
 });
 
 privilegeSchema.set('toJSON', {
