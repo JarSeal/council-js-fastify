@@ -54,59 +54,83 @@ const privilegeSchema = new Schema<DBPrivilege>({
   ],
   systemDocument: { type: Boolean, default: false },
   privilegeViewAccess: {
-    users: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    groups: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    excludeUsers: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    excludeGroups: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
+    users: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    groups: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    excludeUsers: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    excludeGroups: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
   },
   privilegeEditAccess: {
-    users: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    groups: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    excludeUsers: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    excludeGroups: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
+    users: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    groups: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    excludeUsers: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    excludeGroups: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
   },
   privilegeAccess: {
     public: { type: Boolean, required: true, default: false },
-    users: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    groups: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    excludeUsers: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
-    excludeGroups: {
-      _id: false,
-      type: Schema.Types.ObjectId,
-    },
+    users: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    groups: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    excludeUsers: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
+    excludeGroups: [
+      {
+        _id: false,
+        type: Schema.Types.ObjectId,
+      },
+    ],
   },
 });
 
