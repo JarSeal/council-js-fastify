@@ -1,6 +1,0 @@
-// PRIVILEGES:
-module.exports = [
-  {
-    simpleId: '',
-  },
-];

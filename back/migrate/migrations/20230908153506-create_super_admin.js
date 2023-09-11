@@ -1,31 +1,23 @@
-const { hash } = require('bcrypt');
-const { config } = require('dotenv');
-
-config({ path: '../.env' });
-
-const defaultUsername = 'superadmin';
-const defaultEmail = 'notreal@notarealdomain.com';
-const defaultPassword = 'changepassword';
+const {
+  getSuperAdminUsername,
+  getSuperAdminPassword,
+  getSuperAdminEmail,
+} = require('../data/utils');
 
 module.exports = {
   async up(db) {
-    const username = process.env.SUPER_ADMIN_USERNAME || defaultUsername;
-    const email = process.env.SUPER_ADMIN_EMAIL || defaultEmail;
-    const password = process.env.SUPER_ADMIN_PASS || defaultPassword;
-    const passwordHash = await hash(password, Number(process.env.SALT_ROUNDS || 10));
-
     const timeNow = new Date();
 
     await db.collection('users').insertOne({
-      simpleId: username,
+      simpleId: getSuperAdminUsername(),
       emails: [
         {
-          email,
+          email: getSuperAdminEmail(),
           verified: true,
           added: timeNow,
         },
       ],
-      passwordHash,
+      passwordHash: getSuperAdminPassword(),
       created: {
         user: null,
         publicForm: false,
@@ -45,8 +37,6 @@ module.exports = {
   },
 
   async down(db) {
-    await db
-      .collection('users')
-      .deleteOne({ simpleId: process.env.SUPER_ADMIN_USERNAME || defaultUsername });
+    await db.collection('users').deleteOne({ simpleId: getSuperAdminUsername() });
   },
 };

@@ -1,9 +1,9 @@
 import { type Types, Schema, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema, mongoIdArray } from './_schemaPartials';
-import type { Edited } from './_modelTypePartials';
+import { simpleIdDBSchema, dateDBSchema, formElemDbSchema } from './_schemaPartials';
+import type { Edited, FormElem } from './_modelTypePartials';
 
-export interface DBPrivilege {
+export interface DBForm {
   id?: string;
   simpleId: string;
   name: string;
@@ -15,15 +15,18 @@ export interface DBPrivilege {
   edited: Edited;
   systemDocument?: boolean;
   owner: Types.ObjectId;
-  members: {
-    users: Types.ObjectId[];
-    groups: Types.ObjectId[];
-    excludeUsers: Types.ObjectId[];
-    excludeGroups: Types.ObjectId[];
+  url: string;
+  form: {
+    formTitle?: { [key: string]: string };
+    formTitleLangKey?: string;
+    formText?: { [key: string]: string };
+    formTextLangKey?: string;
+    classes: string[];
+    formElems: FormElem[];
   };
 }
 
-const privilegeSchema = new Schema<DBPrivilege>({
+const formSchema = new Schema<DBForm>({
   simpleId: simpleIdDBSchema,
   name: { type: String, required: true, default: null },
   description: String,
@@ -42,15 +45,18 @@ const privilegeSchema = new Schema<DBPrivilege>({
   ],
   systemDocument: { type: Boolean, default: false },
   owner: { type: Schema.Types.ObjectId, required: true },
-  members: {
-    users: mongoIdArray,
-    groups: mongoIdArray,
-    excludeUsers: mongoIdArray,
-    excludeGroups: mongoIdArray,
+  url: { type: String, required: true },
+  form: {
+    formTitle: Object,
+    formTitleLangKey: String,
+    formText: Object,
+    formTextLangKey: String,
+    classes: [{ _id: false, type: String }],
+    formElems: [formElemDbSchema],
   },
 });
 
-privilegeSchema.set('toJSON', {
+formSchema.set('toJSON', {
   transform: (_, returnedObject) => {
     returnedObject.id = String(returnedObject._id);
     delete returnedObject._id;
@@ -58,6 +64,6 @@ privilegeSchema.set('toJSON', {
   },
 });
 
-const DBPrivilegeModel = model<DBPrivilege>('Privilege', privilegeSchema, 'privileges');
+const DBFormModel = model<DBForm>('Form', formSchema, 'forms');
 
-export default DBPrivilegeModel;
+export default DBFormModel;

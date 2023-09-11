@@ -1,6 +1,6 @@
 import { type Types, Schema, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema } from './_schemaPartials';
+import { simpleIdDBSchema, dateDBSchema, mongoIdArray } from './_schemaPartials';
 import type { Edited } from './_modelTypePartials';
 
 export interface DBPrivilege {
@@ -54,83 +54,23 @@ const privilegeSchema = new Schema<DBPrivilege>({
   ],
   systemDocument: { type: Boolean, default: false },
   privilegeViewAccess: {
-    users: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    groups: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    excludeUsers: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    excludeGroups: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
+    users: mongoIdArray,
+    groups: mongoIdArray,
+    excludeUsers: mongoIdArray,
+    excludeGroups: mongoIdArray,
   },
   privilegeEditAccess: {
-    users: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    groups: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    excludeUsers: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    excludeGroups: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
+    users: mongoIdArray,
+    groups: mongoIdArray,
+    excludeUsers: mongoIdArray,
+    excludeGroups: mongoIdArray,
   },
   privilegeAccess: {
     public: { type: Boolean, required: true, default: false },
-    users: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    groups: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    excludeUsers: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
-    excludeGroups: [
-      {
-        _id: false,
-        type: Schema.Types.ObjectId,
-      },
-    ],
+    users: mongoIdArray,
+    groups: mongoIdArray,
+    excludeUsers: mongoIdArray,
+    excludeGroups: mongoIdArray,
   },
 });
 
