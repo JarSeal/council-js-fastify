@@ -50,3 +50,9 @@ export const validatePublicSignup = (
   // @TODO: add password regex
   return null;
 };
+
+export const simpleIdRegExp = ['^[a-zA-Z0-9-_]+$', 'gm'];
+export const validateSimpleId = (simpleId: string) => {
+  const regex = new RegExp(simpleIdRegExp[0], simpleIdRegExp[1]);
+  return regex.test(simpleId);
+};

@@ -41,15 +41,17 @@ export const mongoIdArray = [
 
 export const formElemDbSchema = {
   _id: false,
-  elemId: String,
-  orderNr: Number,
-  elemType: String,
+  elemId: { type: String, required: true },
+  orderNr: { type: Number, required: true },
+  elemType: { type: String, required: true },
   classes: [{ _id: false, type: String }],
-  elemData: Object,
-  label: Object,
-  labelLangKey: String,
-  required: { type: Boolean, default: false },
-  validationRegExp: String,
+  elemData: { type: Object },
+  label: { type: Object },
+  labelLangKey: { type: String },
+  required: { type: Boolean },
+  validationRegExp: { type: String },
+  mustMatchValue: { type: String },
+  validationFn: { type: String },
   errors: [
     {
       errorId: String,
@@ -57,18 +59,21 @@ export const formElemDbSchema = {
       messageLangKey: String,
     },
   ],
+  doNotSend: { type: Boolean },
   children: [
     {
       _id: false,
-      elemId: String,
-      orderNr: Number,
-      elemType: String,
+      elemId: { type: String, required: true },
+      orderNr: { type: Number, required: true },
+      elemType: { type: String, required: true },
       classes: [{ _id: false, type: String }],
-      elemData: Object,
-      label: Object,
-      labelLangKey: String,
-      required: { type: Boolean, default: false },
-      validationRegExp: String,
+      elemData: { type: Object },
+      label: { type: Object },
+      labelLangKey: { type: String },
+      required: { type: Boolean },
+      validationRegExp: [{ type: String }],
+      mustMatchValue: { type: String },
+      validationFn: { type: String },
       errors: [
         {
           errorId: String,
@@ -76,6 +81,7 @@ export const formElemDbSchema = {
           messageLangKey: String,
         },
       ],
+      doNotSend: { type: Boolean },
     },
   ],
 };

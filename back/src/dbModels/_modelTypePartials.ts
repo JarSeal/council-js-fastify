@@ -21,23 +21,27 @@ export type FormElemType =
   | 'inputDropDown'
   | 'inputText'
   | 'inputTextArea'
-  | 'inputNumber';
+  | 'inputNumber'
+  | 'hidden';
 
 export type FormElem = {
   _id?: boolean;
-  simpleId: string;
+  elemId: string;
   orderNr: number;
   elemType: FormElemType;
-  classes?: string;
+  classes?: string[];
   elemData?: { [key: string]: unknown };
   label?: { [key: string]: string };
   labelLangKey?: string;
   required: boolean;
-  validationRegExp?: string;
+  validationRegExp?: string[];
+  mustMatchValue?: string;
+  validationFn?: string;
   errors: {
     errorId: string;
     message?: { [langKey: string]: string };
     messageLangKey?: string;
   }[];
+  doNotSend?: boolean;
   children?: Omit<FormElem, 'children'>[];
 };
