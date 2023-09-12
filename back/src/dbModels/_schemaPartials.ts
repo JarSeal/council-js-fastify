@@ -32,18 +32,38 @@ export const dateDBSchema = {
   required: true,
 };
 
-export const mongoIdArray = [
+export const mongoIdArraySchema = [
   {
     _id: false,
     type: Schema.Types.ObjectId,
   },
 ];
 
+export const basicPrivilegePropsSchema = {
+  users: mongoIdArraySchema,
+  groups: mongoIdArraySchema,
+  excludeUsers: mongoIdArraySchema,
+  excludeGroups: mongoIdArraySchema,
+};
+
+export const allPrivilegePropsSchema = {
+  public: { type: String, required: true, default: 'false' },
+  requireCsrfHeader: { type: Boolean },
+  ...basicPrivilegePropsSchema,
+};
+
+export const formDataPrivilegesSchema = {
+  read: allPrivilegePropsSchema,
+  edit: basicPrivilegePropsSchema,
+  delete: basicPrivilegePropsSchema,
+};
+
 export const formElemDbSchema = {
   _id: false,
   elemId: { type: String, required: true },
   orderNr: { type: Number, required: true },
   elemType: { type: String, required: true },
+  defaultValue: { type: Schema.Types.Mixed, default: null },
   classes: [{ _id: false, type: String }],
   elemData: { type: Object },
   label: { type: Object },
@@ -66,6 +86,7 @@ export const formElemDbSchema = {
       elemId: { type: String, required: true },
       orderNr: { type: Number, required: true },
       elemType: { type: String, required: true },
+      defaultValue: { type: Schema.Types.Mixed, default: null },
       classes: [{ _id: false, type: String }],
       elemData: { type: Object },
       label: { type: Object },
@@ -82,6 +103,8 @@ export const formElemDbSchema = {
         },
       ],
       doNotSend: { type: Boolean },
+      privileges: formDataPrivilegesSchema,
     },
   ],
+  privileges: formDataPrivilegesSchema,
 };

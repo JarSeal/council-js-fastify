@@ -1,6 +1,6 @@
 import { type Types, Schema, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema, mongoIdArray } from './_schemaPartials';
+import { simpleIdDBSchema, dateDBSchema, mongoIdArraySchema } from './_schemaPartials';
 import type { Edited } from './_modelTypePartials';
 
 export interface DBPrivilege {
@@ -43,10 +43,10 @@ const privilegeSchema = new Schema<DBPrivilege>({
   systemDocument: { type: Boolean, default: false },
   owner: { type: Schema.Types.ObjectId, required: true },
   members: {
-    users: mongoIdArray,
-    groups: mongoIdArray,
-    excludeUsers: mongoIdArray,
-    excludeGroups: mongoIdArray,
+    users: mongoIdArraySchema,
+    groups: mongoIdArraySchema,
+    excludeUsers: mongoIdArraySchema,
+    excludeGroups: mongoIdArraySchema,
   },
 });
 

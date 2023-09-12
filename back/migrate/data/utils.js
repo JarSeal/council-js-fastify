@@ -10,8 +10,8 @@ const saltRounds = Number(process.env.SALT_ROUNDS || 10);
 
 const getSuperAdminUsername = () => process.env.SUPER_ADMIN_USERNAME || defaultUsername;
 const getSuperAdminEmail = () => process.env.SUPER_ADMIN_EMAIL || defaultEmail;
-const getSuperAdminPassword = () =>
-  hash(process.env.SUPER_ADMIN_PASSWORD || defaultPassword, saltRounds);
+const getSuperAdminPassword = async () =>
+  await hash(process.env.SUPER_ADMIN_PASSWORD || defaultPassword, saltRounds);
 
 module.exports = {
   getSuperAdminUsername,

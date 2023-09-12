@@ -24,6 +24,21 @@ export type FormElemType =
   | 'inputNumber'
   | 'hidden';
 
+export type AllPrivilegeProps = {
+  public: 'true' | 'false' | 'onlyPublic' | 'onlySignedIn';
+  requireCsrfHeader?: boolean;
+  users: Types.ObjectId[];
+  groups: Types.ObjectId[];
+  excludeUsers: Types.ObjectId[];
+  excludeGroups: Types.ObjectId[];
+};
+
+export type FormDataPrivileges = {
+  read: AllPrivilegeProps;
+  edit: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
+  delete: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
+};
+
 export type FormElem = {
   _id?: boolean;
   elemId: string;
@@ -31,6 +46,7 @@ export type FormElem = {
   elemType: FormElemType;
   classes?: string[];
   elemData?: { [key: string]: unknown };
+  defaultValue?: unknown;
   label?: { [key: string]: string };
   labelLangKey?: string;
   required: boolean;
@@ -44,4 +60,5 @@ export type FormElem = {
   }[];
   doNotSend?: boolean;
   children?: Omit<FormElem, 'children'>[];
+  privileges?: FormDataPrivileges;
 };

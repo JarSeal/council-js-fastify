@@ -1,7 +1,12 @@
-import { type Types, Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema, mongoIdArray } from './_schemaPartials';
-import type { Edited } from './_modelTypePartials';
+import {
+  simpleIdDBSchema,
+  dateDBSchema,
+  basicPrivilegePropsSchema,
+  allPrivilegePropsSchema,
+} from './_schemaPartials';
+import type { AllPrivilegeProps, Edited } from './_modelTypePartials';
 
 export interface DBPrivilege {
   id?: string;
@@ -14,26 +19,9 @@ export interface DBPrivilege {
   created: Date;
   edited: Edited;
   systemDocument?: boolean;
-  privilegeViewAccess: {
-    users: Types.ObjectId[];
-    groups: Types.ObjectId[];
-    excludeUsers: Types.ObjectId[];
-    excludeGroups: Types.ObjectId[];
-  };
-  privilegeEditAccess: {
-    users: Types.ObjectId[];
-    groups: Types.ObjectId[];
-    excludeUsers: Types.ObjectId[];
-    excludeGroups: Types.ObjectId[];
-  };
-  privilegeAccess: {
-    public: 'true' | 'false' | 'onlyPublic' | 'onlySignedIn';
-    requireCsrfHeader: boolean;
-    users: Types.ObjectId[];
-    groups: Types.ObjectId[];
-    excludeUsers: Types.ObjectId[];
-    excludeGroups: Types.ObjectId[];
-  };
+  privilegeViewAccess: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
+  privilegeEditAccess: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
+  privilegeAccess: AllPrivilegeProps;
 }
 
 const privilegeSchema = new Schema<DBPrivilege>({
@@ -54,26 +42,9 @@ const privilegeSchema = new Schema<DBPrivilege>({
     },
   ],
   systemDocument: { type: Boolean, default: false },
-  privilegeViewAccess: {
-    users: mongoIdArray,
-    groups: mongoIdArray,
-    excludeUsers: mongoIdArray,
-    excludeGroups: mongoIdArray,
-  },
-  privilegeEditAccess: {
-    users: mongoIdArray,
-    groups: mongoIdArray,
-    excludeUsers: mongoIdArray,
-    excludeGroups: mongoIdArray,
-  },
-  privilegeAccess: {
-    public: { type: String, required: true, default: 'false' },
-    requireCsrfHeader: { type: Boolean, required: true, default: true },
-    users: mongoIdArray,
-    groups: mongoIdArray,
-    excludeUsers: mongoIdArray,
-    excludeGroups: mongoIdArray,
-  },
+  privilegeViewAccess: basicPrivilegePropsSchema,
+  privilegeEditAccess: basicPrivilegePropsSchema,
+  privilegeAccess: allPrivilegePropsSchema,
 });
 
 privilegeSchema.set('toJSON', {

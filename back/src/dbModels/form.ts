@@ -1,7 +1,12 @@
 import { type Types, Schema, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema, formElemDbSchema } from './_schemaPartials';
-import type { Edited, FormElem } from './_modelTypePartials';
+import {
+  simpleIdDBSchema,
+  dateDBSchema,
+  formElemDbSchema,
+  formDataPrivilegesSchema,
+} from './_schemaPartials';
+import type { Edited, FormDataPrivileges, FormElem } from './_modelTypePartials';
 
 export interface DBForm {
   id?: string;
@@ -13,7 +18,7 @@ export interface DBForm {
     date: Date;
   };
   edited: Edited;
-  systemDocument?: boolean;
+  systemDocument: boolean;
   owner: Types.ObjectId;
   url: string;
   form: {
@@ -21,15 +26,16 @@ export interface DBForm {
     formTitleLangKey?: string;
     formText?: { [key: string]: string };
     formTextLangKey?: string;
-    classes: string[];
+    classes?: string[];
     formElems: FormElem[];
   };
+  defaultPrivileges?: FormDataPrivileges;
 }
 
 const formSchema = new Schema<DBForm>({
   simpleId: simpleIdDBSchema,
   name: { type: String, required: true, default: null },
-  description: String,
+  description: { type: String, required: true, default: null },
   created: {
     user: { type: Schema.Types.ObjectId, required: true, default: null },
     date: dateDBSchema,
@@ -45,7 +51,7 @@ const formSchema = new Schema<DBForm>({
   ],
   systemDocument: { type: Boolean, default: false },
   owner: { type: Schema.Types.ObjectId, required: true },
-  url: { type: String, required: true },
+  url: { type: String, unique: true, required: true },
   form: {
     formTitle: Object,
     formTitleLangKey: String,
@@ -54,6 +60,7 @@ const formSchema = new Schema<DBForm>({
     classes: [{ _id: false, type: String }],
     formElems: [formElemDbSchema],
   },
+  defaultPrivileges: formDataPrivilegesSchema,
 });
 
 formSchema.set('toJSON', {

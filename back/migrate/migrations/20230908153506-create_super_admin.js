@@ -17,7 +17,7 @@ module.exports = {
           added: timeNow,
         },
       ],
-      passwordHash: getSuperAdminPassword(),
+      passwordHash: await getSuperAdminPassword(),
       created: {
         user: null,
         publicForm: false,
