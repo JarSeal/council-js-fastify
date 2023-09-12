@@ -6,7 +6,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "yarn migrate && cross-env node ./dist/server.js",
+    "start": "cross-env node ./dist/server.js",
     "dev": "yarn migrate && cross-env ts-node-dev --files ./src/server.ts",
     "build": "rm -rf dist && tsc -p tsconfig.json && yarn build:public",
     "build:public": "cp -a ./../shared/public/. ./dist/public",

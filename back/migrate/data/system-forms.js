@@ -70,12 +70,32 @@ module.exports = [
         },
       ],
     },
+    privileges: [
+      // will be deleted from the form and set to privileges
+      {
+        simpleId: 'form__systemLogin__canUseForm',
+        priCategoryId: 'form',
+        priTargetId: 'systemLogin',
+        priAccessId: 'canUseForm',
+        name: 'Use form: System Login',
+        description: 'Who can use the "System Login" form.',
+        created: { date: timeNow },
+        privilegeAccess: {
+          public: 'onlyPublic',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+    ],
   },
 
   // Public sign up
   {
     simpleId: 'publicSignUp',
-    name: 'Public sign up',
+    name: 'Public Sign Up',
     description: 'Council public sign-up form.',
     created: {
       user: null,
@@ -177,5 +197,69 @@ module.exports = [
         },
       ],
     },
+    privileges: [
+      // will be deleted from the form and set to privileges
+      {
+        simpleId: 'form__publicSignUp__canUseForm',
+        priCategoryId: 'form',
+        priTargetId: 'publicSignUp',
+        priAccessId: 'canUseForm',
+        name: 'Use form: Public Sign Up',
+        description: 'Who can use the "Public Sign Up" form.',
+        created: { date: timeNow },
+        privilegeAccess: {
+          public: 'onlyPublic',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+    ],
+  },
+
+  // Logout
+  {
+    simpleId: 'logout',
+    name: 'Council Logout',
+    description: 'Council universal logout.',
+    created: {
+      user: null,
+      date: timeNow,
+    },
+    edited: [],
+    systemDocument: true,
+    owner: null,
+    url: '/api/v1/logout',
+    form: {
+      formElems: [
+        {
+          elemId: 'redirectUrl',
+          orderNr: 0,
+          elemType: 'hidden',
+        },
+      ],
+    },
+    privileges: [
+      // will be deleted from the form and set to privileges
+      {
+        simpleId: 'form__logout__canUseForm',
+        priCategoryId: 'form',
+        priTargetId: 'logout',
+        priAccessId: 'canUseForm',
+        name: 'Use form: Council Logout',
+        description: 'Who can use the "Council Logout" form.',
+        created: { date: timeNow },
+        privilegeAccess: {
+          public: 'onlySignedIn',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+    ],
   },
 ];

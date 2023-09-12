@@ -6,10 +6,10 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "migrate:create": "migrate-mongo create",
+    "migrate:create": "migrate-mongo create && migrate-mongo status",
     "migrate:status": "migrate-mongo status",
     "migrate": "migrate-mongo up && migrate-mongo status",
-    "migrate:down": "migrate-mongo down"
+    "migrate:down": "migrate-mongo down && migrate-mongo status"
   },
   "devDependencies": {
     "migrate-mongo": "10.0.0"

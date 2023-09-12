@@ -13,13 +13,8 @@ const getSuperAdminEmail = () => process.env.SUPER_ADMIN_EMAIL || defaultEmail;
 const getSuperAdminPassword = () =>
   hash(process.env.SUPER_ADMIN_PASSWORD || defaultPassword, saltRounds);
 
-const sysAdminGroupId = 'sysAdmins';
-const basicUsersGroupId = 'basicUsers';
-
 module.exports = {
   getSuperAdminUsername,
   getSuperAdminEmail,
   getSuperAdminPassword,
-  sysAdminGroupId,
-  basicUsersGroupId,
 };

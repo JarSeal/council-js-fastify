@@ -1,9 +1,9 @@
 const systemGroups = require('../data/system-groups');
-const { getSuperAdminUsername, sysAdminGroupId, basicUsersGroupId } = require('../data/utils');
+const { getSuperAdminUsername } = require('../data/utils');
 
 module.exports = {
   async up(db) {
-    // Get superadmin MongoId
+    // Get superadmin
     const superUser = await db.collection('users').findOne({ simpleId: getSuperAdminUsername() });
 
     // Create system groups

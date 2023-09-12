@@ -27,7 +27,8 @@ export interface DBPrivilege {
     excludeGroups: Types.ObjectId[];
   };
   privilegeAccess: {
-    public: boolean;
+    public: 'true' | 'false' | 'onlyPublic' | 'onlySignedIn';
+    requireCsrfHeader: boolean;
     users: Types.ObjectId[];
     groups: Types.ObjectId[];
     excludeUsers: Types.ObjectId[];
@@ -66,7 +67,8 @@ const privilegeSchema = new Schema<DBPrivilege>({
     excludeGroups: mongoIdArray,
   },
   privilegeAccess: {
-    public: { type: Boolean, required: true, default: false },
+    public: { type: String, required: true, default: 'false' },
+    requireCsrfHeader: { type: Boolean, required: true, default: true },
     users: mongoIdArray,
     groups: mongoIdArray,
     excludeUsers: mongoIdArray,
