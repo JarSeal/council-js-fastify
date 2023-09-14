@@ -60,6 +60,6 @@ formDataSchema.set('toJSON', {
   },
 });
 
-const DBFormDataModel = model<DBFormData>('Form', formDataSchema, 'forms');
+const DBFormDataModel = model<DBFormData>('FormData', formDataSchema, 'formData');
 
 export default DBFormDataModel;

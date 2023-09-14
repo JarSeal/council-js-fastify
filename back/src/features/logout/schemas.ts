@@ -3,7 +3,6 @@ import type { Static } from '@sinclair/typebox';
 import type { RouteGenericInterface, FastifyError } from 'fastify';
 
 export const bodySchema = Type.Object({
-  formId: Type.String(),
   redirectUrl: Type.Optional(Type.String()),
 });
 

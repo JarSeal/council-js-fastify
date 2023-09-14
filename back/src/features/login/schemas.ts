@@ -3,7 +3,6 @@ import type { Static } from '@sinclair/typebox';
 import type { RouteGenericInterface, FastifyError } from 'fastify';
 
 export const bodySchema = Type.Object({
-  formId: Type.String(),
   usernameOrEmail: Type.String(),
   pass: Type.String(),
   loginMethod: Type.Union([Type.Literal('username'), Type.Literal('email')]),
