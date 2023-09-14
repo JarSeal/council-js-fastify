@@ -1,9 +1,9 @@
 import type { FastifyError } from 'fastify';
 
-import type { Body } from '../publicSignUp/schemas';
-import { errors } from '../../core/errors';
-import type { DBUser } from '../../dbModels/user';
-import { getConfig, type ConfigFile } from '../../core/config';
+import type { Body } from '../features/publicSignUp/schemas';
+import { errors } from '../core/errors';
+import type { DBUser } from '../dbModels/user';
+import { getConfig, type ConfigFile } from '../core/config';
 
 export type ValidationError = FastifyError | null;
 

@@ -6,7 +6,7 @@ import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import { errors } from '../../core/errors';
 import { getConfig } from '../../core/config';
-import { getTimestamp, getTimestampFromDate } from '../utils/timeAndDate';
+import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
 
 export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const body = req.body;

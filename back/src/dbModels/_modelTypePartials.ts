@@ -6,8 +6,8 @@ export type Edited = {
 }[];
 
 export type Token = {
-  token: string | null;
-  tokenId: string | null;
+  token?: string | null;
+  tokenId?: string | null;
 };
 
 export type FormElemType =

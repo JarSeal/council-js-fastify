@@ -2,12 +2,12 @@ import type { RouteHandler } from 'fastify';
 import { hash } from 'bcrypt';
 
 import { errors } from '../../core/errors';
-import { validatePublicSignup } from '../utils/validation';
+import { validatePublicSignup } from '../../utils/validation';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
 import { HASH_SALT_ROUNDS } from '../../core/config';
-import { createUrlTokenAndId } from '../utils/token';
+import { createUrlTokenAndId } from '../../utils/token';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;

@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import initApp from '../../core/app';
 import type { PublicSignUpRoute } from './schemas';
 import DBUserModel, { type DBUser } from '../../dbModels/user';
-import { getTimestamp, getTimestampFromDate } from '../utils/timeAndDate';
+import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
 import { csrfHeader } from '../../test/utils';
 
 describe('publicSignUp', () => {

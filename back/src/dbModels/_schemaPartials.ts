@@ -17,12 +17,10 @@ export const emailDBSchema = {
 export const tokenDbSchema = {
   token: {
     type: String,
-    required: true,
     default: null,
   },
   tokenId: {
     type: String,
-    required: true,
     default: null,
   },
 };
