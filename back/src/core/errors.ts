@@ -3,6 +3,7 @@ import { default as createFastifyError } from '@fastify/error';
 export enum ErrorCodes {
   UNAUTHORIZED = 'UNAUTHORIZED',
   FORBIDDEN = 'FORBIDDEN',
+  NOT_FOUND = 'NOT_FOUND',
   LOGIN_USER_OR_PASS_WRONG = 'LOGIN_USER_OR_PASS_WRONG',
   LOGIN_USER_UNDER_COOLDOWN = 'LOGIN_USER_UNDER_COOLDOWN',
   USERNAME_TAKEN = 'USERNAME_TAKEN',
@@ -26,6 +27,7 @@ const createError = (code: ErrorCodes, message: string, statusCode?: number) =>
 const errors = {
   UNAUTHORIZED: createError(ErrorCodes.UNAUTHORIZED, '%s', 401),
   FORBIDDEN: createError(ErrorCodes.FORBIDDEN, '%s', 403),
+  NOT_FOUND: createError(ErrorCodes.NOT_FOUND, '%s', 404),
   LOGIN_USER_OR_PASS_WRONG: createError(
     ErrorCodes.LOGIN_USER_OR_PASS_WRONG,
     'Password or %s wrong',

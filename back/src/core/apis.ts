@@ -8,7 +8,6 @@ import customRoute from '../features/custom/routes';
 import { notSignedInHook } from '../hooks/notSignedIn';
 import { signedInHook } from '../hooks/signedIn';
 import { csrfHook } from '../hooks/csrf';
-import { csrfAndAuthorizationHook } from '../hooks/csrfAndAuthorization';
 
 const apiVersion = '/v1';
 const vPrefixObj = { prefix: apiVersion };
@@ -28,6 +27,7 @@ const publicRoutes: FastifyPluginAsync = async (instance) => {
 
 // All state altering system API routes (check CSRF header)
 const stateAlteringSystemRoutes: FastifyPluginAsync = async (instance) => {
+  instance.addHook('onRequest', csrfHook);
   await instance.register(notSignedInSystemRoutes);
   await instance.register(signedInSystemRoutes);
 };
@@ -35,7 +35,6 @@ const stateAlteringSystemRoutes: FastifyPluginAsync = async (instance) => {
 // Not signed in system API routes:
 const notSignedInSystemRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', notSignedInHook);
-  instance.addHook('onRequest', csrfHook);
   await instance.register(publicSignUpRoute, vPrefixObj);
   await instance.register(loginRoute, vPrefixObj);
 };
@@ -44,7 +43,7 @@ const notSignedInSystemRoutes: FastifyPluginAsync = async (instance) => {
 // *****************
 const signedInSystemRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', signedInHook);
-  instance.addHook('onRequest', csrfAndAuthorizationHook);
+  // @TODO: add here the authorization check hook
   await instance.register(logoutRoute, vPrefixObj); // @CONSIDER: maybe move this to public and return false if not signed in
 };
 

@@ -11,7 +11,6 @@ export type Token = {
 };
 
 export type FormElemType =
-  | 'fieldset'
   | 'text'
   | 'heading'
   | 'submitButton'
@@ -23,6 +22,15 @@ export type FormElemType =
   | 'inputTextArea'
   | 'inputNumber'
   | 'hidden';
+
+export type FormDataValueType =
+  | 'string'
+  | 'number'
+  | 'boolean'
+  | 'array'
+  | 'object'
+  | 'none'
+  | 'unknown';
 
 export type AllPrivilegeProps = {
   public: 'true' | 'false' | 'onlyPublic' | 'onlySignedIn';
@@ -47,18 +55,18 @@ export type FormElem = {
   classes?: string[];
   elemData?: { [key: string]: unknown };
   defaultValue?: unknown;
+  valueType: FormDataValueType;
   label?: { [key: string]: string };
   labelLangKey?: string;
   required: boolean;
   validationRegExp?: string[];
   mustMatchValue?: string;
   validationFn?: string;
-  errors: {
+  inputErrors: {
     errorId: string;
     message?: { [langKey: string]: string };
     messageLangKey?: string;
   }[];
   doNotSend?: boolean;
-  children?: Omit<FormElem, 'children'>[];
   privileges?: FormDataPrivileges;
 };

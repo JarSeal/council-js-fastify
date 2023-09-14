@@ -27,9 +27,12 @@ export interface DBForm {
     formText?: { [key: string]: string };
     formTextLangKey?: string;
     classes?: string[];
+    allowPartialSaving?: boolean;
+    lockOrder?: boolean;
+    maxDataOwnerItems?: number;
     formElems: FormElem[];
   };
-  defaultPrivileges?: FormDataPrivileges;
+  formDataPrivileges?: FormDataPrivileges;
 }
 
 const formSchema = new Schema<DBForm>({
@@ -58,9 +61,12 @@ const formSchema = new Schema<DBForm>({
     formText: Object,
     formTextLangKey: String,
     classes: [{ _id: false, type: String }],
+    allowPartialSaving: { type: Boolean, default: true },
+    lockOrder: { type: Boolean, default: false },
+    maxDataOwnerItems: { type: Number },
     formElems: [formElemDbSchema],
   },
-  defaultPrivileges: formDataPrivilegesSchema,
+  formDataPrivileges: formDataPrivilegesSchema,
 });
 
 formSchema.set('toJSON', {

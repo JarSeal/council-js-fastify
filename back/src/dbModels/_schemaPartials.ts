@@ -64,6 +64,7 @@ export const formElemDbSchema = {
   orderNr: { type: Number, required: true },
   elemType: { type: String, required: true },
   defaultValue: { type: Schema.Types.Mixed, default: null },
+  valueType: { type: String, required: true, default: 'unknown' },
   classes: [{ _id: false, type: String }],
   elemData: { type: Object },
   label: { type: Object },
@@ -72,39 +73,13 @@ export const formElemDbSchema = {
   validationRegExp: { type: String },
   mustMatchValue: { type: String },
   validationFn: { type: String },
-  errors: [
+  inputErrors: [
     {
       errorId: String,
       message: Object,
       messageLangKey: String,
     },
   ],
-  doNotSend: { type: Boolean },
-  children: [
-    {
-      _id: false,
-      elemId: { type: String, required: true },
-      orderNr: { type: Number, required: true },
-      elemType: { type: String, required: true },
-      defaultValue: { type: Schema.Types.Mixed, default: null },
-      classes: [{ _id: false, type: String }],
-      elemData: { type: Object },
-      label: { type: Object },
-      labelLangKey: { type: String },
-      required: { type: Boolean },
-      validationRegExp: [{ type: String }],
-      mustMatchValue: { type: String },
-      validationFn: { type: String },
-      errors: [
-        {
-          errorId: String,
-          message: Object,
-          messageLangKey: String,
-        },
-      ],
-      doNotSend: { type: Boolean },
-      privileges: formDataPrivilegesSchema,
-    },
-  ],
+  doNotSend: { type: Boolean, default: false },
   privileges: formDataPrivilegesSchema,
 };

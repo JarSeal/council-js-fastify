@@ -11,6 +11,7 @@ describe('validation util', () => {
   it('should validate the publicSignUp body successfully', () => {
     const validation = validatePublicSignup(
       {
+        formId: 'publicSignUp',
         username: 'myusername',
         pass: 'somepass',
         email: 'a@a.com',
@@ -24,6 +25,7 @@ describe('validation util', () => {
   it('should validate the publicSignUp body and return username too long error', () => {
     const validation = validatePublicSignup(
       {
+        formId: 'publicSignUp',
         username: 'myusernameistoolong',
         pass: 'somepass',
         email: 'a@a.com',
@@ -41,6 +43,7 @@ describe('validation util', () => {
   it('should validate the publicSignUp body and return username too short error', () => {
     const validation = validatePublicSignup(
       {
+        formId: 'publicSignUp',
         username: 'm',
         pass: 'somepass',
         email: 'a@a.com',
@@ -58,6 +61,7 @@ describe('validation util', () => {
   it('should validate the publicSignUp body and return password too long error', () => {
     const validation = validatePublicSignup(
       {
+        formId: 'publicSignUp',
         username: 'mysusername',
         pass: 'somepasswordthatistoolong',
         email: 'a@a.com',
@@ -75,6 +79,7 @@ describe('validation util', () => {
   it('should validate the publicSignUp body and return password too short error', () => {
     const validation = validatePublicSignup(
       {
+        formId: 'publicSignUp',
         username: 'mysusername',
         pass: 's',
         email: 'a@a.com',
@@ -92,6 +97,7 @@ describe('validation util', () => {
   it('should validate the publicSignUp body and return username taken error', () => {
     const validation = validatePublicSignup(
       {
+        formId: 'publicSignUp',
         username: 'myusername',
         pass: 'somepass',
         email: 'a@a.com',

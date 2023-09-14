@@ -22,7 +22,7 @@ module.exports = {
       }
     }
 
-    // Create system forms can use privilege
+    // Create system forms canUse privilege
     for (let i = 0; i < privileges.length; i++) {
       const foundCanUseForm = await db
         .collection('privileges')
