@@ -6,6 +6,7 @@ import type { Edited, FormDataPrivileges, FormDataValueType } from './_modelType
 export interface DBFormData {
   id?: string;
   formId: string;
+  url: string;
   created: {
     user: Types.ObjectId | null;
     date: Date;
@@ -24,6 +25,7 @@ export interface DBFormData {
 
 const formDataSchema = new Schema<DBFormData>({
   formId: simpleIdDBSchema,
+  url: { type: String, unique: true, required: true },
   created: {
     user: { type: Schema.Types.ObjectId, required: true, default: null },
     date: dateDBSchema,

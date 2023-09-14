@@ -47,6 +47,8 @@ export type FormDataPrivileges = {
   delete: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
 };
 
+export type FormDataOwner = 'none' | 'user' | Types.ObjectId;
+
 export type FormElem = {
   _id?: boolean;
   elemId: string;

@@ -6,7 +6,7 @@ import {
   formElemDbSchema,
   formDataPrivilegesSchema,
 } from './_schemaPartials';
-import type { Edited, FormDataPrivileges, FormElem } from './_modelTypePartials';
+import type { Edited, FormDataOwner, FormDataPrivileges, FormElem } from './_modelTypePartials';
 
 export interface DBForm {
   id?: string;
@@ -27,9 +27,10 @@ export interface DBForm {
     formText?: { [key: string]: string };
     formTextLangKey?: string;
     classes?: string[];
-    allowPartialSaving?: boolean;
+    disablePartialSaving?: boolean;
     lockOrder?: boolean;
     maxDataOwnerItems?: number;
+    formDataOwner: FormDataOwner;
     formElems: FormElem[];
   };
   formDataPrivileges?: FormDataPrivileges;
@@ -61,9 +62,10 @@ const formSchema = new Schema<DBForm>({
     formText: Object,
     formTextLangKey: String,
     classes: [{ _id: false, type: String }],
-    allowPartialSaving: { type: Boolean, default: true },
+    disablePartialSaving: { type: Boolean },
     lockOrder: { type: Boolean, default: false },
     maxDataOwnerItems: { type: Number },
+    formDataOwner: { type: String, required: true, default: 'none' },
     formElems: [formElemDbSchema],
   },
   formDataPrivileges: formDataPrivilegesSchema,
