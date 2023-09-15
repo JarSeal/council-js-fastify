@@ -20,7 +20,8 @@
     "migrate:status": "yarn --cwd ./migrate/ migrate:status",
     "migrate": "yarn --cwd ./migrate/ migrate",
     "migrate:down": "yarn --cwd ./migrate/ migrate:down",
-    "seed": "yarn build && node ./devData/seed.js"
+    "seed": "yarn build && yarn migrate && node ./devData/seed.js",
+    "unseed": "yarn build && node ./devData/unseed.js"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {

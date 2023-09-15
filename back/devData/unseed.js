@@ -1,17 +1,17 @@
 const { initDB, closeDB } = require('../dist/back/src/core/db.js');
-const { createGroups } = require('./data/groups.js');
-const { createUsers } = require('./data/users.js');
+const { removeGroups } = require('./data/groups.js');
+const { removeUsers } = require('./data/users.js');
 
-const createSeedData = async () => {
-  await createGroups();
-  await createUsers();
+const removeSeedData = async () => {
+  await removeUsers();
+  await removeGroups();
 };
 
 const runScripts = async () => {
-  console.log('\x1b[33m\nCREATING SEED DATA\n');
+  console.log('\x1b[33m\nREMOVING SEED DATA\n');
   await initDB();
   console.log('****************\x1b[0m');
-  await createSeedData();
+  await removeSeedData();
   console.log('\x1b[33m\n****************');
   await closeDB();
   console.log('\x1b[0m');

@@ -1,7 +1,7 @@
 // FORMS:
 const timeNow = new Date();
 const { getConfig } = require('../../dist/back/src/core/config');
-const { simpleIdRegex } = require('../../dist/back/src/features/utils/validation');
+const { simpleIdRegex } = require('../../dist/back/src/utils/validation');
 
 if (!getConfig) {
   console.error(

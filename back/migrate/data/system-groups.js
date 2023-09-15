@@ -14,12 +14,7 @@ module.exports = [
     edited: [],
     systemDocument: true,
     owner: null,
-    members: {
-      users: [],
-      groups: [],
-      excludeUsers: [],
-      excludeGroups: [],
-    },
+    members: [],
   },
   {
     simpleId: 'basicUsers',
@@ -33,11 +28,6 @@ module.exports = [
     edited: [],
     systemDocument: true,
     owner: null,
-    members: {
-      users: [],
-      groups: [],
-      excludeUsers: [],
-      excludeGroups: [],
-    },
+    members: [],
   },
 ];

@@ -1,27 +1,70 @@
 const { config } = require('dotenv');
 const { hash } = require('bcrypt');
 const { createUrlTokenAndId } = require('../../dist/back/src/utils/token');
-const { default: DBUserModel } = require('../../dist/back/src/dbModels/user.js');
+const { userCount, password, createUsername, createEmail } = require('./_config');
+const { default: DBUserModel } = require('../../dist/back/src/dbModels/user');
+const { default: DBGroupModel } = require('../../dist/back/src/dbModels/group');
 
 config();
 
-const userCount = 100;
-const usernameBase = 'testuser';
-const password = 'password';
+const extraUserCount = 2;
+
+const removeUsers = async () => {
+  console.log('\nUSERS:');
+  console.log('Check and remove users...');
+  const simpleIds = [];
+  for (let i = 0; i < userCount + extraUserCount; i++) {
+    const username = createUsername(i);
+    simpleIds.push(username);
+
+    // Remove all test users from groups
+    const user = await DBUserModel.findOne({ simpleId: username });
+    if (user?._id) {
+      await DBGroupModel.updateMany({}, { $pull: { members: user._id } });
+    }
+  }
+  // Delete all users
+  const result = await DBUserModel.deleteMany({ simpleId: { $in: simpleIds } });
+  console.log(`Removed ${result.deletedCount || 0} users.`);
+};
+
+const getUserObj = ({ i, isVerified, token, tokenId, dateNow, passwordHash }) => ({
+  simpleId: createUsername(i),
+  emails: [
+    {
+      email: createEmail(i),
+      verified: isVerified,
+      token: {
+        token,
+        tokenId,
+      },
+      added: dateNow,
+    },
+  ],
+  passwordHash,
+  created: { user: null, publicForm: true, date: dateNow },
+  edited: [],
+  systemDocument: false,
+  security: {
+    forcePassChange: i === userCount - 1,
+    loginAttempts: 0,
+    coolDownStarted: null,
+    isUnderCoolDown: false,
+    lastLoginAttempts: [],
+    lastLogins: [],
+  },
+});
 
 const createUsers = async () => {
-  console.log('\nCreate users...');
-  let removedPreviousUsersMsg = '';
-  let removedCount = 0;
+  if (userCount === 0) return;
+  await removeUsers();
+  console.log('Create users...');
+  const users = [];
+  const dateNow = new Date();
+  const passwordHash = await hash(password, Number(process.env.SALT_ROUNDS || 10));
+  const verifiedEmailsStart = 50;
   for (let i = 0; i < userCount; i++) {
-    const dateNow = new Date();
-    const simpleId = usernameBase + i;
-    const foundUser = await DBUserModel.find({ simpleId });
-    if (foundUser) {
-      await DBUserModel.deleteOne({ simpleId });
-      removedCount++;
-    }
-    const isVerified = i + 1 > 100 / 2;
+    const isVerified = i + 1 > verifiedEmailsStart;
     let token = null;
     let tokenId = null;
     if (!isVerified) {
@@ -29,43 +72,62 @@ const createUsers = async () => {
       token = tokenAndId.token;
       tokenId = tokenAndId.tokenId;
     }
-    const passwordHash = await hash(password, Number(process.env.SALT_ROUNDS || 10));
-    const newUser = new DBUserModel({
-      simpleId,
-      emails: [
-        {
-          email: simpleId + '@council.fastify',
-          verified: isVerified,
-          token: {
-            token,
-            tokenId,
-          },
-          added: dateNow,
-        },
-      ],
-      passwordHash,
-      created: { user: null, publicForm: true, date: dateNow },
-      edited: [],
-      systemDocument: false,
-      security: {
-        forcePassChange: i === 0,
-        loginAttempts: 0,
-        coolDownStarted: null,
-        isUnderCoolDown: false,
-        lastLoginAttempts: [],
-        lastLogins: [],
-      },
-    });
-    await newUser.save();
+    users.push(getUserObj({ i, isVerified, token, tokenId, dateNow, passwordHash }));
   }
 
-  if (removedCount > 0) {
-    removedPreviousUsersMsg = ` (removed ${removedCount} previously created seed data users)`;
-  }
-  console.log(`Created ${userCount} seed data users${removedPreviousUsersMsg}.`);
-  console.log('- Username: ' + usernameBase + '0-' + (userCount - 1));
+  await DBUserModel.insertMany(users);
+
+  // Create one basicUser and one sysAdmin user and add to respective groups
+  const totalCount = userCount + extraUserCount;
+  const basicUserObj = new DBUserModel(
+    getUserObj({
+      i: userCount,
+      isVerified: true,
+      token: null,
+      tokenId: null,
+      dateNow,
+      passwordHash,
+    })
+  );
+  const basicUser = await basicUserObj.save();
+  await DBGroupModel.findOneAndUpdate(
+    { simpleId: 'basicUsers' },
+    { $addToSet: { members: basicUser._id } }
+  );
+  const adminUserObj = new DBUserModel(
+    getUserObj({
+      i: userCount + 1,
+      isVerified: true,
+      token: null,
+      tokenId: null,
+      dateNow,
+      passwordHash,
+    })
+  );
+  const adminUser = await adminUserObj.save();
+  await DBGroupModel.findOneAndUpdate(
+    { simpleId: 'sysAdmins' },
+    { $addToSet: { members: adminUser._id } }
+  );
+
+  console.log(
+    `Created ${totalCount} seed data users. Username "${createUsername(
+      userCount
+    )}" belongs to "basicUsers" group and username "${createUsername(
+      userCount + 1
+    )}" belongs to "sysAdmins" group. Users from 0 - ${
+      verifiedEmailsStart - 1
+    } have an unverified email.`
+  );
+  console.log(
+    '- Usernames: ' +
+      createUsername(0) +
+      (totalCount > 1 ? ' - ' + createUsername(totalCount - 1) : '')
+  );
   console.log('- Password: ' + password);
-  console.log('- Email: ' + usernameBase + '0-' + (userCount - 1) + '@council.fastify');
+  console.log(
+    '- Emails: ' + createEmail(0) + (totalCount > 1 ? ' - ' + createEmail(totalCount - 1) : '')
+  );
 };
 
-module.exports = { createUsers };
+module.exports = { createUsers, removeUsers };

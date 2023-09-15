@@ -4,7 +4,7 @@ const { config } = require('dotenv');
 config({ path: '../.env' });
 
 const defaultUsername = 'superadmin';
-const defaultEmail = 'notreal@notarealdomain.com';
+const defaultEmail = defaultUsername + '@council.fastify';
 const defaultPassword = 'changepassword';
 const saltRounds = Number(process.env.SALT_ROUNDS || 10);
 

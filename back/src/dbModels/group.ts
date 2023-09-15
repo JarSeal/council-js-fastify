@@ -3,7 +3,7 @@ import { type Types, Schema, model } from 'mongoose';
 import { simpleIdDBSchema, dateDBSchema, mongoIdArraySchema } from './_schemaPartials';
 import type { Edited } from './_modelTypePartials';
 
-export interface DBPrivilege {
+export interface DBGroup {
   id?: string;
   simpleId: string;
   name: string;
@@ -15,15 +15,10 @@ export interface DBPrivilege {
   edited: Edited;
   systemDocument?: boolean;
   owner: Types.ObjectId;
-  members: {
-    users: Types.ObjectId[];
-    groups: Types.ObjectId[];
-    excludeUsers: Types.ObjectId[];
-    excludeGroups: Types.ObjectId[];
-  };
+  members: Types.ObjectId[];
 }
 
-const privilegeSchema = new Schema<DBPrivilege>({
+const groupSchema = new Schema<DBGroup>({
   simpleId: simpleIdDBSchema,
   name: { type: String, required: true, default: null },
   description: String,
@@ -42,15 +37,10 @@ const privilegeSchema = new Schema<DBPrivilege>({
   ],
   systemDocument: { type: Boolean, default: false },
   owner: { type: Schema.Types.ObjectId, required: true },
-  members: {
-    users: mongoIdArraySchema,
-    groups: mongoIdArraySchema,
-    excludeUsers: mongoIdArraySchema,
-    excludeGroups: mongoIdArraySchema,
-  },
+  members: mongoIdArraySchema,
 });
 
-privilegeSchema.set('toJSON', {
+groupSchema.set('toJSON', {
   transform: (_, returnedObject) => {
     returnedObject.id = String(returnedObject._id);
     delete returnedObject._id;
@@ -58,6 +48,6 @@ privilegeSchema.set('toJSON', {
   },
 });
 
-const DBPrivilegeModel = model<DBPrivilege>('Privilege', privilegeSchema, 'privileges');
+const DBGroupModel = model<DBGroup>('Group', groupSchema, 'groups');
 
-export default DBPrivilegeModel;
+export default DBGroupModel;
