@@ -1,7 +1,7 @@
 const { config } = require('dotenv');
 const { hash } = require('bcrypt');
 const { createUrlTokenAndId } = require('../../dist/back/src/utils/token');
-const { userCount, password, createUsername, createEmail } = require('./_config');
+const { userCount, password, createUsername, createEmail, createGroupId } = require('./_config');
 const { default: DBUserModel } = require('../../dist/back/src/dbModels/user');
 const { default: DBGroupModel } = require('../../dist/back/src/dbModels/group');
 
@@ -46,7 +46,7 @@ const getUserObj = ({ i, isVerified, token, tokenId, dateNow, passwordHash }) =>
   edited: [],
   systemDocument: false,
   security: {
-    forcePassChange: i === userCount - 1,
+    forcePassChange: i !== 0 && i === userCount - 1,
     loginAttempts: 0,
     coolDownStarted: null,
     isUnderCoolDown: false,
@@ -110,6 +110,19 @@ const createUsers = async () => {
     { $addToSet: { members: adminUser._id } }
   );
 
+  // Add testuser50 to testgroup0
+  let userAddedToCustomGroupMsg = '';
+  if (userCount > 50) {
+    const user50username = createUsername(50);
+    const user50 = await DBUserModel.findOne({ simpleId: user50username });
+    const group0Id = createGroupId(0);
+    await DBGroupModel.findOneAndUpdate(
+      { simpleId: group0Id },
+      { $addToSet: { members: user50._id } }
+    );
+    userAddedToCustomGroupMsg = ` Added "${user50username} as a member to group "${group0Id}".`;
+  }
+
   console.log(
     `Created ${totalCount} seed data users. Username "${createUsername(
       userCount
@@ -117,7 +130,7 @@ const createUsers = async () => {
       userCount + 1
     )}" belongs to "sysAdmins" group. Users from 0 - ${
       verifiedEmailsStart - 1
-    } have an unverified email.`
+    } have an unverified email.${userAddedToCustomGroupMsg}`
   );
   console.log(
     '- Usernames: ' +
