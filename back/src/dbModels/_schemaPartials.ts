@@ -52,6 +52,7 @@ export const allPrivilegePropsSchema = {
 
 export const formDataPrivilegesSchema = {
   read: allPrivilegePropsSchema,
+  create: allPrivilegePropsSchema,
   edit: basicPrivilegePropsSchema,
   delete: basicPrivilegePropsSchema,
 };
