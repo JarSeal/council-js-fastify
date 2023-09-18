@@ -12,14 +12,11 @@ export type Token = {
 
 export type FormElemType =
   | 'text'
-  | 'heading'
-  | 'submitButton'
-  | 'resetButton'
+  | 'button'
   | 'inputCheckbox'
   | 'inputRadioGroup'
   | 'inputDropDown'
   | 'inputText'
-  | 'inputTextArea'
   | 'inputNumber'
   | 'hidden';
 
@@ -27,6 +24,12 @@ export type FormDataValueType =
   | 'string'
   | 'number'
   | 'boolean'
+  | 'date'
+  | 'stringArray'
+  | 'numberArray'
+  | 'booleanArray'
+  | 'dateArray'
+  | 'objectArray'
   | 'array'
   | 'object'
   | 'none'
@@ -56,7 +59,6 @@ export type FormElem = {
   elemType: FormElemType;
   classes?: string[];
   elemData?: { [key: string]: unknown };
-  defaultValue?: unknown;
   valueType: FormDataValueType;
   label?: { [key: string]: string };
   labelLangKey?: string;
@@ -69,6 +71,6 @@ export type FormElem = {
     message?: { [langKey: string]: string };
     messageLangKey?: string;
   }[];
-  doNotSend?: boolean;
+  doNotSave?: boolean;
   privileges?: FormDataPrivileges;
 };

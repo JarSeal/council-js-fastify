@@ -61,7 +61,6 @@ export const formElemDbSchema = {
   elemId: { type: String, required: true },
   orderNr: { type: Number, required: true },
   elemType: { type: String, required: true },
-  defaultValue: { type: Schema.Types.Mixed, default: null },
   valueType: { type: String, required: true, default: 'unknown' },
   classes: [{ _id: false, type: String }],
   elemData: { type: Object },
@@ -78,6 +77,6 @@ export const formElemDbSchema = {
       messageLangKey: String,
     },
   ],
-  doNotSend: { type: Boolean, default: false },
+  doNotSave: { type: Boolean, default: false },
   privileges: formDataPrivilegesSchema,
 };
