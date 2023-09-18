@@ -1,8 +1,10 @@
 const { initDB, closeDB } = require('../dist/back/src/core/db.js');
+const { removeForms } = require('./data/forms.js');
 const { removeGroups } = require('./data/groups.js');
 const { removeUsers } = require('./data/users.js');
 
 const removeSeedData = async () => {
+  await removeForms();
   await removeUsers();
   await removeGroups();
 };

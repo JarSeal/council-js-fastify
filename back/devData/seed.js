@@ -1,10 +1,12 @@
 const { initDB, closeDB } = require('../dist/back/src/core/db.js');
+const { createForms } = require('./data/forms.js');
 const { createGroups } = require('./data/groups.js');
 const { createUsers } = require('./data/users.js');
 
 const createSeedData = async () => {
   await createGroups();
   await createUsers();
+  await createForms();
 };
 
 const runScripts = async () => {

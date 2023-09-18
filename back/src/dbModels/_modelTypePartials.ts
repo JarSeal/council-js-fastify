@@ -46,8 +46,9 @@ export type AllPrivilegeProps = {
 
 export type FormDataPrivileges = {
   read: AllPrivilegeProps;
-  edit: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
-  delete: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
+  create: AllPrivilegeProps;
+  edit: AllPrivilegeProps;
+  delete: AllPrivilegeProps;
 };
 
 export type FormDataOwner = 'none' | 'user' | Types.ObjectId;
