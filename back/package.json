@@ -6,7 +6,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "yarn migrate && cross-env node ./dist/server.js",
+    "start": "cross-env node ./dist/server.js",
     "dev": "yarn migrate && cross-env ts-node-dev --files ./src/server.ts",
     "build": "rm -rf dist && tsc -p tsconfig.json && yarn build:public",
     "build:public": "cp -a ./../shared/public/. ./dist/public",
@@ -19,7 +19,9 @@
     "migrate:create": "yarn --cwd ./migrate/ migrate:create",
     "migrate:status": "yarn --cwd ./migrate/ migrate:status",
     "migrate": "yarn --cwd ./migrate/ migrate",
-    "migrate:down": "yarn --cwd ./migrate/ migrate:down"
+    "migrate:down": "yarn --cwd ./migrate/ migrate:down",
+    "seed": "yarn build && yarn migrate && node ./devData/seed.js",
+    "unseed": "yarn build && node ./devData/unseed.js"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {

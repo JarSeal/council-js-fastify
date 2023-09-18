@@ -1,6 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import { replySchema } from './schemas';
+import { bodySchema, replySchema } from './schemas';
 import type { LogoutRoute } from './schemas';
 import { logout } from './handlers';
 
@@ -9,7 +9,10 @@ const logoutRoute: FastifyPluginAsync = (instance) => {
     method: 'POST',
     url: '/logout',
     handler: logout,
-    schema: { response: { 200: replySchema } },
+    schema: {
+      body: bodySchema,
+      response: { 200: replySchema },
+    },
   });
 
   return Promise.resolve();

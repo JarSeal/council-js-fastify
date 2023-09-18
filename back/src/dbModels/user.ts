@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import type { Types } from 'mongoose';
 
-import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './_shemaPartials';
+import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './_schemaPartials';
 import type { Edited, Token } from './_modelTypePartials';
 
 export interface DBUser {

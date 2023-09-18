@@ -4,6 +4,9 @@
     "maxUsernameLength": 32,
     "minPassLength": 8,
     "maxPassLength": 128,
+    "passRegExp": [
+      "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!#$%&?@* \"])[a-zA-Z0-9!#$%&?@* \"]{0,}$"
+    ],
     "maxEmails": 2,
     "maxLoginAttempts": 4,
     "sessionMaxAge": 3600,

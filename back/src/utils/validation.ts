@@ -1,9 +1,9 @@
 import type { FastifyError } from 'fastify';
 
-import type { Body } from '../publicSignUp/schemas';
-import { errors } from '../../core/errors';
-import type { DBUser } from '../../dbModels/user';
-import { getConfig, type ConfigFile } from '../../core/config';
+import type { Body } from '../features/publicSignUp/schemas';
+import { errors } from '../core/errors';
+import type { DBUser } from '../dbModels/user';
+import { getConfig, type ConfigFile } from '../core/config';
 
 export type ValidationError = FastifyError | null;
 
@@ -49,4 +49,10 @@ export const validatePublicSignup = (
   // @TODO: add username (simpleId) regex
   // @TODO: add password regex
   return null;
+};
+
+export const simpleIdRegExp = ['^[a-zA-Z0-9-_]+$', 'gm'];
+export const validateSimpleId = (simpleId: string) => {
+  const regex = new RegExp(simpleIdRegExp[0], simpleIdRegExp[1]);
+  return regex.test(simpleId);
 };

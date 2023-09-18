@@ -50,7 +50,7 @@ describe('login', () => {
     const body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(401);
     expect(body.code).toEqual('UNAUTHORIZED');
-    expect(body.message).toEqual('CSRF-header is required');
+    expect(body.message).toEqual('CSRF-header is invalid or missing');
   });
 
   it('should fail the login without proper payload', async () => {
@@ -319,6 +319,7 @@ describe('login', () => {
     response = await app.inject({
       method: 'POST',
       path: '/api/v1/logout',
+      body: {},
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });

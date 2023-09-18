@@ -9,7 +9,7 @@ import type {
 } from 'fast-jwt';
 import crypto from 'crypto';
 
-import { URL_TOKEN_SECRET } from '../../core/config';
+import { URL_TOKEN_SECRET } from '../core/config';
 
 const ALGORITHM = 'HS512';
 const ISSUER = 'Council-Fastify';

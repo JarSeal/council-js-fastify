@@ -1,12 +1,22 @@
-import type { FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 
 import { errors } from '../core/errors';
 import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../core/config';
 
 export const csrfHook = async (req: FastifyRequest, res: FastifyReply) => {
-  if (req.headers[CSRF_HEADER_NAME] !== CSRF_HEADER_VALUE) {
-    req.log.warn(`Request without the CSRF-header ("${CSRF_HEADER_NAME}") was made`);
-    return res.send(new errors.UNAUTHORIZED('CSRF-header is required'));
+  const csrfError = csrfCheck(req);
+  if (csrfError) {
+    return res.send(csrfError);
   }
   return Promise.resolve();
+};
+
+export const csrfCheck = (req: FastifyRequest): null | FastifyError => {
+  if (req.headers[CSRF_HEADER_NAME] !== CSRF_HEADER_VALUE) {
+    req.log.warn(
+      `Request with a missing or invalid CSRF-header or ("${CSRF_HEADER_NAME}") was made`
+    );
+    return new errors.UNAUTHORIZED('CSRF-header is invalid or missing');
+  }
+  return null;
 };

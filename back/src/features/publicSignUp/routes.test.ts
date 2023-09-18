@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import initApp from '../../core/app';
 import type { PublicSignUpRoute } from './schemas';
 import DBUserModel, { type DBUser } from '../../dbModels/user';
-import { getTimestamp, getTimestampFromDate } from '../utils/timeAndDate';
+import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
 import { csrfHeader } from '../../test/utils';
 
 describe('publicSignUp', () => {
@@ -32,7 +32,7 @@ describe('publicSignUp', () => {
     const body = JSON.parse(response.body) as FastifyError;
     expect(response.statusCode).toBe(401);
     expect(body.code).toEqual('UNAUTHORIZED');
-    expect(body.message).toEqual('CSRF-header is required');
+    expect(body.message).toEqual('CSRF-header is invalid or missing');
   });
 
   it('should fail the publicSignUp without proper payload', async () => {

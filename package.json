@@ -23,7 +23,9 @@
     "migrate:create": "yarn --cwd ./back/migrate/ migrate:create",
     "migrate:status": "yarn --cwd ./back/migrate/ migrate:status",
     "migrate": "yarn --cwd ./back/migrate/ migrate",
-    "migrate:down": "yarn --cwd ./back/migrate/ migrate:down"
+    "migrate:down": "yarn --cwd ./back/migrate/ migrate:down",
+    "seed": "yarn --cwd ./back/ seed",
+    "unseed": "yarn --cwd ./back/ unseed"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {
