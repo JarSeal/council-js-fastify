@@ -2,10 +2,13 @@ const randomIntFromInterval = (min, max) => Math.floor(Math.random() * (max - mi
 const { default: DBFormModel } = require('../../dist/back/src/dbModels/form');
 const { default: DBFormDataModel } = require('../../dist/back/src/dbModels/formData');
 const { default: DBPrivilegeModel } = require('../../dist/back/src/dbModels/privilege');
-const { getSuperAdminId, getBasicUsersGroupId } = require('./_config');
+const { getSuperAdminId, getBasicUsersGroupId, getBasicUserId } = require('./_config');
+
+let formDataCount = 0;
 
 const getFormConfigs = async () => {
   const basicUsersId = await getBasicUsersGroupId();
+  const basicUserId = await getBasicUserId();
   return [
     {
       formId: 'testform0',
@@ -58,7 +61,7 @@ const getFormConfigs = async () => {
             elemType: 'inputText',
             valueType: createValueType('inputText'),
             elemData: createElemData('inputText'),
-            labelLangKey: 'Label 1',
+            labelLangKey: 'Label 2',
             required: true,
             privileges: {
               read: { excludeGroups: [basicUsersId] },
@@ -71,6 +74,36 @@ const getFormConfigs = async () => {
           edit: { groups: [basicUsersId] },
           delete: { groups: [basicUsersId] },
         },
+        formData: [
+          {
+            formId: 'testform1',
+            url: '/testform1',
+            owner: null,
+            privileges: {
+              read: { groups: [basicUsersId] },
+              create: { groups: [basicUsersId] },
+              edit: { groups: [basicUsersId] },
+              delete: { groups: [basicUsersId] },
+            },
+            data: [
+              {
+                elemId: 'testElem0',
+                orderNr: 0,
+                value: 'Some text input data',
+                valueType: createValueType('inputText'),
+              },
+              {
+                elemId: 'testElem1',
+                orderNr: 1,
+                value: 'Some hidden data',
+                valueType: createValueType('inputText'),
+                privileges: {
+                  read: { excludeGroups: [basicUsersId] },
+                },
+              },
+            ],
+          },
+        ],
         privileges: [
           {
             priCategoryId: 'form',
@@ -88,12 +121,19 @@ const getFormConfigs = async () => {
         ],
       },
     },
+    {
+      formId: 'testform2',
+      name: 'Basic user access form as owner',
+      description: 'Basic user is the owner of this form',
+      url: '/testform2',
+      formDataOwner: basicUserId,
+    },
   ];
 };
 
 const removeForms = async () => {
   console.log('\nFORMS:');
-  console.log('Check and remove forms and formData...');
+  console.log('Check and remove forms, formData items, and form privileges...');
 
   const formConfigs = await getFormConfigs();
 
@@ -168,9 +208,13 @@ const createForms = async () => {
   await DBFormModel.insertMany(forms);
 
   console.log(
-    `Created ${formConfigs.length} seed data forms and ${privilegesAdded} form privileges.`
+    `Created ${formConfigs.length} seed data forms, ${formDataCount} formData items, and ${privilegesAdded} form privileges.`
   );
   console.log('- formId "testform0" has all privileges set for "basicUsers" group');
+  console.log(
+    '- formId "testform1" has all privileges set for "basicUsers" group except 1 formElem (excludeGroups)'
+  );
+  console.log('- formId "testform2" has a basic user as formDataOwner');
 };
 
 const formElemTypes = [
@@ -266,10 +310,14 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
 
   // Form elements
   let formElems = [];
-  const formElemCount = randomIntFromInterval(1, 15);
+  let formElemCount = 0;
   if (opts?.formElems?.length) {
+    // Pre-configured formElems
+    formElemCount = opts.formElems.length;
     formElems = opts.formElems;
   } else {
+    // Random formElems
+    formElemCount = randomIntFromInterval(1, 15);
     for (let i = 0; i < formElemCount; i++) {
       const formElemIndex = randomIntFromInterval(1, 8) - 1;
       const formElem = {
@@ -323,7 +371,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
       groups: [],
       excludeUsers: [],
       excludeGroups: [],
-      ...(opts.formDataPrivileges?.read || {}),
+      ...(opts?.formDataPrivileges?.read || {}),
     },
     create: {
       public: 'false',
@@ -332,7 +380,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
       groups: [],
       excludeUsers: [],
       excludeGroups: [],
-      ...(opts.formDataPrivileges?.create || {}),
+      ...(opts?.formDataPrivileges?.create || {}),
     },
     edit: {
       public: 'false',
@@ -341,7 +389,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
       groups: [],
       excludeUsers: [],
       excludeGroups: [],
-      ...(opts.formDataPrivileges?.edit || {}),
+      ...(opts?.formDataPrivileges?.edit || {}),
     },
     delete: {
       public: 'false',
@@ -350,10 +398,22 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
       groups: [],
       excludeUsers: [],
       excludeGroups: [],
-      ...(opts.formDataPrivileges?.delete || {}),
+      ...(opts?.formDataPrivileges?.delete || {}),
     },
   };
   form.formDataPrivileges = privileges;
+
+  // Set possible formData
+  if (opts?.formData?.length) {
+    for (let i = 0; i < opts.formData.length; i++) {
+      if (!opts.formData[i].created)
+        opts.formData[i].created = { user: superAdminId, date: new Date() };
+      if (!opts.formData[i].owner) opts.formData[i].owner = superAdminId;
+      const formData = new DBFormDataModel(opts.formData[i]);
+      formData.save();
+      formDataCount++;
+    }
+  }
 
   return form;
 };

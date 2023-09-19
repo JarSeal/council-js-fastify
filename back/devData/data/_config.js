@@ -19,17 +19,29 @@ const getSuperAdminId = async () => {
   if (!superAdmin) {
     throw new Error('COULD NOT FIND SUPER ADMIN USER!');
   }
+  _superAdminId = superAdmin._id;
   return superAdmin._id;
 };
 
 let _basicUsersGroupId;
+let _basicUserId;
 const getBasicUsersGroupId = async () => {
   if (_basicUsersGroupId) return _basicUsersGroupId;
   const basicUsersGroup = await DBGroupModel.findOne({ simpleId: 'basicUsers' });
   if (!basicUsersGroup) {
     throw new Error('COULD NOT FIND BASIC USERS GROUP!');
   }
-  return basicUsersGroup._id;
+  _basicUsersGroupId = basicUsersGroup._id;
+  return _basicUsersGroupId;
+};
+const getBasicUserId = async () => {
+  if (_basicUserId) return _basicUserId;
+  const basicUsersGroup = await DBGroupModel.findOne({ simpleId: 'basicUsers' });
+  if (!basicUsersGroup || !basicUsersGroup.members[0]) {
+    throw new Error('COULD NOT FIND BASIC USERS GROUP OR A MEMBER!');
+  }
+  _basicUserId = basicUsersGroup.members[0];
+  return _basicUserId;
 };
 
 module.exports = {
@@ -43,4 +55,5 @@ module.exports = {
   createEmail,
   getSuperAdminId,
   getBasicUsersGroupId,
+  getBasicUserId,
 };
