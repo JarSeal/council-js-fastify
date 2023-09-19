@@ -79,7 +79,7 @@ module.exports = [
         priAccessId: 'canUseForm',
         name: 'Use form: System Login',
         description: 'Who can use the "System Login" form.',
-        created: { date: timeNow },
+        created: timeNow,
         privilegeAccess: {
           public: 'onlyPublic',
           requireCsrfHeader: true,
@@ -206,7 +206,7 @@ module.exports = [
         priAccessId: 'canUseForm',
         name: 'Use form: Public Sign Up',
         description: 'Who can use the "Public Sign Up" form.',
-        created: { date: timeNow },
+        created: timeNow,
         privilegeAccess: {
           public: 'onlyPublic',
           requireCsrfHeader: true,
@@ -250,7 +250,7 @@ module.exports = [
         priAccessId: 'canUseForm',
         name: 'Use form: Council Logout',
         description: 'Who can use the "Council Logout" form.',
-        created: { date: timeNow },
+        created: timeNow,
         privilegeAccess: {
           public: 'onlySignedIn',
           requireCsrfHeader: true,

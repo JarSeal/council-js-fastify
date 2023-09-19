@@ -46,15 +46,15 @@ export const basicPrivilegePropsSchema = {
 
 export const allPrivilegePropsSchema = {
   public: { type: String, required: true, default: 'false' },
-  requireCsrfHeader: { type: Boolean },
+  requireCsrfHeader: { type: Boolean, default: true },
   ...basicPrivilegePropsSchema,
 };
 
 export const formDataPrivilegesSchema = {
   read: allPrivilegePropsSchema,
   create: allPrivilegePropsSchema,
-  edit: basicPrivilegePropsSchema,
-  delete: basicPrivilegePropsSchema,
+  edit: allPrivilegePropsSchema,
+  delete: allPrivilegePropsSchema,
 };
 
 export const formElemDbSchema = {
@@ -79,5 +79,5 @@ export const formElemDbSchema = {
     },
   ],
   doNotSave: { type: Boolean, default: false },
-  privileges: formDataPrivilegesSchema,
+  privileges: Schema.Types.Mixed,
 };

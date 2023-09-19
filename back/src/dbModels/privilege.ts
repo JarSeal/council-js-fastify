@@ -12,7 +12,7 @@ export interface DBPrivilege {
   id?: string;
   simpleId: string;
   priCategoryId: string;
-  priOwnerId: string;
+  priTargetId: string;
   priAccessId: string;
   name: string;
   description: string;
@@ -27,7 +27,7 @@ export interface DBPrivilege {
 const privilegeSchema = new Schema<DBPrivilege>({
   simpleId: simpleIdDBSchema,
   priCategoryId: { type: String, required: true },
-  priOwnerId: { type: String, required: true },
+  priTargetId: { type: String, required: true },
   priAccessId: { type: String, required: true },
   name: { type: String, required: true },
   description: String,

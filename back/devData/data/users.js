@@ -120,7 +120,7 @@ const createUsers = async () => {
       { simpleId: group0Id },
       { $addToSet: { members: user50._id } }
     );
-    userAddedToCustomGroupMsg = ` Added "${user50username} as a member to group "${group0Id}".`;
+    userAddedToCustomGroupMsg = ` Added "${user50username}" as a member to group "${group0Id}".`;
   }
 
   console.log(

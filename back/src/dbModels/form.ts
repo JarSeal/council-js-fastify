@@ -27,13 +27,13 @@ export interface DBForm {
     formText?: { [key: string]: string };
     formTextLangKey?: string;
     classes?: string[];
-    disablePartialSaving?: boolean;
     lockOrder?: boolean;
-    maxDataOwnerItems?: number;
-    formDataOwner: FormDataOwner;
     formElems: FormElem[];
   };
-  formDataPrivileges?: FormDataPrivileges;
+  disablePartialSaving?: boolean;
+  maxDataOwnerItems?: number;
+  formDataOwner: FormDataOwner;
+  formDataPrivileges: FormDataPrivileges;
 }
 
 const formSchema = new Schema<DBForm>({
@@ -62,12 +62,12 @@ const formSchema = new Schema<DBForm>({
     formText: Object,
     formTextLangKey: String,
     classes: [{ _id: false, type: String }],
-    disablePartialSaving: { type: Boolean },
     lockOrder: { type: Boolean, default: false },
-    maxDataOwnerItems: { type: Number },
-    formDataOwner: { type: String, required: true, default: 'none' },
     formElems: [formElemDbSchema],
   },
+  disablePartialSaving: { type: Boolean },
+  maxDataOwnerItems: { type: Number },
+  formDataOwner: { type: String, required: true, default: 'none' },
   formDataPrivileges: formDataPrivilegesSchema,
 });
 

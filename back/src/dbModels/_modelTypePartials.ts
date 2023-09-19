@@ -37,7 +37,7 @@ export type FormDataValueType =
 
 export type AllPrivilegeProps = {
   public: 'true' | 'false' | 'onlyPublic' | 'onlySignedIn';
-  requireCsrfHeader?: boolean;
+  requireCsrfHeader: boolean;
   users: Types.ObjectId[];
   groups: Types.ObjectId[];
   excludeUsers: Types.ObjectId[];
@@ -73,5 +73,5 @@ export type FormElem = {
     messageLangKey?: string;
   }[];
   doNotSave?: boolean;
-  privileges?: FormDataPrivileges;
+  privileges: FormDataPrivileges | null;
 };

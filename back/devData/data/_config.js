@@ -1,4 +1,5 @@
 const { default: DBUserModel } = require('../../dist/back/src/dbModels/user');
+const { default: DBGroupModel } = require('../../dist/back/src/dbModels/group');
 const { getSuperAdminUsername } = require('../../migrate/data/utils');
 
 const groupCount = 10;
@@ -21,6 +22,16 @@ const getSuperAdminId = async () => {
   return superAdmin._id;
 };
 
+let _basicUsersGroupId;
+const getBasicUsersGroupId = async () => {
+  if (_basicUsersGroupId) return _basicUsersGroupId;
+  const basicUsersGroup = await DBGroupModel.findOne({ simpleId: 'basicUsers' });
+  if (!basicUsersGroup) {
+    throw new Error('COULD NOT FIND BASIC USERS GROUP!');
+  }
+  return basicUsersGroup._id;
+};
+
 module.exports = {
   groupCount,
   groupIdBase,
@@ -31,4 +42,5 @@ module.exports = {
   createUsername,
   createEmail,
   getSuperAdminId,
+  getBasicUsersGroupId,
 };
