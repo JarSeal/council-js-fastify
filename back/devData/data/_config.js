@@ -29,7 +29,7 @@ const getBasicUsersGroupId = async () => {
   if (_basicUsersGroupId) return _basicUsersGroupId;
   const basicUsersGroup = await DBGroupModel.findOne({ simpleId: 'basicUsers' });
   if (!basicUsersGroup) {
-    throw new Error('COULD NOT FIND BASIC USERS GROUP!');
+    return null;
   }
   _basicUsersGroupId = basicUsersGroup._id;
   return _basicUsersGroupId;
@@ -38,7 +38,7 @@ const getBasicUserId = async () => {
   if (_basicUserId) return _basicUserId;
   const basicUsersGroup = await DBGroupModel.findOne({ simpleId: 'basicUsers' });
   if (!basicUsersGroup || !basicUsersGroup.members[0]) {
-    throw new Error('COULD NOT FIND BASIC USERS GROUP OR A MEMBER!');
+    return null;
   }
   _basicUserId = basicUsersGroup.members[0];
   return _basicUserId;
