@@ -9,7 +9,7 @@ import { notSignedInHook } from '../hooks/notSignedIn';
 import { signedInHook } from '../hooks/signedIn';
 import { csrfHook } from '../hooks/csrf';
 
-const apiVersion = '/v1';
+export const apiVersion = '/v1';
 const vPrefixObj = { prefix: apiVersion };
 const sysPrefixObj = { prefix: apiVersion + '/sys' };
 

@@ -21,6 +21,8 @@ import apis from './apis';
 import { initDB } from './db';
 import { sessionStore } from './sessionStore';
 
+export const apiRoot = '/api';
+
 const initApp = async (): Promise<FastifyInstance> => {
   const envToLogger = {
     development: {
@@ -80,7 +82,7 @@ const initApp = async (): Promise<FastifyInstance> => {
   });
 
   // API routes
-  await app.register(apis, { prefix: '/api' });
+  await app.register(apis, { prefix: apiRoot });
 
   // Static files
   let publicPath = path.join(__dirname, '../public');
