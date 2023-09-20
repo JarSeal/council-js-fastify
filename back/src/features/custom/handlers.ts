@@ -21,12 +21,29 @@ export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   return res.send({ ok: true });
 };
 
-export const customGet: RouteHandler<CustomGetRoute> = async (_req, res) => {
-  // @TODO: get current form data
-  // @TODO: check CSRF header (if enabled in form data)
-  // @TODO: check authorization
-  // @TODO: validate incoming body fields against the form data
+export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
+  const { getForm, dataId, elemId, flat, offset, limit, orderBy, orderDir, s } = req.query;
+  let formId;
+  if (dataId) {
+    if (!formId) {
+      // Get formId from formData
+    }
+  }
+  if (getForm) {
+    // Get formId from form
+  }
 
-  console.log('TADAAAAAAAAAAA GET');
+  console.log(
+    'TADAAAAAAAAAAA GET',
+    getForm,
+    dataId,
+    elemId,
+    flat,
+    offset,
+    limit,
+    orderBy,
+    orderDir,
+    s
+  );
   return res.send({ ok: true });
 };
