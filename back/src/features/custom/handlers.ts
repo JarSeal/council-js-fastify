@@ -8,6 +8,7 @@ import DBGroupModel from '../../dbModels/group';
 import { errors } from '../../core/errors';
 import { apiRoot } from '../../core/app';
 import { apiVersion } from '../../core/apis';
+import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../../core/config';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -50,11 +51,16 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     return res.send(new errors.NOT_FOUND(`Could not find form with url "${req.url}"`));
   }
 
-  // @TODO: check CSRF here
+  // Get CSRF result
+  const isCsrfGood = req.headers[CSRF_HEADER_NAME] === CSRF_HEADER_VALUE;
 
   // Get user data
   const { isSignedIn, userId } = req.session;
-  const userData: UserData = { isSignedIn, userId, userGroups: [] };
+  const userData: UserData = {
+    isSignedIn: isSignedIn || false,
+    userId: userId || null,
+    userGroups: [],
+  };
   if (isSignedIn) {
     const userGroups = await DBGroupModel.find<{ simpleId: Schema.Types.ObjectId }>({
       members: req.session.userId,
@@ -91,6 +97,17 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     );
   }
 
-  console.log('TADAAAAAAAAAAA GET', formData, elemId, flat, offset, limit, orderBy, orderDir, s);
+  console.log(
+    'TADAAAAAAAAAAA GET',
+    formData,
+    isCsrfGood,
+    elemId,
+    flat,
+    offset,
+    limit,
+    orderBy,
+    orderDir,
+    s
+  );
   return res.send({ ok: true });
 };
