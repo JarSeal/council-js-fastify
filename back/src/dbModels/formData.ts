@@ -36,10 +36,11 @@ const formDataSchema = new Schema<DBFormData>({
       user: {
         type: Schema.Types.ObjectId,
       },
+      ref: 'User',
       date: dateDBSchema,
     },
   ],
-  owner: { type: Schema.Types.ObjectId, required: true, default: null },
+  owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, default: null },
   data: [
     {
       _id: false,
