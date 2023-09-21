@@ -1,5 +1,6 @@
 import type { RouteHandler } from 'fastify';
-import { type Schema, Types } from 'mongoose';
+import { Types } from 'mongoose';
+import type { Types as MongoTypes } from 'mongoose';
 
 import type { CustomGetRoute, CustomPostRoute, GetReply } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
@@ -9,7 +10,7 @@ import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { apiRoot } from '../../core/app';
 import { apiVersion } from '../../core/apis';
-import { csrfIsGood } from '../../hooks/csrf';
+import { isCsrfGood } from '../../hooks/csrf';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -30,8 +31,9 @@ export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
 
 type UserData = {
   isSignedIn: boolean;
-  userId: Schema.Types.ObjectId | null;
-  userGroups: Schema.Types.ObjectId[];
+  userId: MongoTypes.ObjectId | null;
+  userGroups: MongoTypes.ObjectId[];
+  isSysAdmin: boolean;
 };
 
 export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
@@ -53,7 +55,7 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   }
 
   // Get CSRF result
-  const isCsrfGood = csrfIsGood(req);
+  const csrfIsGood = isCsrfGood(req);
 
   // Get user data (@TODO: move to util)
   const { isSignedIn, userId } = req.session;
@@ -61,12 +63,16 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     isSignedIn: isSignedIn || false,
     userId: userId || null,
     userGroups: [],
+    isSysAdmin: false,
   };
   if (isSignedIn) {
-    let userGroups = await DBGroupModel.find<{ _id: Schema.Types.ObjectId }>({
+    let userGroups = await DBGroupModel.find<{ _id: MongoTypes.ObjectId; simpleId: string }>({
       members: req.session.userId,
-    }).select('_id');
+    }).select('_id simpleId');
     userData.userGroups = userGroups.map((ug) => ug._id);
+    if (userGroups.find((ug) => ug.simpleId === 'sysAdmins')) {
+      userData.isSysAdmin = true;
+    }
     userGroups = [];
   }
 
@@ -75,8 +81,34 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     // @TODO: add form privilege access check
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-    console.log(privilege);
-    // if (privilege?.privilegeAccess) {}
+    if (privilege?.privilegeAccess && userData.userId) {
+      // Check CSRF
+      if (privilege.privilegeAccess.requireCsrfHeader && !csrfIsGood) {
+        // return false;
+      }
+      // Check public
+      if (
+        ((privilege.privilegeAccess.public === 'false' ||
+          privilege.privilegeAccess.public === 'onlySignedIn') &&
+          !userData.isSignedIn) ||
+        (privilege.privilegeAccess.public === 'onlyPublic' && userData.isSignedIn)
+      ) {
+        // return false;
+      }
+      // Check if user is a sysAdmin
+      if (!userData.isSysAdmin) {
+        // Check excluded users
+        if (privilege.privilegeAccess.excludeUsers.includes(userData.userId)) {
+          // return false
+        }
+        // Check excluded groups (compare two arrays and see if none match)
+
+        // Check included users
+
+        // Check included groups
+      }
+      // return true;
+    }
     returnObject['$form'] = form.form;
   }
 
@@ -102,7 +134,7 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   console.log(
     'TADAAAAAAAAAAA GET',
     formData,
-    isCsrfGood,
+    csrfIsGood,
     canBeFlat,
     elemId,
     flat,

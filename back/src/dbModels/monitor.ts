@@ -1,8 +1,10 @@
-import mongoose from 'mongoose';
+import mongoose, { type Types } from 'mongoose';
 
 import { simpleIdDBSchema } from './_schemaPartials';
 
 export interface DBMonitor {
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
   simpleId: string;
   systemDocument?: boolean;
   data: object;

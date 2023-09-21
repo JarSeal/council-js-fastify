@@ -4,7 +4,8 @@ import { simpleIdDBSchema, dateDBSchema, mongoIdArraySchema } from './_schemaPar
 import type { Edited } from './_modelTypePartials';
 
 export interface DBGroup {
-  id?: string;
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
   simpleId: string;
   name: string;
   description: string;

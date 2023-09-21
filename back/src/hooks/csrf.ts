@@ -11,11 +11,11 @@ export const csrfHook = async (req: FastifyRequest, res: FastifyReply) => {
   return Promise.resolve();
 };
 
-export const csrfIsGood = (req: FastifyRequest) =>
+export const isCsrfGood = (req: FastifyRequest) =>
   req.headers[CSRF_HEADER_NAME] === CSRF_HEADER_VALUE;
 
 export const csrfCheck = (req: FastifyRequest): null | FastifyError => {
-  if (!csrfIsGood(req)) {
+  if (!isCsrfGood(req)) {
     req.log.warn(
       `Request with a missing or invalid CSRF-header or ("${CSRF_HEADER_NAME}") was made`
     );

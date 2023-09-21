@@ -5,8 +5,8 @@ import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './
 import type { Edited, Token } from './_modelTypePartials';
 
 export interface DBUser {
-  _id?: Schema.Types.ObjectId;
-  id?: Schema.Types.ObjectId;
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
   simpleId: string;
   emails: {
     email: string;

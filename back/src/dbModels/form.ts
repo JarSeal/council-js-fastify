@@ -9,7 +9,8 @@ import {
 import type { Edited, FormDataOwner, FormDataPrivileges, FormElem } from './_modelTypePartials';
 
 export interface DBForm {
-  id?: string;
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
   simpleId: string;
   name: string;
   description: string;

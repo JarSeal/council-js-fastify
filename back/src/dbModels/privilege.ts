@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, type Types, model } from 'mongoose';
 
 import {
   simpleIdDBSchema,
@@ -9,7 +9,8 @@ import {
 import type { AllPrivilegeProps, Edited } from './_modelTypePartials';
 
 export interface DBPrivilege {
-  id?: string;
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
   simpleId: string;
   priCategoryId: string;
   priTargetId: string;

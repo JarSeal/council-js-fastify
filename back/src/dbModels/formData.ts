@@ -4,7 +4,8 @@ import { simpleIdDBSchema, dateDBSchema, formDataPrivilegesSchema } from './_sch
 import type { Edited, FormDataPrivileges, FormDataValueType } from './_modelTypePartials';
 
 export interface DBFormData {
-  id?: string;
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
   formId: string;
   url: string;
   created: {
@@ -35,8 +36,8 @@ const formDataSchema = new Schema<DBFormData>({
       _id: false,
       user: {
         type: Schema.Types.ObjectId,
+        ref: 'User',
       },
-      ref: 'User',
       date: dateDBSchema,
     },
   ],
