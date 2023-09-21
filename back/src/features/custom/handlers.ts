@@ -62,10 +62,11 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     userGroups: [],
   };
   if (isSignedIn) {
-    const userGroups = await DBGroupModel.find<{ simpleId: Schema.Types.ObjectId }>({
+    let userGroups = await DBGroupModel.find<{ _id: Schema.Types.ObjectId }>({
       members: req.session.userId,
-    }).select('simpleId');
-    userData.userGroups = userGroups.map((ug) => ug.simpleId);
+    }).select('_id');
+    userData.userGroups = userGroups.map((ug) => ug._id);
+    userGroups = [];
   }
 
   const returnObject: GetReply = {};
@@ -74,33 +75,30 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     returnObject['$form'] = form.form;
   }
 
-  let formData = null;
+  let formData = null,
+    canBeFlat = false;
   if (dataId && dataId[0] === 'all') {
     // Get all data
     // @TODO: set a upper limit of maximum dataItems per request (implement offset and limit)
     // @TODO: add populate methods
-    formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId }).populate(
-      'created.user',
-      'simpleId -_id'
-    );
+    formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId });
   } else if (Array.isArray(dataId) && dataId?.length > 1) {
     // Get specific formData items
     const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
     formData = await DBFormDataModel.find<DBFormData[]>({
       $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
-    }).populate('created.user', 'simpleId -_id');
+    });
   } else if (dataId) {
     // Get one formData item
-    formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).populate(
-      'created.user',
-      'simpleId -_id'
-    );
+    formData = await DBFormDataModel.findById<DBFormData>(dataId[0]);
+    canBeFlat = true;
   }
 
   console.log(
     'TADAAAAAAAAAAA GET',
     formData,
     isCsrfGood,
+    canBeFlat,
     elemId,
     flat,
     offset,
@@ -109,5 +107,5 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     orderDir,
     s
   );
-  return res.send({ ok: true });
+  return res.send(returnObject);
 };
