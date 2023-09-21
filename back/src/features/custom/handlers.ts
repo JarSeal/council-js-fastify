@@ -5,10 +5,11 @@ import type { CustomGetRoute, CustomPostRoute, GetReply } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBGroupModel from '../../dbModels/group';
+import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { apiRoot } from '../../core/app';
 import { apiVersion } from '../../core/apis';
-import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../../core/config';
+import { csrfIsGood } from '../../hooks/csrf';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -52,9 +53,9 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   }
 
   // Get CSRF result
-  const isCsrfGood = req.headers[CSRF_HEADER_NAME] === CSRF_HEADER_VALUE;
+  const isCsrfGood = csrfIsGood(req);
 
-  // Get user data
+  // Get user data (@TODO: move to util)
   const { isSignedIn, userId } = req.session;
   const userData: UserData = {
     isSignedIn: isSignedIn || false,
@@ -72,6 +73,10 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   const returnObject: GetReply = {};
   if (getForm) {
     // @TODO: add form privilege access check
+    const privilegeId = `form__${form.simpleId}__canUseForm`;
+    const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
+    console.log(privilege);
+    // if (privilege?.privilegeAccess) {}
     returnObject['$form'] = form.form;
   }
 
