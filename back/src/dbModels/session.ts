@@ -6,7 +6,7 @@ import { getConfig } from '../core/config';
 export interface Session {
   isSignedIn: boolean;
   username: string;
-  userId: string;
+  userId: mongoose.Schema.Types.ObjectId;
   agentId: string;
   cookie: {
     path?: string;
@@ -36,7 +36,7 @@ const sessionSchema = new mongoose.Schema<DBSession>({
   session: {
     isSignedIn: Boolean,
     username: String,
-    userId: String,
+    userId: mongoose.Schema.Types.ObjectId,
     agentId: String,
     cookie: {
       path: { type: String, default: '/' },

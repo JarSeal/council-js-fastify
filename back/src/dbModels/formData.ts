@@ -27,7 +27,7 @@ const formDataSchema = new Schema<DBFormData>({
   formId: simpleIdDBSchema,
   url: { type: String, unique: true, required: true },
   created: {
-    user: { type: Schema.Types.ObjectId, required: true, default: null },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, default: null },
     date: dateDBSchema,
   },
   edited: [
