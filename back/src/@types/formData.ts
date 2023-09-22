@@ -10,3 +10,11 @@ export const formDataSchema = Type.Object({
   valueType: valueTypeSchema,
 });
 export type FormData = Static<typeof formDataSchema>;
+
+export const errorResponseSchema = Type.Object({
+  statusCode: Type.Number(),
+  code: Type.String(),
+  error: Type.String(),
+  message: Type.String(),
+});
+export type ErrorResponseSchema = Static<typeof errorResponseSchema>;

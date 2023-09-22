@@ -75,48 +75,48 @@ describe('userAndPrivilegeChecks', () => {
     let req = {} as FastifyRequest;
     let userData = await getUserData(req);
     let privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
-    let isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    let privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(401);
+    expect(privErrors?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'true' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(401);
+    expect(privErrors?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(401);
+    expect(privErrors?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'onlySignedIn' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(401);
+    expect(privErrors?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'onlyPublic' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(401);
+    expect(privErrors?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'true', requireCsrfHeader: false } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
 
     req = { headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE } } as unknown as FastifyRequest;
     userData = await getUserData(req);
     privilege = { public: 'true' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
 
     privilege = { public: 'onlyPublic' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
 
     privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('Must be signed in');
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(401);
+    expect(privErrors?.message).toBe('Must be signed in');
 
     req = {
       headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
@@ -130,21 +130,21 @@ describe('userAndPrivilegeChecks', () => {
     } as unknown as FastifyRequest;
     userData = await getUserData(req);
     privilege = { public: 'true' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
 
     privilege = { public: 'onlySignedIn' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
 
     privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
 
     privilege = { public: 'onlyPublic' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(400);
-    expect(isPrivOk?.message).toBe('Cannot be signed in to access route');
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(400);
+    expect(privErrors?.message).toBe('Cannot be signed in to access route');
   });
 
   it('should check privilegde: sysAdmin', async () => {
@@ -163,11 +163,65 @@ describe('userAndPrivilegeChecks', () => {
     } as unknown as FastifyRequest;
     const userData = await getUserData(req);
     let privilege = { public: 'false', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
-    let isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    let privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
 
     privilege = { public: 'onlySignedIn', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
+
+    privilege = { public: 'onlySignedIn', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
+  });
+
+  it('should check privilegde: excluded and included user and group', async () => {
+    const userId = await createUser('someTestUser');
+    const req = {
+      headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
+      session: {
+        isSignedIn: true,
+        username: 'someTestUser',
+        userId,
+        agentId: '',
+        cookie: {},
+      },
+    } as unknown as FastifyRequest;
+    let userData = await getUserData(req);
+    let privilege = { public: 'false', excludeUsers: [userId] } as Partial<AllPrivilegeProps>;
+    let privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(403);
+    expect(privErrors?.message).toBe('User is in excluded users');
+
+    privilege = { public: 'false', excludeUsers: [] } as Partial<AllPrivilegeProps>;
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(403);
+    expect(privErrors?.message).toBe('No privileges');
+
+    const groupId = await createGroup('someGroupId', await createSysAdmin(), [userId]);
+    userData = await getUserData(req);
+    privilege = { public: 'false', excludeGroups: [groupId] } as Partial<AllPrivilegeProps>;
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(403);
+    expect(privErrors?.message).toBe('User is in a group that is excluded');
+
+    privilege = {
+      public: 'false',
+      excludeUsers: [],
+      excludeGroups: [],
+      users: [],
+      groups: [],
+    } as Partial<AllPrivilegeProps>;
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors?.statusCode).toBe(403);
+    expect(privErrors?.message).toBe('No privileges');
+
+    privilege = { public: 'false', users: [userId] } as Partial<AllPrivilegeProps>;
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
+
+    privilege = { public: 'false', groups: [groupId] } as Partial<AllPrivilegeProps>;
+    privErrors = checkPrivilege(privilege, userData, isCsrfGood(req));
+    expect(privErrors).toBe(null);
   });
 });

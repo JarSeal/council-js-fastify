@@ -9,7 +9,7 @@ import { errors } from '../../core/errors';
 import { apiRoot } from '../../core/app';
 import { apiVersion } from '../../core/apis';
 import { isCsrfGood } from '../../hooks/csrf';
-import { getUserData } from '../../utils/userAndPrivilegeChecks';
+import { checkPrivilege, getUserData } from '../../utils/userAndPrivilegeChecks';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -56,35 +56,12 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   if (getForm) {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-    if (privilege?.privilegeAccess && userData.userId) {
-      // Check CSRF
-      if (privilege.privilegeAccess.requireCsrfHeader && !csrfIsGood) {
-        // return false;
-      }
-      // Check public
-      if (
-        ((privilege.privilegeAccess.public === 'false' ||
-          privilege.privilegeAccess.public === 'onlySignedIn') &&
-          !userData.isSignedIn) ||
-        (privilege.privilegeAccess.public === 'onlyPublic' && userData.isSignedIn)
-      ) {
-        // return false;
-      }
-      // Check if user is a sysAdmin
-      if (!userData.isSysAdmin) {
-        // Check excluded users
-        if (privilege.privilegeAccess.excludeUsers.includes(userData.userId)) {
-          // return false
-        }
-        // Check excluded groups (compare two arrays and see if none match)
-
-        // Check included users
-
-        // Check included groups
-      }
-      // return true;
+    const privError = checkPrivilege(privilege?.privilegeAccess, userData, csrfIsGood);
+    if (privError) {
+      returnObject['$error'] = privError;
+    } else {
+      returnObject['$form'] = form.form;
     }
-    returnObject['$form'] = form.form;
   }
 
   let formData = null,
@@ -92,8 +69,9 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   if (dataId && dataId[0] === 'all') {
     // Get all data
     // @TODO: set a upper limit of maximum dataItems per request (implement offset and limit)
+    const MAX_LIMIT = 500;
     // @TODO: add populate methods
-    formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId });
+    formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId }).limit(MAX_LIMIT);
   } else if (Array.isArray(dataId) && dataId?.length > 1) {
     // Get specific formData items
     const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
@@ -109,7 +87,6 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   console.log(
     'TADAAAAAAAAAAA GET',
     formData,
-    csrfIsGood,
     canBeFlat,
     elemId,
     flat,

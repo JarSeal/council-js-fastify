@@ -4,6 +4,7 @@ import type { Types } from 'mongoose';
 import DBGroupModel from '../dbModels/group';
 import type { AllPrivilegeProps } from '../dbModels/_modelTypePartials';
 import { errors } from '../core/errors';
+import { isCsrfGood } from '../hooks/csrf';
 
 export type UserData = {
   isSignedIn: boolean;
@@ -34,8 +35,17 @@ export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
   return userData;
 };
 
+export const privilegeCheckpoint = async (
+  req: FastifyRequest,
+  privilege?: AllPrivilegeProps | Partial<AllPrivilegeProps> | null
+) => {
+  const crsfIsGood = isCsrfGood(req);
+  const userData = await getUserData(req);
+  return checkPrivilege(privilege, userData, crsfIsGood);
+};
+
 export const checkPrivilege = (
-  privilege: AllPrivilegeProps | Partial<AllPrivilegeProps>,
+  privilege: AllPrivilegeProps | Partial<AllPrivilegeProps> | null | undefined,
   userData: UserData,
   csrfIsGood: boolean
 ): null | FastifyError => {
@@ -49,6 +59,8 @@ export const checkPrivilege = (
     excludeGroups: [],
     ...privilege,
   };
+
+  if (!privilege) return null;
 
   // Check CSRF
   if (priv.requireCsrfHeader && !csrfIsGood) {
@@ -68,19 +80,44 @@ export const checkPrivilege = (
   }
 
   // Check excluded users
-  if (userData.userId && priv.excludeUsers.includes(userData.userId)) {
-    return new errors.FORBIDDEN('User in excluded users');
+  if (userData.userId) {
+    for (let i = 0; i < priv.excludeUsers.length; i++) {
+      if (priv.excludeUsers[i].equals(userData.userId)) {
+        return new errors.FORBIDDEN('User is in excluded users');
+      }
+    }
   }
 
   // Check excluded groups (compare two arrays and see if none match)
   for (let i = 0; i < priv.excludeGroups.length; i++) {
-    // const exclGroup = priv.excludeGroups[i];
-    //for (let j = 0; j < priv.excludeGroups.length; j++) {}
+    const exclGroup = priv.excludeGroups[i];
+    for (let j = 0; j < userData.userGroups.length; j++) {
+      if (userData.userGroups[j].equals(exclGroup)) {
+        return new errors.FORBIDDEN('User is in a group that is excluded');
+      }
+    }
   }
 
   // Check included users
+  if (userData.userId) {
+    for (let i = 0; i < priv.users.length; i++) {
+      if (priv.users[i].equals(userData.userId)) {
+        // All good
+        return null;
+      }
+    }
+  }
 
   // Check included groups
+  for (let i = 0; i < priv.groups.length; i++) {
+    const inclGroup = priv.groups[i];
+    for (let j = 0; j < userData.userGroups.length; j++) {
+      if (userData.userGroups[j].equals(inclGroup)) {
+        // All good
+        return null;
+      }
+    }
+  }
 
   // User doesn't have any privileges
   return new errors.FORBIDDEN('No privileges');
