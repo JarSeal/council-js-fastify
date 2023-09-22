@@ -1,16 +1,15 @@
 import type { RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
-import type { Types as MongoTypes } from 'mongoose';
 
 import type { CustomGetRoute, CustomPostRoute, GetReply } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
-import DBGroupModel from '../../dbModels/group';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { apiRoot } from '../../core/app';
 import { apiVersion } from '../../core/apis';
 import { isCsrfGood } from '../../hooks/csrf';
+import { getUserData } from '../../utils/userAndPrivilegeChecks';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -27,13 +26,6 @@ export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
 
   console.log('TADAAAAAAAAAAA POST');
   return res.send({ ok: true });
-};
-
-type UserData = {
-  isSignedIn: boolean;
-  userId: MongoTypes.ObjectId | null;
-  userGroups: MongoTypes.ObjectId[];
-  isSysAdmin: boolean;
 };
 
 export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
@@ -57,28 +49,11 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   // Get CSRF result
   const csrfIsGood = isCsrfGood(req);
 
-  // Get user data (@TODO: move to util)
-  const { isSignedIn, userId } = req.session;
-  const userData: UserData = {
-    isSignedIn: isSignedIn || false,
-    userId: userId || null,
-    userGroups: [],
-    isSysAdmin: false,
-  };
-  if (isSignedIn) {
-    let userGroups = await DBGroupModel.find<{ _id: MongoTypes.ObjectId; simpleId: string }>({
-      members: req.session.userId,
-    }).select('_id simpleId');
-    userData.userGroups = userGroups.map((ug) => ug._id);
-    if (userGroups.find((ug) => ug.simpleId === 'sysAdmins')) {
-      userData.isSysAdmin = true;
-    }
-    userGroups = [];
-  }
+  // Get user data
+  const userData = await getUserData(req);
 
   const returnObject: GetReply = {};
   if (getForm) {
-    // @TODO: add form privilege access check
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
     if (privilege?.privilegeAccess && userData.userId) {

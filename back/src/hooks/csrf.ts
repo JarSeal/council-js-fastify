@@ -12,7 +12,7 @@ export const csrfHook = async (req: FastifyRequest, res: FastifyReply) => {
 };
 
 export const isCsrfGood = (req: FastifyRequest) =>
-  req.headers[CSRF_HEADER_NAME] === CSRF_HEADER_VALUE;
+  req.headers && req.headers[CSRF_HEADER_NAME] === CSRF_HEADER_VALUE;
 
 export const csrfCheck = (req: FastifyRequest): null | FastifyError => {
   if (!isCsrfGood(req)) {
