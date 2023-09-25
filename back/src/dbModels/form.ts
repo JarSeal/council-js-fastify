@@ -34,7 +34,8 @@ export interface DBForm {
   disablePartialSaving?: boolean;
   maxDataOwnerItems?: number;
   formDataOwner: FormDataOwner;
-  formDataPrivileges: FormDataPrivileges;
+  formDataDefaultPrivileges: FormDataPrivileges;
+  formDataPrivilegesAreIdentical: boolean;
 }
 
 const formSchema = new Schema<DBForm>({
@@ -69,7 +70,8 @@ const formSchema = new Schema<DBForm>({
   disablePartialSaving: { type: Boolean },
   maxDataOwnerItems: { type: Number },
   formDataOwner: { type: String, required: true, default: 'none' },
-  formDataPrivileges: formDataPrivilegesSchema,
+  formDataDefaultPrivileges: formDataPrivilegesSchema,
+  formDataPrivilegesAreIdentical: { type: Boolean },
 });
 
 formSchema.set('toJSON', {
