@@ -56,7 +56,10 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   if (getForm) {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-    if (privilege && !isPrivBlocked(privilege.privilegeAccess, userData, csrfIsGood)) {
+    const privError = !isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
+    if (privError) {
+      returnObject['$error'] = privError;
+    } else {
       returnObject['$form'] = form.form;
     }
   }
@@ -66,8 +69,9 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   if (dataId && dataId[0] === 'all') {
     // Get all data
     // @TODO: set a upper limit of maximum dataItems per request (implement offset and limit)
+    const MAX_LIMIT = 500;
     // @TODO: add populate methods
-    formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId });
+    formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId }).limit(MAX_LIMIT);
   } else if (Array.isArray(dataId) && dataId?.length > 1) {
     // Get specific formData items
     const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));

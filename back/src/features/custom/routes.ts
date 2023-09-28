@@ -3,7 +3,7 @@ import { type Static, Type } from '@sinclair/typebox';
 
 import { customGet, customPost } from './handlers';
 import { formFormSchema } from '../../@types/form';
-import { formDataSchema } from '../../@types/formData';
+import { errorResponseSchema, formDataSchema } from '../../@types/formData';
 
 export const postBodySchema = Type.Object({
   formId: Type.String(),
@@ -19,12 +19,14 @@ export const getReplySchema = Type.Union([
   Type.Optional(
     Type.Object({
       $form: Type.Optional(formFormSchema),
+      $error: Type.Optional(errorResponseSchema),
       data: Type.Optional(Type.Union([Type.Array(formDataSchema), formDataSchema])),
     })
   ),
   Type.Optional(
     Type.Object({
       $form: Type.Optional(formFormSchema),
+      $error: Type.Optional(errorResponseSchema),
       ...formDataSchema.schema,
     })
   ),

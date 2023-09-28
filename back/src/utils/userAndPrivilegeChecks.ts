@@ -55,6 +55,8 @@ export const isPrivBlocked = (
     ...privilege,
   };
 
+  if (!privilege) return null;
+
   // Check CSRF
   if (priv.requireCsrfHeader && !csrfIsGood) {
     return new errors.UNAUTHORIZED('CSRF-header is invalid or missing');
@@ -115,9 +117,6 @@ const checkExcludedUsers = (userData: UserData, excludedUsers: Types.ObjectId[])
       }
     }
   }
-  // if (userData.userId && excludedUsers.includes(userData.userId)) {
-  //   return new errors.FORBIDDEN('User in excluded users');
-  // }
   return null;
 };
 
@@ -132,12 +131,5 @@ const checkExcludedGroups = (userData: UserData, excludedGroups: Types.ObjectId[
       }
     }
   }
-  // if (userData.userGroups.length) {
-  //   for (let i = 0; i < excludedGroups.length; i++) {
-  //     if (userData.userGroups.includes(excludedGroups[i])) {
-  //       return new errors.FORBIDDEN('User in excluded group');
-  //     }
-  //   }
-  // }
   return null;
 };

@@ -22,6 +22,7 @@ const getFormConfigs = async () => {
           edit: { groups: [basicUsersId] },
           delete: { groups: [basicUsersId] },
         },
+        formDataPrivilegesAreIdentical: true,
         privileges: [
           {
             priCategoryId: 'form',
@@ -85,6 +86,7 @@ const getFormConfigs = async () => {
               edit: { groups: [basicUsersId] },
               delete: { groups: [basicUsersId] },
             },
+            hasElemPrivileges: true,
             data: [
               {
                 elemId: 'testElem0',
@@ -363,6 +365,8 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
   };
 
   if (opts?.formDataOwner) form.formDataOwner = opts.formDataOwner;
+  if (opts?.formDataPrivilegesAreIdentical)
+    form.formDataPrivilegesAreIdentical = opts.formDataPrivilegesAreIdentical;
   const privileges = {
     read: {
       public: 'false',
@@ -401,7 +405,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
       ...(opts?.formDataPrivileges?.delete || {}),
     },
   };
-  form.formDataPrivileges = privileges;
+  form.formDataDefaultPrivileges = privileges;
 
   // Set possible formData
   if (opts?.formData?.length) {
@@ -409,6 +413,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
       if (!opts.formData[i].created)
         opts.formData[i].created = { user: superAdminId, date: new Date() };
       if (!opts.formData[i].owner) opts.formData[i].owner = superAdminId;
+      if (!opts.formData[i].hasElemPrivileges) opts.formData[i].hasElemPrivileges = true;
       const formData = new DBFormDataModel(opts.formData[i]);
       formData.save();
       formDataCount++;

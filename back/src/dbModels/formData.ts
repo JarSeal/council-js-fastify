@@ -14,6 +14,7 @@ export interface DBFormData {
   };
   edited: Edited;
   owner: Types.ObjectId;
+  hasElemPrivileges: boolean;
   privileges: FormDataPrivileges;
   data: {
     elemId: string;
@@ -42,6 +43,8 @@ const formDataSchema = new Schema<DBFormData>({
     },
   ],
   owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, default: null },
+  hasElemPrivileges: { type: Boolean },
+  privileges: formDataPrivilegesSchema,
   data: [
     {
       _id: false,
