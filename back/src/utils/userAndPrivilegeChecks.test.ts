@@ -1,7 +1,7 @@
 import type { FastifyRequest } from 'fastify';
 import mongoose, { Types } from 'mongoose';
 
-import { checkPrivilege, getUserData } from './userAndPrivilegeChecks';
+import { isPrivBlocked, getUserData } from './userAndPrivilegeChecks';
 import { closeDB, initDB } from '../core/db';
 import { createGroup, createSysAdmin, createSysDocuments, createUser } from '../test/utils';
 import type { AllPrivilegeProps } from '../dbModels/_modelTypePartials';
@@ -22,6 +22,8 @@ describe('userAndPrivilegeChecks', () => {
   });
 
   it('should get user data from request', async () => {
+    // Get userData
+    // ***********************************
     let req = {} as FastifyRequest;
     let userData = await getUserData(req);
     expect(userData).toStrictEqual({
@@ -75,48 +77,48 @@ describe('userAndPrivilegeChecks', () => {
     let req = {} as FastifyRequest;
     let userData = await getUserData(req);
     let privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
-    let isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    let privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(401);
+    expect(privBlocked?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'true' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(401);
+    expect(privBlocked?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(401);
+    expect(privBlocked?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'onlySignedIn' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(401);
+    expect(privBlocked?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'onlyPublic' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('CSRF-header is invalid or missing');
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(401);
+    expect(privBlocked?.message).toBe('CSRF-header is invalid or missing');
 
     privilege = { public: 'true', requireCsrfHeader: false } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
 
     req = { headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE } } as unknown as FastifyRequest;
     userData = await getUserData(req);
     privilege = { public: 'true' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
 
     privilege = { public: 'onlyPublic' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
 
     privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(401);
-    expect(isPrivOk?.message).toBe('Must be signed in');
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(401);
+    expect(privBlocked?.message).toBe('Must be signed in');
 
     req = {
       headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
@@ -130,21 +132,21 @@ describe('userAndPrivilegeChecks', () => {
     } as unknown as FastifyRequest;
     userData = await getUserData(req);
     privilege = { public: 'true' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
 
     privilege = { public: 'onlySignedIn' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
 
     privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
 
     privilege = { public: 'onlyPublic' } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk?.statusCode).toBe(400);
-    expect(isPrivOk?.message).toBe('Cannot be signed in to access route');
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(400);
+    expect(privBlocked?.message).toBe('Cannot be signed in to access route');
   });
 
   it('should check privilegde: sysAdmin', async () => {
@@ -163,11 +165,150 @@ describe('userAndPrivilegeChecks', () => {
     } as unknown as FastifyRequest;
     const userData = await getUserData(req);
     let privilege = { public: 'false', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
-    let isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    let privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
 
     privilege = { public: 'onlySignedIn', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
-    isPrivOk = checkPrivilege(privilege, userData, isCsrfGood(req));
-    expect(isPrivOk).toBe(null);
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
+  });
+
+  it('should check included users', async () => {
+    const username = 'myusername';
+    const userId = await createUser(username, { verified: true });
+    const req = {
+      headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
+      session: {
+        isSignedIn: true,
+        username: username,
+        userId,
+        agentId: '',
+        cookie: {},
+      },
+    } as unknown as FastifyRequest;
+    const userData = await getUserData(req);
+
+    let privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
+    let privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(403);
+    expect(privBlocked?.message).toBe('No privileges');
+
+    privilege = { public: 'false', users: [new Types.ObjectId()] } as Partial<AllPrivilegeProps>;
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(403);
+    expect(privBlocked?.message).toBe('No privileges');
+
+    privilege = { public: 'false', users: [userId] } as Partial<AllPrivilegeProps>;
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
+  });
+
+  it('should check included groups', async () => {
+    const username = 'myusername';
+    const userId = await createUser(username, { verified: true });
+    const adminId = await createSysAdmin();
+    const groupId = await createGroup('mygroup', adminId, [userId]);
+    const req = {
+      headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
+      session: {
+        isSignedIn: true,
+        username: username,
+        userId,
+        agentId: '',
+        cookie: {},
+      },
+    } as unknown as FastifyRequest;
+    const userData = await getUserData(req);
+
+    let privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
+    let privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(403);
+    expect(privBlocked?.message).toBe('No privileges');
+
+    privilege = { public: 'false', groups: [new Types.ObjectId()] } as Partial<AllPrivilegeProps>;
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(403);
+    expect(privBlocked?.message).toBe('No privileges');
+
+    privilege = { public: 'false', groups: [groupId] } as Partial<AllPrivilegeProps>;
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
+  });
+
+  it('should reject excluded user', async () => {
+    const username = 'myusername';
+    const userId = await createUser(username, { verified: true });
+    const req = {
+      headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
+      session: {
+        isSignedIn: true,
+        username: username,
+        userId,
+        agentId: '',
+        cookie: {},
+      },
+    } as unknown as FastifyRequest;
+    const userData = await getUserData(req);
+
+    let privilege = {
+      public: 'false',
+      users: [userId],
+      excludeUsers: [userId],
+    } as Partial<AllPrivilegeProps>;
+    let privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(403);
+    expect(privBlocked?.message).toBe('User in excluded users');
+
+    privilege = {
+      public: 'false',
+      users: [userId],
+      excludeUsers: [],
+    } as Partial<AllPrivilegeProps>;
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
+  });
+
+  it('should reject when user belongs to excluded group', async () => {
+    const username = 'myusername';
+    const userId = await createUser(username, { verified: true });
+    const adminId = await createSysAdmin();
+    const groupId = await createGroup('mygroup', adminId, [userId]);
+    const req = {
+      headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
+      session: {
+        isSignedIn: true,
+        username: username,
+        userId,
+        agentId: '',
+        cookie: {},
+      },
+    } as unknown as FastifyRequest;
+    const userData = await getUserData(req);
+
+    let privilege = {
+      public: 'false',
+      users: [userId],
+      excludeGroups: [groupId],
+    } as Partial<AllPrivilegeProps>;
+    let privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(403);
+    expect(privBlocked?.message).toBe('User in excluded group');
+
+    privilege = {
+      public: 'false',
+      groups: [groupId],
+      excludeGroups: [groupId],
+    } as Partial<AllPrivilegeProps>;
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked?.statusCode).toBe(403);
+    expect(privBlocked?.message).toBe('User in excluded group');
+
+    privilege = {
+      public: 'false',
+      groups: [groupId],
+      excludeGroups: [],
+    } as Partial<AllPrivilegeProps>;
+    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
   });
 });

@@ -9,7 +9,7 @@ import { errors } from '../../core/errors';
 import { apiRoot } from '../../core/app';
 import { apiVersion } from '../../core/apis';
 import { isCsrfGood } from '../../hooks/csrf';
-import { getUserData } from '../../utils/userAndPrivilegeChecks';
+import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -56,35 +56,9 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   if (getForm) {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-    if (privilege?.privilegeAccess && userData.userId) {
-      // Check CSRF
-      if (privilege.privilegeAccess.requireCsrfHeader && !csrfIsGood) {
-        // return false;
-      }
-      // Check public
-      if (
-        ((privilege.privilegeAccess.public === 'false' ||
-          privilege.privilegeAccess.public === 'onlySignedIn') &&
-          !userData.isSignedIn) ||
-        (privilege.privilegeAccess.public === 'onlyPublic' && userData.isSignedIn)
-      ) {
-        // return false;
-      }
-      // Check if user is a sysAdmin
-      if (!userData.isSysAdmin) {
-        // Check excluded users
-        if (privilege.privilegeAccess.excludeUsers.includes(userData.userId)) {
-          // return false
-        }
-        // Check excluded groups (compare two arrays and see if none match)
-
-        // Check included users
-
-        // Check included groups
-      }
-      // return true;
+    if (privilege && !isPrivBlocked(privilege.privilegeAccess, userData, csrfIsGood)) {
+      returnObject['$form'] = form.form;
     }
-    returnObject['$form'] = form.form;
   }
 
   let formData = null,
@@ -109,7 +83,6 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   console.log(
     'TADAAAAAAAAAAA GET',
     formData,
-    csrfIsGood,
     canBeFlat,
     elemId,
     flat,
