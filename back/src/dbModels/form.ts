@@ -9,9 +9,14 @@ import {
 import type { Edited, FormDataOwner, FormDataPrivileges, FormElem } from './_modelTypePartials';
 
 export interface DBForm {
+  // Mongo ID
   _id?: Types.ObjectId;
   id?: Types.ObjectId;
+
+  // Council simpleId
   simpleId: string;
+
+  // Metadata and logs
   name: string;
   description: string;
   created: {
@@ -21,21 +26,38 @@ export interface DBForm {
   edited: Edited;
   systemDocument: boolean;
   owner: Types.ObjectId;
+
+  // API url
   url: string;
+
+  // Form
   form: {
+    // Form metadata
     formTitle?: { [key: string]: string };
     formTitleLangKey?: string;
     formText?: { [key: string]: string };
     formTextLangKey?: string;
     classes?: string[];
+
+    // Whether the formElems' order can be changed or not
     lockOrder?: boolean;
+
+    // Form elements
     formElems: FormElem[];
   };
+
+  // Whether the form can be sent with only partial payload
   disablePartialSaving?: boolean;
-  maxDataOwnerItems?: number;
+
+  // How many documents can be sent with this form per user/owner (must be signed in)
+  // Usually this is either undefined or 1 (undefined = infinite)
+  maxDataOwnerDocs?: number;
+
+  // Form data owner
   formDataOwner: FormDataOwner;
+
+  // Default privileges to be passed to the formData document
   formDataDefaultPrivileges: FormDataPrivileges;
-  formDataPrivilegesAreIdentical: boolean;
 }
 
 const formSchema = new Schema<DBForm>({
@@ -68,10 +90,9 @@ const formSchema = new Schema<DBForm>({
     formElems: [formElemDbSchema],
   },
   disablePartialSaving: { type: Boolean },
-  maxDataOwnerItems: { type: Number },
+  maxDataOwnerDocs: { type: Number },
   formDataOwner: { type: String, required: true, default: 'none' },
   formDataDefaultPrivileges: formDataPrivilegesSchema,
-  formDataPrivilegesAreIdentical: { type: Boolean },
 });
 
 formSchema.set('toJSON', {

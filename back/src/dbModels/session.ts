@@ -4,10 +4,15 @@ import { simpleIdDBSchema } from './_schemaPartials';
 import { getConfig } from '../core/config';
 
 export interface Session {
+  // Whether the current user is signed in or not
   isSignedIn: boolean;
+
+  // user and client data
   username: string;
   userId: Types.ObjectId;
   agentId: string;
+
+  // Cookie
   cookie: {
     path?: string;
     secure?: boolean | 'auto';

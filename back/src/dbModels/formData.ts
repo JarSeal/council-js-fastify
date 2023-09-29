@@ -4,24 +4,46 @@ import { simpleIdDBSchema, dateDBSchema, formDataPrivilegesSchema } from './_sch
 import type { Edited, FormDataPrivileges, FormDataValueType } from './_modelTypePartials';
 
 export interface DBFormData {
+  // Mongo ID
   _id?: Types.ObjectId;
   id?: Types.ObjectId;
+
+  // Form ID (simpleId)
   formId: string;
+
+  // API url
   url: string;
+
+  // Logs and owner
   created: {
     user: Types.ObjectId | null;
     date: Date;
   };
   edited: Edited;
   owner: Types.ObjectId;
-  hasElemPrivileges: boolean;
+
+  // Whether elements' have specific privileges that need to be checked (optimisation)
+  hasElemPrivileges?: boolean;
+
+  // Privileges for all elements, but these are overridden if element has specific privileges
   privileges: FormDataPrivileges;
+
+  // Form element data
   data: {
+    // Element Id (simpleId)
     elemId: string;
+
+    // Order number (this is normalised for partial data sets that are returned)
     orderNr: number;
+
+    // Actual data value
     value: unknown;
+
+    // Data value type
     valueType: FormDataValueType;
-    privileges: FormDataPrivileges;
+
+    // Element specific privileges
+    privileges?: FormDataPrivileges;
   }[];
 }
 

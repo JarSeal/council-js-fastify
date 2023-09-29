@@ -56,12 +56,8 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   if (getForm) {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-    const privError = !isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
-    if (privError) {
-      returnObject['$error'] = privError;
-    } else {
-      returnObject['$form'] = form.form;
-    }
+    const privError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
+    returnObject['$form'] = privError?.code || form.form;
   }
 
   let formData = null,

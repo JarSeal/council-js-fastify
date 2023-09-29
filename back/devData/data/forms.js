@@ -22,7 +22,6 @@ const getFormConfigs = async () => {
           edit: { groups: [basicUsersId] },
           delete: { groups: [basicUsersId] },
         },
-        formDataPrivilegesAreIdentical: true,
         privileges: [
           {
             priCategoryId: 'form',
@@ -365,8 +364,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
   };
 
   if (opts?.formDataOwner) form.formDataOwner = opts.formDataOwner;
-  if (opts?.formDataPrivilegesAreIdentical)
-    form.formDataPrivilegesAreIdentical = opts.formDataPrivilegesAreIdentical;
+  if (opts?.hasElemPrivileges) form.hasElemPrivileges = opts.hasElemPrivileges;
   const privileges = {
     read: {
       public: 'false',

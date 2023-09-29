@@ -54,24 +54,44 @@ export type FormDataPrivileges = {
 export type FormDataOwner = 'none' | 'user' | Types.ObjectId;
 
 export type FormElem = {
-  _id?: boolean;
+  // Form element ID (simpleId)
   elemId: string;
+
+  // Order number
   orderNr: number;
+
+  // Element type
   elemType: FormElemType;
-  classes?: string[];
-  elemData?: { [key: string]: unknown };
+
+  // Value type
   valueType: FormDataValueType;
+
+  // CSS classes
+  classes?: string[];
+
+  // Specific element type element data
+  elemData?: { [key: string]: unknown };
+
+  // Label
   label?: { [key: string]: string };
   labelLangKey?: string;
+
+  // Validation
   required: boolean;
   validationRegExp?: string[];
   mustMatchValue?: string;
   validationFn?: string;
+
+  // All possible errors to be shown in the client
   inputErrors: {
     errorId: string;
     message?: { [langKey: string]: string };
     messageLangKey?: string;
   }[];
+
+  // Whether to save or not save this value to formData document
   doNotSave?: boolean;
+
+  // Form data privileges
   privileges: FormDataPrivileges | null;
 };

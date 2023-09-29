@@ -5,28 +5,51 @@ import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './
 import type { Edited, Token } from './_modelTypePartials';
 
 export interface DBUser {
+  // Mongo Id
   _id?: Types.ObjectId;
   id?: Types.ObjectId;
+
+  // Council Id (in this case, this is the username)
   simpleId: string;
+
+  // Emails array, where the first item is the primary email
   emails: {
     email: string;
     verified: boolean;
     token: Token;
     added: Date;
   }[];
+
+  // Password
   passwordHash: string;
+
+  // Logs
   created: {
     user: Types.ObjectId | null;
     publicForm: boolean;
     date: Date;
   };
   edited: Edited;
+
+  // Only the super admin has a system document
   systemDocument?: boolean;
+
+  // Security settings
   security: {
+    // Force a pass change after next login
     forcePassChange?: boolean;
+
+    // Failed login attempts count, this is reset after a successfull
+    // login or when the cool down period has ended
     loginAttempts?: number;
+
+    // Cool down started time
     coolDownStarted?: Date | null;
+
+    // Whether the user is under cool down or not
     isUnderCoolDown?: boolean;
+
+    // Login logs
     lastLoginAttempts: {
       date: Date;
       agentId: string;
