@@ -37,6 +37,11 @@ export const mongoIdArraySchema = [
   },
 ];
 
+export const transTextDbSchema = {
+  langs: { type: Object },
+  langKey: { type: String },
+};
+
 export const basicPrivilegePropsSchema = {
   users: mongoIdArraySchema,
   groups: mongoIdArraySchema,
@@ -65,8 +70,7 @@ export const formElemDbSchema = {
   valueType: { type: String, required: true, default: 'unknown' },
   classes: [{ _id: false, type: String }],
   elemData: { type: Object },
-  label: { type: Object },
-  labelLangKey: { type: String },
+  label: transTextDbSchema,
   required: { type: Boolean },
   validationRegExp: { type: String },
   mustMatchValue: { type: String },
@@ -74,8 +78,7 @@ export const formElemDbSchema = {
   inputErrors: [
     {
       errorId: String,
-      message: Object,
-      messageLangKey: String,
+      message: transTextDbSchema,
     },
   ],
   doNotSave: { type: Boolean, default: false },

@@ -25,7 +25,7 @@ module.exports = [
     owner: null,
     url: '/api/v1/login',
     form: {
-      formTitleLangKey: 'Login',
+      formTitle: { langKey: 'Login' },
       formElems: [
         {
           elemId: 'loginMethod',
@@ -35,23 +35,23 @@ module.exports = [
             defaultValue: 'username',
             options: [
               {
-                labelLangKey: 'Username',
+                label: { langKey: 'Username' },
                 value: 'username',
               },
               {
-                labelLangKey: 'Email',
+                label: { langKey: 'Email' },
                 value: 'email',
               },
             ],
           },
-          labelLangKey: 'Login method',
+          label: { langKey: 'Login method' },
           required: true,
         },
         {
           elemId: 'usernameOrEmail',
           orderNr: 1,
           elemType: 'inputText',
-          labelLangKey: 'Username',
+          label: { langKey: 'Username or Email' },
           required: true,
         },
         {
@@ -59,7 +59,7 @@ module.exports = [
           orderNr: 2,
           elemType: 'inputText',
           elemData: { password: true },
-          labelLangKey: 'Password',
+          label: { langKey: 'Password' },
           required: true,
         },
         {
@@ -106,7 +106,7 @@ module.exports = [
     owner: null,
     url: '/api/v1/publicsignup',
     form: {
-      formTitleLangKey: 'Sign up',
+      formTitle: { langKey: 'Sign up' },
       formElems: [
         {
           elemId: 'username',
@@ -116,14 +116,15 @@ module.exports = [
             minLength: getConfig('user.minUsernameLength', 2),
             maxLength: getConfig('user.maxUsernameLength', 32),
           },
-          labelLangKey: 'Username',
+          label: { langKey: 'Username' },
           required: true,
           validationRegExp: simpleIdRegex,
           errors: [
             {
               errorId: 'validationRegExp',
-              messageLangKey:
-                'Invalid input, only letters (a-z), numbers, "-", and "_" are allowed.',
+              message: {
+                langKey: 'Invalid input, only letters (a-z), numbers, "-", and "_" are allowed.',
+              },
             },
           ],
         },
@@ -132,13 +133,13 @@ module.exports = [
           orderNr: 1,
           elemType: 'inputText',
           elemData: { email: true },
-          labelLangKey: 'E-mail',
+          label: { langKey: 'E-mail' },
           required: true,
           mustMatchValue: 'emailAgain',
           errors: [
             {
               errorId: 'mustMatchValue',
-              messageLangKey: 'E-mails do not match',
+              message: { langKey: 'E-mails do not match' },
             },
           ],
         },
@@ -147,7 +148,7 @@ module.exports = [
           orderNr: 2,
           elemType: 'inputText',
           elemData: { email: true },
-          labelLangKey: 'E-mail again',
+          label: { langKey: 'E-mail again' },
           required: true,
           mustMatchValue: 'email',
           errors: [
@@ -165,19 +166,21 @@ module.exports = [
             minLength: getConfig('user.minPassLength'),
             maxLength: getConfig('user.maxPassLength'),
           },
-          labelLangKey: 'Password',
+          label: { langKey: 'Password' },
           required: true,
           validationRegExp: getConfig('user.passRegExp'),
           mustMatchValue: 'passAgain',
           errors: [
             {
               errorId: 'validationRegExp',
-              messageLangKey:
-                'Password must contain at least: lower and upper case, number, special character (!#$%&?@* )',
+              message: {
+                langKey:
+                  'Password must contain at least: lower and upper case, number, special character (!#$%&?@* )',
+              },
             },
             {
               errorId: 'mustMatchValue',
-              messageLangKey: 'Passwords do not match',
+              message: { langKey: 'Passwords do not match' },
             },
           ],
         },
@@ -186,7 +189,7 @@ module.exports = [
           orderNr: 4,
           elemType: 'inputText',
           elemData: { password: true },
-          labelLangKey: 'Password again',
+          label: { langKey: 'Password again' },
           required: true,
           mustMatchValue: 'pass',
           errors: [

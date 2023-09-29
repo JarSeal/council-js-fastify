@@ -10,6 +10,11 @@ export type Token = {
   tokenId?: string | null;
 };
 
+export type TransText = {
+  langs?: { [key: string]: string };
+  langKey?: string;
+};
+
 export type FormElemType =
   | 'text'
   | 'button'
@@ -73,8 +78,7 @@ export type FormElem = {
   elemData?: { [key: string]: unknown };
 
   // Label
-  label?: { [key: string]: string };
-  labelLangKey?: string;
+  label?: TransText;
 
   // Validation
   required: boolean;
@@ -85,8 +89,7 @@ export type FormElem = {
   // All possible errors to be shown in the client
   inputErrors: {
     errorId: string;
-    message?: { [langKey: string]: string };
-    messageLangKey?: string;
+    message?: TransText;
   }[];
 
   // Whether to save or not save this value to formData document

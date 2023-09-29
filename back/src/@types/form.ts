@@ -18,6 +18,13 @@ export const valueTypeSchema = Type.Union([
 
 export const mongoIdArraySchema = Type.Array(Type.Unknown());
 
+export const transTextSchema = Type.Optional(
+  Type.Object({
+    langs: Type.Optional(Type.Object(Type.Record(Type.String(), Type.String()))),
+    langKey: Type.Optional(Type.String()),
+  })
+);
+
 export const basicPrivilegePropsSchema = Type.Object({
   users: Type.Optional(mongoIdArraySchema),
   groups: Type.Optional(mongoIdArraySchema),
@@ -50,8 +57,7 @@ export const formElemSchema = Type.Object({
   valueType: valueTypeSchema,
   classes: Type.Optional(Type.Array(Type.String())),
   elemData: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
-  label: Type.Optional(Type.Record(Type.String(), Type.String())),
-  labelLangKey: Type.Optional(Type.String()),
+  label: transTextSchema,
   required: Type.Boolean(),
   validationRegExp: Type.Optional(Type.String()),
   mustMatchValue: Type.Optional(Type.String()),
@@ -60,8 +66,7 @@ export const formElemSchema = Type.Object({
     Type.Array(
       Type.Object({
         errorId: Type.String(),
-        message: Type.Optional(Type.Record(Type.String(), Type.String())),
-        messageLangKey: Type.Optional(Type.String()),
+        message: transTextSchema,
       })
     )
   ),
@@ -70,10 +75,8 @@ export const formElemSchema = Type.Object({
 });
 
 export const formFormSchema = Type.Object({
-  formTitle: Type.Optional(Type.Record(Type.String(), Type.String())),
-  formTitleLangKey: Type.Optional(Type.String()),
-  formText: Type.Optional(Type.Record(Type.String(), Type.String())),
-  formTextLangKey: Type.Optional(Type.String()),
+  formTitle: transTextSchema,
+  formText: transTextSchema,
   classes: Type.Optional(Type.Array(Type.String())),
   lockOrder: Type.Optional(Type.Boolean()),
   formElems: Type.Array(formElemSchema),

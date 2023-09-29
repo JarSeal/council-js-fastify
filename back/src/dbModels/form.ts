@@ -5,8 +5,15 @@ import {
   dateDBSchema,
   formElemDbSchema,
   formDataPrivilegesSchema,
+  transTextDbSchema,
 } from './_schemaPartials';
-import type { Edited, FormDataOwner, FormDataPrivileges, FormElem } from './_modelTypePartials';
+import type {
+  Edited,
+  FormDataOwner,
+  FormDataPrivileges,
+  FormElem,
+  TransText,
+} from './_modelTypePartials';
 
 export interface DBForm {
   // Mongo ID
@@ -33,10 +40,8 @@ export interface DBForm {
   // Form
   form: {
     // Form metadata
-    formTitle?: { [key: string]: string };
-    formTitleLangKey?: string;
-    formText?: { [key: string]: string };
-    formTextLangKey?: string;
+    formTitle?: TransText;
+    formText?: TransText;
     classes?: string[];
 
     // Whether the formElems' order can be changed or not
@@ -81,10 +86,8 @@ const formSchema = new Schema<DBForm>({
   owner: { type: Schema.Types.ObjectId, required: true },
   url: { type: String, unique: true, required: true },
   form: {
-    formTitle: Object,
-    formTitleLangKey: String,
-    formText: Object,
-    formTextLangKey: String,
+    formTitle: transTextDbSchema,
+    formText: transTextDbSchema,
     classes: [{ _id: false, type: String }],
     lockOrder: { type: Boolean, default: false },
     formElems: [formElemDbSchema],

@@ -52,7 +52,7 @@ const getFormConfigs = async () => {
             elemType: 'inputText',
             valueType: createValueType('inputText'),
             elemData: createElemData('inputText'),
-            labelLangKey: 'Label 1',
+            label: { langKey: 'Label 1' },
             required: true,
           },
           {
@@ -61,7 +61,7 @@ const getFormConfigs = async () => {
             elemType: 'inputText',
             valueType: createValueType('inputText'),
             elemData: createElemData('inputText'),
-            labelLangKey: 'Label 2',
+            label: { langKey: 'Label 2' },
             required: true,
             privileges: {
               read: { excludeGroups: [basicUsersId] },
@@ -261,25 +261,25 @@ const createElemData = (elemType) => {
     case 'inputCheckboxGroup':
       return {
         options: [
-          { labelLangKey: 'Option 1', value: 'value1' },
-          { labelLangKey: 'Option 2', value: 'value2' },
-          { labelLangKey: 'Option 3', value: 'value3' },
+          { label: { langKey: 'Option 1' }, value: 'value1' },
+          { label: { langKey: 'Option 2' }, value: 'value2' },
+          { label: { langKey: 'Option 3' }, value: 'value3' },
         ],
       };
     case 'inputRadioGroup':
       return {
         options: [
-          { labelLangKey: 'Option 1', value: 'value1' },
-          { labelLangKey: 'Option 2', value: 'value2' },
-          { labelLangKey: 'Option 3', value: 'value3' },
+          { label: { langKey: 'Option 1' }, value: 'value1' },
+          { label: { langKey: 'Option 2' }, value: 'value2' },
+          { label: { langKey: 'Option 3' }, value: 'value3' },
         ],
       };
     case 'inputDropdown':
       return {
         options: [
-          { labelLangKey: 'Option 1', value: 'value1' },
-          { labelLangKey: 'Option 2', value: 'value2' },
-          { labelLangKey: 'Option 3', value: 'value3' },
+          { label: { langKey: 'Option 1' }, value: 'value1' },
+          { label: { langKey: 'Option 2' }, value: 'value2' },
+          { label: { langKey: 'Option 3' }, value: 'value3' },
         ],
       };
     case 'inputText':
@@ -327,7 +327,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
         elemType: formElemTypes[formElemIndex],
         valueType: createValueType(formElemTypes[formElemIndex]),
         elemData: createElemData(formElemTypes[formElemIndex]),
-        labelLangKey: 'Label ' + (i + 1),
+        label: { langKey: 'Label ' + (i + 1) },
         required: Math.round(Math.random()) > 0.5,
         // @TODO: add validationRegExt, mustMatchValue, validationFn
         doNotSave: formElemTypes[formElemIndex] === 'text',
@@ -342,7 +342,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
     elemType: 'button',
     valueType: 'none',
     elemData: { buttonType: 'reset' },
-    labelLangKey: 'Reset',
+    label: { langKey: 'Reset' },
     required: false,
     doNotSave: true,
   });
@@ -352,14 +352,14 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
     elemType: 'button',
     valueType: 'none',
     elemData: { buttonType: 'submit' },
-    labelLangKey: 'Save',
+    label: { langKey: 'Save' },
     required: false,
     doNotSave: true,
   });
 
   form.form = {
-    formTitleLangKey: 'Form title',
-    formTextLangKey: 'Form text...',
+    formTitle: { langKey: 'Form title for ' + formId },
+    formText: { langKey: 'Form text...' },
     formElems: formElems,
   };
 
