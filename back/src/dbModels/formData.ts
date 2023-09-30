@@ -43,7 +43,7 @@ export interface DBFormData {
     valueType: FormDataValueType;
 
     // Element specific privileges
-    privileges?: FormDataPrivileges;
+    privileges?: Omit<FormDataPrivileges, 'create'>;
   }[];
 }
 

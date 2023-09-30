@@ -9,8 +9,7 @@ import { errors } from '../../core/errors';
 import { apiRoot } from '../../core/app';
 import { apiVersion } from '../../core/apis';
 import { isCsrfGood } from '../../hooks/csrf';
-import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
-import type { FormData } from '../../@types/formData';
+import { type UserData, getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -63,8 +62,8 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
 
   if (dataId) {
     let formData = null,
-      oneItem = false,
-      data;
+      oneItem = false;
+    const data = [];
 
     // @TODO: set a upper limit of maximum dataItems per request
     const MAX_LIMIT = 500;
@@ -83,13 +82,28 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
       // Get one formData item
       formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
       // @TODO: check formData privileges
-      data =
-        formData?.data.map((elem) => ({
-          elemId: elem.elemId,
-          orderNr: elem.orderNr,
-          value: elem.value,
-          valueType: elem.valueType,
-        })) || {};
+      const mainPrivileges = {
+        ...form.formDataDefaultPrivileges.read,
+        ...(formData?.privileges?.read || {}),
+      };
+      const mainPrivError = isPrivBlocked(mainPrivileges, userData, csrfIsGood);
+      const rawData = formData?.data || [];
+      for (let i = 0; i < rawData.length; i++) {
+        const elem = rawData[i];
+        let privError = null;
+        if (elem.privileges?.read) {
+          const elemPrivileges = { ...mainPrivileges, ...elem.privileges.read };
+          privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
+        }
+        if (!privError && !mainPrivError) {
+          data.push({
+            elemId: elem.elemId,
+            orderNr: i,
+            value: elem.value,
+            valueType: elem.valueType,
+          });
+        }
+      }
       oneItem = true;
     }
 
@@ -104,12 +118,16 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   return res.send(returnObject);
 };
 
-const checkAndReturnData = (formData: DBFormData | DBFormData[]) => {
-  const isArray = Array.isArray(formData);
-  if (!formData || (isArray && !formData.length)) return {};
+// const checkAndReturnData = (
+//   formData: DBFormData | DBFormData[],
+//   userData: UserData,
+//   csrfIsGood: boolean
+// ) => {
+//   const isArray = Array.isArray(formData);
+//   if (!formData || (isArray && !formData.length)) return {};
 
-  if (Array.isArray(formData)) {
-  } else {
-    const privileges = formData.privileges;
-  }
-};
+//   if (isArray) {
+//   } else {
+//     const privError = isPrivBlocked(formData.privileges, userData, csrfIsGood);
+//   }
+// };
