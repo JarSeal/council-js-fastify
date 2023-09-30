@@ -10,6 +10,7 @@ import { apiRoot } from '../../core/app';
 import { apiVersion } from '../../core/apis';
 import { isCsrfGood } from '../../hooks/csrf';
 import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
+import type { FormData } from '../../@types/formData';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -52,7 +53,7 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   // Get user data
   const userData = await getUserData(req);
 
-  const returnObject: GetReply = {};
+  let returnObject: GetReply = {};
   if (getForm) {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
@@ -60,37 +61,55 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     returnObject['$form'] = privError?.code || form.form;
   }
 
-  let formData = null,
-    canBeFlat = false;
-  if (dataId && dataId[0] === 'all') {
-    // Get all data
-    // @TODO: set a upper limit of maximum dataItems per request (implement offset and limit)
+  if (dataId) {
+    let formData = null,
+      oneItem = false,
+      data;
+
+    // @TODO: set a upper limit of maximum dataItems per request
     const MAX_LIMIT = 500;
-    // @TODO: add populate methods
-    formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId }).limit(MAX_LIMIT);
-  } else if (Array.isArray(dataId) && dataId?.length > 1) {
-    // Get specific formData items
-    const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
-    formData = await DBFormDataModel.find<DBFormData[]>({
-      $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
-    });
-  } else if (dataId) {
-    // Get one formData item
-    formData = await DBFormDataModel.findById<DBFormData>(dataId[0]);
-    canBeFlat = true;
+    const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
+
+    if (dataId && dataId[0] === 'all') {
+      // Get all data
+      formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId }).limit(limiter);
+    } else if (Array.isArray(dataId) && dataId?.length > 1) {
+      // Get specific formData items
+      const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
+      formData = await DBFormDataModel.find<DBFormData[]>({
+        $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
+      }).limit(limiter);
+    } else if (dataId) {
+      // Get one formData item
+      formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
+      // @TODO: check formData privileges
+      data =
+        formData?.data.map((elem) => ({
+          elemId: elem.elemId,
+          orderNr: elem.orderNr,
+          value: elem.value,
+          valueType: elem.valueType,
+        })) || {};
+      oneItem = true;
+    }
+
+    if (oneItem && flat) {
+      returnObject = { ...returnObject, ...data };
+    } else {
+      returnObject['data'] = data;
+    }
   }
 
-  console.log(
-    'TADAAAAAAAAAAA GET',
-    formData,
-    canBeFlat,
-    elemId,
-    flat,
-    offset,
-    limit,
-    orderBy,
-    orderDir,
-    s
-  );
+  console.log('TADAAAAAAAAAAA GET', elemId, flat, offset, limit, orderBy, orderDir, s);
   return res.send(returnObject);
+};
+
+const checkAndReturnData = (formData: DBFormData | DBFormData[]) => {
+  const isArray = Array.isArray(formData);
+  if (!formData || (isArray && !formData.length)) return {};
+
+  if (Array.isArray(formData)) {
+  } else {
+    const privileges = formData.privileges;
+  }
 };
