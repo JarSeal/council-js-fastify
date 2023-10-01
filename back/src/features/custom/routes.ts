@@ -2,8 +2,6 @@ import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fa
 import { type Static, Type } from '@sinclair/typebox';
 
 import { customGet, customPost } from './handlers';
-import { formFormSchema } from '../../@types/form';
-import { errorResponseSchema, formDataSchema } from '../../@types/formData';
 
 export const postBodySchema = Type.Object({
   formId: Type.String(),
@@ -15,22 +13,7 @@ export interface CustomPostRoute extends RouteGenericInterface {
   readonly Reply: { ok: boolean } | FastifyError;
 }
 
-export const getReplySchema = Type.Union([
-  Type.Optional(
-    Type.Object({
-      $form: Type.Optional(formFormSchema),
-      $error: Type.Optional(errorResponseSchema),
-      data: Type.Optional(Type.Union([Type.Array(formDataSchema), formDataSchema])),
-    })
-  ),
-  Type.Optional(
-    Type.Object({
-      $form: Type.Optional(formFormSchema),
-      $error: Type.Optional(errorResponseSchema),
-      ...formDataSchema.schema,
-    })
-  ),
-]);
+export const getReplySchema = Type.Record(Type.String(), Type.Unknown());
 export type GetReply = Static<typeof getReplySchema>;
 
 export const getQuerystringSchema = Type.Object({

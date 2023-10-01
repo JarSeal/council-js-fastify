@@ -1,15 +1,15 @@
-import type { RouteHandler } from 'fastify';
+import type { FastifyError, RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
 
 import type { CustomGetRoute, CustomPostRoute, GetReply } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
+import type { AllPrivilegeProps } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';
-import { apiRoot } from '../../core/app';
-import { apiVersion } from '../../core/apis';
 import { isCsrfGood } from '../../hooks/csrf';
 import { type UserData, getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
+import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 
 export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   const body = req.body;
@@ -28,9 +28,17 @@ export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
   return res.send({ ok: true });
 };
 
+type Data = {
+  elemId: string;
+  orderNr: number;
+  value: unknown;
+  valueType: string;
+};
+
 export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
+  // Query string
   const { getForm, dataId, elemId, flat, offset, limit, orderBy, orderDir, s } = req.query;
-  const url = req.url.split('?')[0].replace(apiRoot + apiVersion, '');
+  const url = getApiPathFromReqUrl(req.url);
 
   if (!getForm && !dataId) {
     return res.send(
@@ -40,7 +48,7 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     );
   }
 
-  // Check that form exists
+  // Get form and check that form exists
   const form = await DBFormModel.findOne<DBForm>({ url });
   if (!form) {
     return res.send(new errors.NOT_FOUND(`Could not find form with url "${req.url}"`));
@@ -52,7 +60,7 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   // Get user data
   const userData = await getUserData(req);
 
-  let returnObject: GetReply = {};
+  const returnObject: GetReply = {};
   if (getForm) {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
@@ -63,52 +71,71 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   if (dataId) {
     let formData = null,
       oneItem = false;
-    const data = [];
+    const data: Data[][] = [];
 
     // @TODO: set a upper limit of maximum dataItems per request
     const MAX_LIMIT = 500;
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
 
     if (dataId && dataId[0] === 'all') {
-      // Get all data
-      formData = await DBFormDataModel.find<DBFormData[]>({ formId: form.simpleId }).limit(limiter);
+      // Get all data (respects possible search, orderBy, orderDir, offset, and limit)
+      // *********************************************
+      formData = await DBFormDataModel.find<DBFormData>({ formId: form.simpleId }).limit(limiter);
     } else if (Array.isArray(dataId) && dataId?.length > 1) {
-      // Get specific formData items
+      // Get specific multiple formData items (respects possible search, orderBy, orderDir, offset, and limit)
+      // *********************************************
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
-      formData = await DBFormDataModel.find<DBFormData[]>({
+      formData = await DBFormDataModel.find<DBFormData>({
         $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
       }).limit(limiter);
+
+      // Check multiple formData privileges
+      for (let i = 0; i < formData.length; i++) {
+        const fd = formData[i];
+        const mainPrivileges = {
+          ...form.formDataDefaultPrivileges.read,
+          ...(fd.privileges?.read || {}),
+        };
+        const mainPrivError = isPrivBlocked(mainPrivileges, userData, csrfIsGood);
+        const rawData = fd.data || [];
+        const dataSet = checkAndSetReadData(
+          rawData,
+          mainPrivileges,
+          mainPrivError,
+          userData,
+          csrfIsGood
+        );
+        if (dataSet.length) {
+          data.push(dataSet);
+        }
+      }
     } else if (dataId) {
+      oneItem = true;
       // Get one formData item
+      // *********************************************
       formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
-      // @TODO: check formData privileges
+
+      // Check formData privileges
       const mainPrivileges = {
         ...form.formDataDefaultPrivileges.read,
         ...(formData?.privileges?.read || {}),
       };
       const mainPrivError = isPrivBlocked(mainPrivileges, userData, csrfIsGood);
       const rawData = formData?.data || [];
-      for (let i = 0; i < rawData.length; i++) {
-        const elem = rawData[i];
-        let privError = null;
-        if (elem.privileges?.read) {
-          const elemPrivileges = { ...mainPrivileges, ...elem.privileges.read };
-          privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
-        }
-        if (!privError && !mainPrivError) {
-          data.push({
-            elemId: elem.elemId,
-            orderNr: i,
-            value: elem.value,
-            valueType: elem.valueType,
-          });
-        }
-      }
-      oneItem = true;
+      const dataSet = checkAndSetReadData(
+        rawData,
+        mainPrivileges,
+        mainPrivError,
+        userData,
+        csrfIsGood
+      );
+      data.push(dataSet);
     }
 
     if (oneItem && flat) {
-      returnObject = { ...returnObject, ...data };
+      for (let i = 0; i < data.length; i++) {
+        returnObject[data[0][i].elemId] = data[0][i].value;
+      }
     } else {
       returnObject['data'] = data;
     }
@@ -118,16 +145,31 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
   return res.send(returnObject);
 };
 
-// const checkAndReturnData = (
-//   formData: DBFormData | DBFormData[],
-//   userData: UserData,
-//   csrfIsGood: boolean
-// ) => {
-//   const isArray = Array.isArray(formData);
-//   if (!formData || (isArray && !formData.length)) return {};
-
-//   if (isArray) {
-//   } else {
-//     const privError = isPrivBlocked(formData.privileges, userData, csrfIsGood);
-//   }
-// };
+const checkAndSetReadData = (
+  rawData: DBFormData['data'],
+  mainPrivileges: AllPrivilegeProps,
+  mainPrivError: null | FastifyError,
+  userData: UserData,
+  csrfIsGood: boolean
+): Data[] => {
+  const returnData: Data[] = [];
+  for (let i = 0; i < rawData.length; i++) {
+    const elem = rawData[i];
+    let privError = null;
+    if (elem.privileges?.read) {
+      const elemPrivileges = { ...mainPrivileges, ...elem.privileges.read };
+      privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
+    }
+    // Data can be accessed if there is not a mainPrivError or if there is,
+    // the elem has overriding elem privileges that does not have an error
+    if (!privError && (!mainPrivError || elem.privileges?.read)) {
+      returnData.push({
+        elemId: elem.elemId,
+        orderNr: i,
+        value: elem.value,
+        valueType: elem.valueType,
+      });
+    }
+  }
+  return returnData;
+};
