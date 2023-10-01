@@ -78,17 +78,24 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
 
     if (dataId && dataId[0] === 'all') {
-      // Get all data (respects possible search, orderBy, orderDir, offset, and limit)
-      // *********************************************
+      // Get all formData (respects possible search, orderBy, orderDir, offset, and limit)
+      // @TODO: implement search, orderBy, orderDir, and offset
+      // USE: https://github.com/aravindnc/mongoose-paginate-v2
       formData = await DBFormDataModel.find<DBFormData>({ formId: form.simpleId }).limit(limiter);
     } else if (Array.isArray(dataId) && dataId?.length > 1) {
       // Get specific multiple formData items (respects possible search, orderBy, orderDir, offset, and limit)
-      // *********************************************
+      // @TODO: implement search, orderBy, orderDir, and offset
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
       formData = await DBFormDataModel.find<DBFormData>({
         $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
       }).limit(limiter);
+    } else if (dataId) {
+      oneItem = true;
+      // Get one formData item
+      formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
+    }
 
+    if (Array.isArray(formData)) {
       // Check multiple formData privileges
       for (let i = 0; i < formData.length; i++) {
         const fd = formData[i];
@@ -109,13 +116,8 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
           data.push(dataSet);
         }
       }
-    } else if (dataId) {
-      oneItem = true;
-      // Get one formData item
-      // *********************************************
-      formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
-
-      // Check formData privileges
+    } else {
+      // Check single formData privileges
       const mainPrivileges = {
         ...form.formDataDefaultPrivileges.read,
         ...(formData?.privileges?.read || {}),
@@ -136,6 +138,8 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
       for (let i = 0; i < data.length; i++) {
         returnObject[data[0][i].elemId] = data[0][i].value;
       }
+    } else if (oneItem) {
+      returnObject['data'] = data[0];
     } else {
       returnObject['data'] = data;
     }
