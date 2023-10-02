@@ -1,7 +1,7 @@
 import type { FastifyError, RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
 
-import type { CustomGetRoute, CustomPostRoute, GetReply } from './routes';
+import type { FormDataGetRoute, FormDataPostRoute, FormDataGetReply } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
@@ -11,7 +11,7 @@ import { isCsrfGood } from '../../hooks/csrf';
 import { type UserData, getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 
-export const customPost: RouteHandler<CustomPostRoute> = async (req, res) => {
+export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
   const body = req.body;
 
   // @TODO: get current form
@@ -35,10 +35,16 @@ type Data = {
   valueType: string;
 };
 
-export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
+export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   // Query string
   const { getForm, dataId, elemId, flat, offset, limit, orderBy, orderDir, s } = req.query;
   const url = getApiPathFromReqUrl(req.url);
+
+  // Get form and check that form exists
+  const form = await DBFormModel.findOne<DBForm>({ url });
+  if (!form) {
+    return res.send(new errors.NOT_FOUND(`Could not find form with url "${req.url}"`));
+  }
 
   if (!getForm && !dataId) {
     return res.send(
@@ -48,19 +54,13 @@ export const customGet: RouteHandler<CustomGetRoute> = async (req, res) => {
     );
   }
 
-  // Get form and check that form exists
-  const form = await DBFormModel.findOne<DBForm>({ url });
-  if (!form) {
-    return res.send(new errors.NOT_FOUND(`Could not find form with url "${req.url}"`));
-  }
-
   // Get CSRF result
   const csrfIsGood = isCsrfGood(req);
 
   // Get user data
   const userData = await getUserData(req);
 
-  const returnObject: GetReply = {};
+  const returnObject: FormDataGetReply = {};
   if (getForm) {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });

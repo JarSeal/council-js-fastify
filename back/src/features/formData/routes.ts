@@ -1,20 +1,20 @@
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 import { type Static, Type } from '@sinclair/typebox';
 
-import { customGet, customPost } from './handlers';
+import { formDataGet, formDataPost } from './handlers';
 
 export const postBodySchema = Type.Object({
   formId: Type.String(),
 });
-export type PostBody = Static<typeof postBodySchema>;
+export type FormDataPostBody = Static<typeof postBodySchema>;
 
-export interface CustomPostRoute extends RouteGenericInterface {
-  readonly Body: PostBody;
+export interface FormDataPostRoute extends RouteGenericInterface {
+  readonly Body: FormDataPostBody;
   readonly Reply: { ok: boolean } | FastifyError;
 }
 
 export const getReplySchema = Type.Record(Type.String(), Type.Unknown());
-export type GetReply = Static<typeof getReplySchema>;
+export type FormDataGetReply = Static<typeof getReplySchema>;
 
 export const getQuerystringSchema = Type.Object({
   getForm: Type.Optional(Type.Boolean()),
@@ -37,26 +37,26 @@ export const getQuerystringSchema = Type.Object({
 });
 export type GetQuerystring = Static<typeof getQuerystringSchema>;
 
-export interface CustomGetRoute extends RouteGenericInterface {
-  readonly Reply: GetReply | FastifyError;
+export interface FormDataGetRoute extends RouteGenericInterface {
+  readonly Reply: FormDataGetReply | FastifyError;
   readonly Querystring: GetQuerystring;
 }
 
-const customRoute: FastifyPluginAsync = (instance) => {
-  instance.route<CustomGetRoute>({
+const formDataRoute: FastifyPluginAsync = (instance) => {
+  instance.route<FormDataGetRoute>({
     method: 'GET',
     url: '/*',
-    handler: customGet,
+    handler: formDataGet,
     schema: {
       response: { 200: getReplySchema },
       querystring: getQuerystringSchema,
     },
   });
 
-  instance.route<CustomPostRoute>({
+  instance.route<FormDataPostRoute>({
     method: 'POST',
     url: '/*',
-    handler: customPost,
+    handler: formDataPost,
     schema: {
       body: postBodySchema,
       response: { 200: Type.Object({ ok: Type.Boolean() }) },
@@ -66,4 +66,4 @@ const customRoute: FastifyPluginAsync = (instance) => {
   return Promise.resolve();
 };
 
-export default customRoute;
+export default formDataRoute;
