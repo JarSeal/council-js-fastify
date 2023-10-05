@@ -20,7 +20,7 @@ export interface DBFormData {
     date: Date;
   };
   edited: Edited;
-  owner: Types.ObjectId;
+  owner: Types.ObjectId | null;
 
   // Whether elements' have specific privileges that need to be checked (optimisation)
   hasElemPrivileges?: boolean;
@@ -64,7 +64,7 @@ const formDataSchema = new Schema<DBFormData>({
       date: dateDBSchema,
     },
   ],
-  owner: { type: Schema.Types.ObjectId, ref: 'User', required: true, default: null },
+  owner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   hasElemPrivileges: { type: Boolean },
   privileges: formDataPrivilegesSchema,
   data: [

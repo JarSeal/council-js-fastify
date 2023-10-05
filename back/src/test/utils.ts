@@ -4,6 +4,14 @@ import { hash } from 'bcrypt';
 import DBGroupModel, { type DBGroup } from '../dbModels/group';
 import DBUserModel from '../dbModels/user';
 import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../core/config';
+import DBFormModel from '../dbModels/form';
+import type {
+  AllPrivilegeProps,
+  FormDataPrivileges,
+  FormDataValueType,
+  FormElem,
+} from '../dbModels/_modelTypePartials';
+import DBFormDataModel from '../dbModels/formData';
 
 export const csrfHeader = { headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE } };
 
@@ -136,13 +144,85 @@ export const createSysDocuments = async () => {
   sysDocumentsCreated = true;
 };
 
-// export const createForm = async (
-//   formId: string,
-//   url: string,
-//   elems: FormElem[],
-//   opts?: { owner?: Types.ObjectId }
-// ) => {
-//   const adminId = await createSysAdmin();
-// };
+export const createForm = async (
+  formId: string,
+  url: string,
+  elems: FormElem[],
+  opts?: {
+    owner?: Types.ObjectId;
+    name?: string;
+    description?: string;
+    disablePartialSaving?: boolean;
+    maxDataOwnerDocs?: number;
+    formDataOwner?: Types.ObjectId;
+    fillerIsFormDataOwner?: boolean;
+    formDataDefaultPrivileges?: AllPrivilegeProps;
+    formTitle?: string;
+    formText?: string;
+    lockOrder?: boolean;
+  }
+) => {
+  const adminId = await createSysAdmin();
 
-// export const createFormData = () => {};
+  const form = new DBFormModel({
+    simpleId: formId,
+    url,
+    name: opts?.name || 'Test from, ' + formId,
+    description: opts?.description || 'Test form description, ' + formId,
+    created: {
+      user: adminId,
+      date: Date.now(),
+    },
+    owner: opts?.owner || adminId,
+    disablePartialSaving: opts?.disablePartialSaving || false,
+    form: {
+      formTitle: opts?.formTitle || 'Form title',
+      formText: opts?.formText || 'Form text',
+      lockOrder: opts?.lockOrder || false,
+      formElems: elems,
+    },
+  });
+  if (opts?.maxDataOwnerDocs) form.maxDataOwnerDocs = opts.maxDataOwnerDocs;
+  if (opts?.formDataOwner) form.formDataOwner = opts.formDataOwner;
+  if (opts?.fillerIsFormDataOwner) form.fillerIsFormDataOwner = opts.fillerIsFormDataOwner;
+  if (opts?.formDataDefaultPrivileges) form.formDataDefaultPrivileges;
+
+  const createdForm = await form.save();
+
+  return createdForm._id;
+};
+
+export const createFormData = async (
+  formId: string,
+  url: string,
+  privileges: FormDataPrivileges,
+  data: {
+    elemId: string;
+    orderNr: number;
+    value: unknown;
+    valueType: FormDataValueType;
+    privileges?: Omit<FormDataPrivileges, 'create'>;
+  }[],
+  opts?: {
+    owner?: Types.ObjectId | 'none';
+  }
+) => {
+  const adminId = await createSysAdmin();
+
+  const formData = new DBFormDataModel({
+    formId,
+    url,
+    created: {
+      user: adminId,
+      date: Date.now(),
+    },
+    owner: opts?.owner || 'none',
+    hasElemPrivileges: Boolean(data.find((d) => d.privileges)),
+    privileges,
+    data,
+  });
+
+  const createdFormData = await formData.save();
+
+  return createdFormData._id;
+};

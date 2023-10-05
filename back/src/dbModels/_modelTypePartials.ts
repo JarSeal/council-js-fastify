@@ -56,8 +56,6 @@ export type FormDataPrivileges = {
   delete: AllPrivilegeProps;
 };
 
-export type FormDataOwner = 'none' | 'user' | Types.ObjectId;
-
 export type FormElem = {
   // Form element ID (simpleId)
   elemId: string;

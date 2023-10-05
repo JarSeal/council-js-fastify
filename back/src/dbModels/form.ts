@@ -7,13 +7,7 @@ import {
   formDataPrivilegesSchema,
   transTextDbSchema,
 } from './_schemaPartials';
-import type {
-  Edited,
-  FormDataOwner,
-  FormDataPrivileges,
-  FormElem,
-  TransText,
-} from './_modelTypePartials';
+import type { Edited, FormDataPrivileges, FormElem, TransText } from './_modelTypePartials';
 
 export interface DBForm {
   // Mongo ID
@@ -32,7 +26,7 @@ export interface DBForm {
   };
   edited: Edited;
   systemDocument: boolean;
-  owner: Types.ObjectId;
+  owner: Types.ObjectId | null;
 
   // API url
   url: string;
@@ -59,7 +53,10 @@ export interface DBForm {
   maxDataOwnerDocs?: number;
 
   // Form data owner
-  formDataOwner: FormDataOwner;
+  formDataOwner?: Types.ObjectId | null;
+
+  // Whether the formData owner is the one who fills the form (formDataOwner must be undefind or null)
+  fillerIsFormDataOwner?: boolean;
 
   // Default privileges to be passed to the formData document
   formDataDefaultPrivileges: FormDataPrivileges;
@@ -70,20 +67,18 @@ const formSchema = new Schema<DBForm>({
   name: { type: String, required: true, default: null },
   description: { type: String, required: true, default: null },
   created: {
-    user: { type: Schema.Types.ObjectId, required: true, default: null },
+    user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     date: dateDBSchema,
   },
   edited: [
     {
       _id: false,
-      user: {
-        type: Schema.Types.ObjectId,
-      },
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
       date: dateDBSchema,
     },
   ],
   systemDocument: { type: Boolean, default: false },
-  owner: { type: Schema.Types.ObjectId, required: true },
+  owner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   url: { type: String, unique: true, required: true },
   form: {
     formTitle: transTextDbSchema,
@@ -94,7 +89,8 @@ const formSchema = new Schema<DBForm>({
   },
   disablePartialSaving: { type: Boolean },
   maxDataOwnerDocs: { type: Number },
-  formDataOwner: { type: String, required: true, default: 'none' },
+  formDataOwner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+  fillerIsFormDataOwner: { type: Boolean },
   formDataDefaultPrivileges: formDataPrivilegesSchema,
 });
 
