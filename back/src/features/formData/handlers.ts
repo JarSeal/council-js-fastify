@@ -9,7 +9,7 @@ import type { AllPrivilegeProps } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
 import { type UserData, getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
-import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
+import { getApiPathFromReqUrl, getPaginationData } from '../../utils/parsingAndConverting';
 
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
   const body = req.body;
@@ -91,28 +91,48 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 
   if (dataId) {
     let formData = null,
+      paginationData = null,
       oneItem = false;
     const data: Data[][] = [];
 
     // @TODO: set a upper limit of maximum dataItems per request
     const MAX_LIMIT = 500;
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
+    const paginationOptions = {
+      offset,
+      limit: limiter,
+      collation: {
+        locale: 'en', // @TODO: add locale support
+      },
+    };
 
     if (dataId && dataId[0] === 'all') {
       // Get all formData (respects possible search, orderBy, orderDir, offset, and limit)
       // @TODO: implement search, orderBy, orderDir, and offset
       // USE: https://github.com/aravindnc/mongoose-paginate-v2
-      formData = await DBFormDataModel.find<DBFormData>({ formId: form.simpleId }).limit(limiter);
+      // formData = await DBFormDataModel.find<DBFormData>({ formId: form.simpleId }).limit(limiter);
+      const paginatedData = await DBFormDataModel.paginate<DBFormData>(
+        { formId: form.simpleId },
+        paginationOptions
+      );
+      formData = paginatedData.docs;
+      paginationData = paginatedData;
     } else if (Array.isArray(dataId) && dataId?.length > 1) {
       // Get specific multiple formData items (respects possible search, orderBy, orderDir, offset, and limit)
       // @TODO: implement search, orderBy, orderDir, and offset
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
-      formData = await DBFormDataModel.find<DBFormData>({
+      // formData = await DBFormDataModel.find<DBFormData>({
+      //   $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
+      // }).limit(limiter);
+      const paginatedData = await DBFormDataModel.paginate<DBFormData>({
         $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
-      }).limit(limiter);
+      });
+      formData = paginatedData.docs;
+      paginationData = paginatedData;
     } else if (dataId) {
       oneItem = true;
       // Get one formData item
+      // formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
       formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
     }
 
@@ -136,6 +156,9 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         if (dataSet.length) {
           data.push(dataSet);
         }
+      }
+      if (paginationData) {
+        returnObject['$pagination'] = getPaginationData(paginationData);
       }
     } else {
       // Check single formData privileges

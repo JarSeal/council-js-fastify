@@ -1,4 +1,5 @@
-import { type Types, Schema, model } from 'mongoose';
+import { type Types, type PaginateModel, Schema, model } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 import { simpleIdDBSchema, dateDBSchema, formDataPrivilegesSchema } from './_schemaPartials';
 import type { Edited, FormDataPrivileges, FormDataValueType } from './_modelTypePartials';
@@ -79,6 +80,8 @@ const formDataSchema = new Schema<DBFormData>({
   ],
 });
 
+formDataSchema.plugin(mongoosePaginate);
+
 formDataSchema.set('toJSON', {
   transform: (_, returnedObject) => {
     returnedObject.id = String(returnedObject._id);
@@ -87,6 +90,10 @@ formDataSchema.set('toJSON', {
   },
 });
 
-const DBFormDataModel = model<DBFormData>('FormData', formDataSchema, 'formData');
+const DBFormDataModel = model<DBFormData, PaginateModel<DBFormData>>(
+  'FormData',
+  formDataSchema,
+  'formData'
+);
 
 export default DBFormDataModel;
