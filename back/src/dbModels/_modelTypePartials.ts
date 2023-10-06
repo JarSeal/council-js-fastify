@@ -40,8 +40,10 @@ export type FormDataValueType =
   | 'none'
   | 'unknown';
 
+export type PublicPrivilegeProp = 'true' | 'false' | 'onlyPublic';
+
 export type AllPrivilegeProps = {
-  public: 'true' | 'false' | 'onlyPublic' | 'onlySignedIn';
+  public: PublicPrivilegeProp;
   requireCsrfHeader: boolean;
   users: Types.ObjectId[];
   groups: Types.ObjectId[];
@@ -79,13 +81,13 @@ export type FormElem = {
   label?: TransText;
 
   // Validation
-  required: boolean;
+  required?: boolean;
   validationRegExp?: string[];
   mustMatchValue?: string;
   validationFn?: string;
 
   // All possible errors to be shown in the client
-  inputErrors: {
+  inputErrors?: {
     errorId: string;
     message?: TransText;
   }[];
@@ -94,5 +96,5 @@ export type FormElem = {
   doNotSave?: boolean;
 
   // Form data privileges
-  privileges: FormDataPrivileges | null;
+  privileges?: FormDataPrivileges | null;
 };

@@ -255,7 +255,7 @@ module.exports = [
         description: 'Who can use the "Council Logout" form.',
         created: timeNow,
         privilegeAccess: {
-          public: 'onlySignedIn',
+          public: 'false',
           requireCsrfHeader: true,
           users: [],
           groups: [],

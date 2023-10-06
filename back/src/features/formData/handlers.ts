@@ -65,7 +65,28 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
     const privError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
-    returnObject['$form'] = privError?.code || form.form;
+    // White list the props to be returned with the form
+    const formElemsWithoutPrivileges = privError
+      ? []
+      : form.form.formElems.map((elem) => ({
+          elemId: elem.elemId,
+          orderNr: elem.orderNr,
+          elemType: elem.elemType,
+          valueType: elem.valueType,
+          classes: elem.classes,
+          elemData: elem.elemData,
+          label: elem.label,
+          required: elem.required,
+          validationRegExp: elem.validationRegExp,
+          mustMatchValue: elem.mustMatchValue,
+          validationFn: elem.validationFn,
+          inputErrors: elem.inputErrors,
+          doNotSave: elem.doNotSave,
+        }));
+    returnObject['$form'] = privError?.code || {
+      ...form.form,
+      formElems: formElemsWithoutPrivileges,
+    };
   }
 
   if (dataId) {
@@ -145,7 +166,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     }
   }
 
-  console.log('TADAAAAAAAAAAA GET', elemId, flat, offset, limit, orderBy, orderDir, s);
+  console.log('TADAAAAAAAAAAA GET', elemId, offset, orderBy, orderDir, s);
   return res.send(returnObject);
 };
 

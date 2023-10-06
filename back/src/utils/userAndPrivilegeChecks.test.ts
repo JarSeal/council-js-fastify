@@ -91,11 +91,6 @@ describe('userAndPrivilegeChecks', () => {
     expect(privBlocked?.statusCode).toBe(401);
     expect(privBlocked?.message).toBe('CSRF-header is invalid or missing');
 
-    privilege = { public: 'onlySignedIn' } as Partial<AllPrivilegeProps>;
-    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
-    expect(privBlocked?.statusCode).toBe(401);
-    expect(privBlocked?.message).toBe('CSRF-header is invalid or missing');
-
     privilege = { public: 'onlyPublic' } as Partial<AllPrivilegeProps>;
     privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
     expect(privBlocked?.statusCode).toBe(401);
@@ -135,10 +130,6 @@ describe('userAndPrivilegeChecks', () => {
     privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
     expect(privBlocked).toBe(null);
 
-    privilege = { public: 'onlySignedIn' } as Partial<AllPrivilegeProps>;
-    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
-    expect(privBlocked).toBe(null);
-
     privilege = { public: 'false' } as Partial<AllPrivilegeProps>;
     privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
     expect(privBlocked).toBe(null);
@@ -164,12 +155,8 @@ describe('userAndPrivilegeChecks', () => {
       },
     } as unknown as FastifyRequest;
     const userData = await getUserData(req);
-    let privilege = { public: 'false', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
-    let privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
-    expect(privBlocked).toBe(null);
-
-    privilege = { public: 'onlySignedIn', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
-    privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    const privilege = { public: 'false', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
+    const privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
     expect(privBlocked).toBe(null);
   });
 

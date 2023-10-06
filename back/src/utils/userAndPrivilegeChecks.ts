@@ -40,8 +40,7 @@ export const isPrivBlocked = (
   csrfIsGood: boolean
 ): null | FastifyError => {
   if (!privilege) {
-    // @Consider: should this case return an error or null?
-    return null;
+    return new errors.UNAUTHORIZED('Privilege not found');
   }
 
   // Normalize privilege
@@ -63,7 +62,7 @@ export const isPrivBlocked = (
   }
 
   // Check public
-  if ((priv.public === 'false' || priv.public === 'onlySignedIn') && !userData.isSignedIn) {
+  if (priv.public === 'false' && !userData.isSignedIn) {
     return new errors.UNAUTHORIZED('Must be signed in');
   }
   if (priv.public === 'onlyPublic' && userData.isSignedIn) {

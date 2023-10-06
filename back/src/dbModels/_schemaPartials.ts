@@ -77,6 +77,7 @@ export const formElemDbSchema = {
   validationFn: { type: String },
   inputErrors: [
     {
+      _id: false,
       errorId: String,
       message: transTextDbSchema,
     },

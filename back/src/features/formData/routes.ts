@@ -2,6 +2,7 @@ import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fa
 import { type Static, Type } from '@sinclair/typebox';
 
 import { formDataGet, formDataPost } from './handlers';
+import { formElemPublicSchema, transTextSchema } from '../../@types/form';
 
 export const postBodySchema = Type.Object({
   formId: Type.String(),
@@ -13,6 +14,15 @@ export interface FormDataPostRoute extends RouteGenericInterface {
   readonly Reply: { ok: boolean } | FastifyError;
 }
 
+export const getFormReplySchema = Type.Object({
+  formTitle: transTextSchema,
+  formText: transTextSchema,
+  classes: Type.Array(Type.String()),
+  lockOrder: Type.Boolean(),
+  formElems: Type.Array(formElemPublicSchema),
+});
+export type GetFormReply = Static<typeof getFormReplySchema>;
+// @CONSIDER: is this getReplySchema enough? Should there be more specific typing?
 export const getReplySchema = Type.Record(Type.String(), Type.Unknown());
 export type FormDataGetReply = Static<typeof getReplySchema>;
 

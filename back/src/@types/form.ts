@@ -33,12 +33,7 @@ export const basicPrivilegePropsSchema = Type.Object({
 });
 
 export const allPrivilegePropsSchema = Type.Object({
-  public: Type.Union([
-    Type.Literal('true'),
-    Type.Literal('false'),
-    Type.Literal('onlyPublic'),
-    Type.Literal('onlySignedIn'),
-  ]),
+  public: Type.Union([Type.Literal('true'), Type.Literal('false'), Type.Literal('onlyPublic')]),
   requireCsrfHeader: Type.Boolean(),
   ...basicPrivilegePropsSchema.schema,
 });
@@ -50,7 +45,7 @@ export const formDataPrivilegesSchema = Type.Object({
   delete: allPrivilegePropsSchema,
 });
 
-export const formElemSchema = Type.Object({
+export const formElemPublicSchema = Type.Object({
   elemId: Type.String(),
   orderNr: Type.Number(),
   elemType: Type.String(),
@@ -71,6 +66,10 @@ export const formElemSchema = Type.Object({
     )
   ),
   doNotSave: Type.Boolean(),
+});
+
+export const formElemSchema = Type.Object({
+  ...formElemPublicSchema.schema,
   privileges: formDataPrivilegesSchema,
 });
 

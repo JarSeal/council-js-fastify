@@ -12,6 +12,7 @@ import type {
   FormElem,
 } from '../dbModels/_modelTypePartials';
 import DBFormDataModel from '../dbModels/formData';
+import DBPrivilegeModel from '../dbModels/privilege';
 
 export const csrfHeader = { headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE } };
 
@@ -148,6 +149,15 @@ export const createForm = async (
   formId: string,
   url: string,
   elems: FormElem[],
+  privileges: {
+    priCategoryId: string;
+    priTargetId: string;
+    priAccessId: string;
+    privilegeAccess: Partial<AllPrivilegeProps>;
+    created?: Date;
+    name?: string;
+    description?: string;
+  }[],
   opts?: {
     owner?: Types.ObjectId;
     name?: string;
@@ -171,13 +181,13 @@ export const createForm = async (
     description: opts?.description || 'Test form description, ' + formId,
     created: {
       user: adminId,
-      date: Date.now(),
+      date: new Date(),
     },
     owner: opts?.owner || adminId,
     disablePartialSaving: opts?.disablePartialSaving || false,
     form: {
-      formTitle: opts?.formTitle || 'Form title',
-      formText: opts?.formText || 'Form text',
+      formTitle: { langKey: opts?.formTitle || 'Form title' },
+      formText: { langKey: opts?.formText || 'Form text' },
       lockOrder: opts?.lockOrder || false,
       formElems: elems,
     },
@@ -188,6 +198,15 @@ export const createForm = async (
   if (opts?.formDataDefaultPrivileges) form.formDataDefaultPrivileges;
 
   const createdForm = await form.save();
+  for (let i = 0; i < privileges.length; i++) {
+    const privilege = privileges[i];
+    await createPrivilege(
+      privilege.priCategoryId,
+      privilege.priTargetId,
+      privilege.priAccessId,
+      privilege.privilegeAccess
+    );
+  }
 
   return createdForm._id;
 };
@@ -204,7 +223,7 @@ export const createFormData = async (
     privileges?: Omit<FormDataPrivileges, 'create'>;
   }[],
   opts?: {
-    owner?: Types.ObjectId | 'none';
+    owner?: Types.ObjectId;
   }
 ) => {
   const adminId = await createSysAdmin();
@@ -214,9 +233,9 @@ export const createFormData = async (
     url,
     created: {
       user: adminId,
-      date: Date.now(),
+      date: new Date(),
     },
-    owner: opts?.owner || 'none',
+    owner: opts?.owner || null,
     hasElemPrivileges: Boolean(data.find((d) => d.privileges)),
     privileges,
     data,
@@ -225,4 +244,43 @@ export const createFormData = async (
   const createdFormData = await formData.save();
 
   return createdFormData._id;
+};
+
+export const createPrivilege = async (
+  priCategoryId: string,
+  priTargetId: string,
+  priAccessId: string,
+  privilegeAccess: Partial<AllPrivilegeProps>,
+  opts?: { name?: string; description?: string; created?: Date }
+) => {
+  const privilege = new DBPrivilegeModel({
+    simpleId: `${priCategoryId}__${priTargetId}__${priAccessId}`,
+    priCategoryId,
+    priTargetId,
+    priAccessId,
+    name: opts?.name || `${priCategoryId}, ${priTargetId}, ${priAccessId}`,
+    description: opts?.description || 'Privilege description',
+    created: opts?.created || new Date(),
+    privilegeAccess: { ...emptyPrivileges, ...privilegeAccess },
+  });
+
+  const createdPrivilege = await privilege.save();
+
+  return createdPrivilege._id;
+};
+
+export const emptyPrivileges: AllPrivilegeProps = {
+  public: 'false',
+  requireCsrfHeader: true,
+  users: [],
+  groups: [],
+  excludeUsers: [],
+  excludeGroups: [],
+};
+
+export const emptyFormDataPrivileges = {
+  read: emptyPrivileges,
+  create: emptyPrivileges,
+  edit: emptyPrivileges,
+  delete: emptyPrivileges,
 };

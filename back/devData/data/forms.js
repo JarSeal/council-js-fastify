@@ -28,7 +28,7 @@ const getFormConfigs = async () => {
             priTargetId: 'testform0',
             priAccessId: 'canUseForm',
             privilegeAccess: {
-              public: 'onlySignedIn',
+              public: 'false',
               requireCsrfHeader: true,
               users: [],
               groups: [basicUsersId],
@@ -111,7 +111,7 @@ const getFormConfigs = async () => {
             priTargetId: 'testform1',
             priAccessId: 'canUseForm',
             privilegeAccess: {
-              public: 'onlySignedIn',
+              public: 'false',
               requireCsrfHeader: true,
               users: [],
               groups: [basicUsersId],
