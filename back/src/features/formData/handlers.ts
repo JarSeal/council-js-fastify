@@ -109,21 +109,59 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     if (dataId && dataId[0] === 'all') {
       // Get all formData (respects possible search, orderBy, orderDir, offset, and limit)
       // @TODO: implement search, orderBy, orderDir, and offset
-      // USE: https://github.com/aravindnc/mongoose-paginate-v2
-      // formData = await DBFormDataModel.find<DBFormData>({ formId: form.simpleId }).limit(limiter);
-      const paginatedData = await DBFormDataModel.paginate<DBFormData>(
-        { formId: form.simpleId },
-        paginationOptions
-      );
-      formData = paginatedData.docs;
+      let paginatedData;
+      if (userData.isSignedIn) {
+        paginatedData = await DBFormDataModel.paginate<DBFormData>(
+          {
+            $and: [
+              { formId: form.simpleId },
+              { $not: { 'privileges.read.public': 'onlyPublic' } },
+              {
+                $or: [
+                  { 'privileges.read.requireCsrfHeader': false },
+                  { 'privileges.read.requireCsrfHeader': csrfIsGood },
+                ],
+              },
+              {
+                $or: [
+                  { 'privileges.read.users': userData.userId },
+                  { 'privileges.read.groups': { $in: userData.userGroups } },
+                ],
+              },
+              { $not: { 'privileges.read.excludedUsers': userData.userId } },
+              { $not: { 'privileges.read.excludedGroups': { $in: userData.userGroups } } },
+            ],
+          },
+          paginationOptions
+        );
+      } else {
+        paginatedData = await DBFormDataModel.paginate<DBFormData>(
+          {
+            $and: [
+              { formId: form.simpleId },
+              {
+                $or: [
+                  { 'privileges.read.public': 'true' },
+                  { 'privileges.read.public': 'onlyPublic' },
+                ],
+              },
+              {
+                $or: [
+                  { 'privileges.read.requireCsrfHeader': false },
+                  { 'privileges.read.requireCsrfHeader': csrfIsGood },
+                ],
+              },
+            ],
+          },
+          paginationOptions
+        );
+      }
+      formData = paginatedData.docs || [];
       paginationData = paginatedData;
     } else if (Array.isArray(dataId) && dataId?.length > 1) {
       // Get specific multiple formData items (respects possible search, orderBy, orderDir, offset, and limit)
       // @TODO: implement search, orderBy, orderDir, and offset
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
-      // formData = await DBFormDataModel.find<DBFormData>({
-      //   $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
-      // }).limit(limiter);
       const paginatedData = await DBFormDataModel.paginate<DBFormData>({
         $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
       });
@@ -132,7 +170,6 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     } else if (dataId) {
       oneItem = true;
       // Get one formData item
-      // formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
       formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
     }
 
@@ -155,6 +192,8 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         );
         if (dataSet.length) {
           data.push(dataSet);
+        } else {
+          data.push();
         }
       }
       if (paginationData) {
