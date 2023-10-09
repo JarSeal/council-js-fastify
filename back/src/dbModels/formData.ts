@@ -49,8 +49,8 @@ export interface DBFormData {
 }
 
 const formDataSchema = new Schema<DBFormData>({
-  formId: simpleIdDBSchema,
-  url: { type: String, unique: true, required: true },
+  formId: { ...simpleIdDBSchema, unique: false },
+  url: { type: String, required: true },
   created: {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, default: null },
     date: dateDBSchema,

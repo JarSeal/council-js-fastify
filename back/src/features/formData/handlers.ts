@@ -1,4 +1,4 @@
-import type { FastifyError, RouteHandler } from 'fastify';
+import type { RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
 
 import type { FormDataGetRoute, FormDataPostRoute, FormDataGetReply } from './routes';
@@ -99,7 +99,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     const MAX_LIMIT = 500;
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
     const paginationOptions = {
-      offset,
+      offset: offset || 0,
       limit: limiter,
       collation: {
         locale: 'en', // @TODO: add locale support
@@ -115,21 +115,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
           {
             $and: [
               { formId: form.simpleId },
-              { $not: { 'privileges.read.public': 'onlyPublic' } },
-              {
-                $or: [
-                  { 'privileges.read.requireCsrfHeader': false },
-                  { 'privileges.read.requireCsrfHeader': csrfIsGood },
-                ],
-              },
-              {
-                $or: [
-                  { 'privileges.read.users': userData.userId },
-                  { 'privileges.read.groups': { $in: userData.userGroups } },
-                ],
-              },
-              { $not: { 'privileges.read.excludedUsers': userData.userId } },
-              { $not: { 'privileges.read.excludedGroups': { $in: userData.userGroups } } },
+              ...readDataAsSignedInPrivilegesQuery(userData, csrfIsGood),
             ],
           },
           paginationOptions
@@ -137,21 +123,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       } else {
         paginatedData = await DBFormDataModel.paginate<DBFormData>(
           {
-            $and: [
-              { formId: form.simpleId },
-              {
-                $or: [
-                  { 'privileges.read.public': 'true' },
-                  { 'privileges.read.public': 'onlyPublic' },
-                ],
-              },
-              {
-                $or: [
-                  { 'privileges.read.requireCsrfHeader': false },
-                  { 'privileges.read.requireCsrfHeader': csrfIsGood },
-                ],
-              },
-            ],
+            $and: [{ formId: form.simpleId }, ...readDataAsSignedOutPrivilegesQuery(csrfIsGood)],
           },
           paginationOptions
         );
@@ -162,9 +134,29 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       // Get specific multiple formData items (respects possible search, orderBy, orderDir, offset, and limit)
       // @TODO: implement search, orderBy, orderDir, and offset
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
-      const paginatedData = await DBFormDataModel.paginate<DBFormData>({
-        $and: [{ formId: form.simpleId }, { _id: { $in: dataObjectIds } }],
-      });
+      let paginatedData;
+      if (userData.isSignedIn) {
+        paginatedData = await DBFormDataModel.paginate<DBFormData>({
+          $and: [
+            { formId: form.simpleId },
+            {
+              _id: { $in: dataObjectIds },
+              ...readDataAsSignedInPrivilegesQuery(userData, csrfIsGood),
+            },
+          ],
+        });
+      } else {
+        paginatedData = await DBFormDataModel.paginate<DBFormData>({
+          $and: [
+            { formId: form.simpleId },
+            {
+              _id: { $in: dataObjectIds },
+              ...readDataAsSignedOutPrivilegesQuery(csrfIsGood),
+            },
+          ],
+        });
+      }
+
       formData = paginatedData.docs;
       paginationData = paginatedData;
     } else if (dataId) {
@@ -181,19 +173,16 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
           ...form.formDataDefaultPrivileges.read,
           ...(fd.privileges?.read || {}),
         };
-        const mainPrivError = isPrivBlocked(mainPrivileges, userData, csrfIsGood);
         const rawData = fd.data || [];
         const dataSet = checkAndSetReadData(
           rawData,
           mainPrivileges,
-          mainPrivError,
           userData,
-          csrfIsGood
+          csrfIsGood,
+          fd.hasElemPrivileges
         );
         if (dataSet.length) {
           data.push(dataSet);
-        } else {
-          data.push();
         }
       }
       if (paginationData) {
@@ -210,11 +199,13 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       const dataSet = checkAndSetReadData(
         rawData,
         mainPrivileges,
-        mainPrivError,
         userData,
-        csrfIsGood
+        csrfIsGood,
+        formData?.hasElemPrivileges
       );
-      data.push(dataSet);
+      if (!mainPrivError && dataSet.length) {
+        data.push(dataSet);
+      }
     }
 
     if (oneItem && flat) {
@@ -235,21 +226,22 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 const checkAndSetReadData = (
   rawData: DBFormData['data'],
   mainPrivileges: AllPrivilegeProps,
-  mainPrivError: null | FastifyError,
   userData: UserData,
-  csrfIsGood: boolean
+  csrfIsGood: boolean,
+  hasElemPrivileges?: boolean
 ): Data[] => {
   const returnData: Data[] = [];
   for (let i = 0; i < rawData.length; i++) {
     const elem = rawData[i];
     let privError = null;
-    if (elem.privileges?.read) {
+    if (hasElemPrivileges && elem.privileges?.read) {
       const elemPrivileges = { ...mainPrivileges, ...elem.privileges.read };
       privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
     }
     // Data can be accessed if there is not a mainPrivError or if there is,
     // the elem has overriding elem privileges that does not have an error
-    if (!privError && (!mainPrivError || elem.privileges?.read)) {
+    if (!privError) {
+      // White list the data props to be returned
       returnData.push({
         elemId: elem.elemId,
         orderNr: i,
@@ -260,3 +252,37 @@ const checkAndSetReadData = (
   }
   return returnData;
 };
+
+const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood: boolean) => [
+  { 'privileges.read.public': { $not: { $in: ['onlyPublic'] } } },
+  {
+    $or: [
+      { 'privileges.read.requireCsrfHeader': false },
+      { 'privileges.read.requireCsrfHeader': csrfIsGood },
+    ],
+  },
+  ...(userData.isSysAdmin
+    ? []
+    : [
+        {
+          $or: [
+            { 'privileges.read.users': userData.userId },
+            { 'privileges.read.groups': { $in: userData.userGroups } },
+          ],
+        },
+        { 'privileges.read.excludedUsers': { $not: { $in: [userData.userId] } } },
+        { 'privileges.read.excludedGroups': { $not: { $in: userData.userGroups } } },
+      ]),
+];
+
+const readDataAsSignedOutPrivilegesQuery = (csrfIsGood: boolean) => [
+  {
+    $or: [{ 'privileges.read.public': 'true' }, { 'privileges.read.public': 'onlyPublic' }],
+  },
+  {
+    $or: [
+      { 'privileges.read.requireCsrfHeader': false },
+      { 'privileges.read.requireCsrfHeader': csrfIsGood },
+    ],
+  },
+];

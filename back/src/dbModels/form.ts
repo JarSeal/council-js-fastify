@@ -59,7 +59,7 @@ export interface DBForm {
   fillerIsFormDataOwner?: boolean;
 
   // Default privileges to be passed to the formData document
-  formDataDefaultPrivileges: FormDataPrivileges;
+  formDataDefaultPrivileges: Omit<FormDataPrivileges, 'create'>;
 }
 
 const formSchema = new Schema<DBForm>({

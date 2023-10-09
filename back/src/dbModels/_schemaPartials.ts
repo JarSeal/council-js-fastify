@@ -43,15 +43,15 @@ export const transTextDbSchema = {
 };
 
 export const basicPrivilegePropsSchema = {
-  users: mongoIdArraySchema,
-  groups: mongoIdArraySchema,
-  excludeUsers: mongoIdArraySchema,
-  excludeGroups: mongoIdArraySchema,
+  users: { type: mongoIdArraySchema, default: undefined },
+  groups: { type: mongoIdArraySchema, default: undefined },
+  excludeUsers: { type: mongoIdArraySchema, default: undefined },
+  excludeGroups: { type: mongoIdArraySchema, default: undefined },
 };
 
 export const allPrivilegePropsSchema = {
-  public: { type: String, required: true, default: 'false' },
-  requireCsrfHeader: { type: Boolean, default: true },
+  public: { type: String },
+  requireCsrfHeader: { type: Boolean },
   ...basicPrivilegePropsSchema,
 };
 

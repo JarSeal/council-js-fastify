@@ -15,10 +15,11 @@ import DBFormDataModel from '../dbModels/formData';
 import DBPrivilegeModel from '../dbModels/privilege';
 
 export const csrfHeader = { headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE } };
+export const validAgentId = '726616f4bb878fab94f1f1dbc8c6ed79';
 
 let sysAdminId: Types.ObjectId;
-export const createSysAdmin = async () => {
-  if (sysAdminId) return sysAdminId;
+export const createSysAdmin = async (asNew?: boolean) => {
+  if (!asNew && sysAdminId) return sysAdminId;
   const passwordHash = await hash('password', 10);
   const dateNow = new Date();
   const sysAdmin = new DBUserModel({
@@ -41,8 +42,10 @@ export const createSysAdmin = async () => {
     edited: [],
     security: { lastLogins: [], lastLoginAttempts: [] },
   });
+
   const savedSysAdmin = await sysAdmin.save();
   sysAdminId = savedSysAdmin._id;
+  await createGroup('sysAdmins', sysAdminGroupId, [sysAdminId], asNew);
   return sysAdminId;
 };
 
@@ -103,10 +106,11 @@ let basicUsersGroupId: Types.ObjectId;
 export const createGroup = async (
   simpleId: string,
   ownerUserId?: Types.ObjectId,
-  members?: Types.ObjectId[]
+  members?: Types.ObjectId[],
+  asNew?: boolean
 ) => {
-  if (simpleId === 'sysAdmins' && sysAdminGroupId) return sysAdminGroupId;
-  if (simpleId === 'basicUsers' && basicUsersGroupId) return basicUsersGroupId;
+  if (!asNew && simpleId === 'sysAdmins' && sysAdminGroupId) return sysAdminGroupId;
+  if (!asNew && simpleId === 'basicUsers' && basicUsersGroupId) return basicUsersGroupId;
   const foundGroup = await DBGroupModel.findOne({ simpleId });
   if (foundGroup) return foundGroup._id;
   const dateNow = new Date();
@@ -166,7 +170,11 @@ export const createForm = async (
     maxDataOwnerDocs?: number;
     formDataOwner?: Types.ObjectId;
     fillerIsFormDataOwner?: boolean;
-    formDataDefaultPrivileges?: AllPrivilegeProps;
+    formDataDefaultPrivileges?: {
+      read?: Partial<AllPrivilegeProps>;
+      edit?: Partial<AllPrivilegeProps>;
+      delete?: Partial<AllPrivilegeProps>;
+    };
     formTitle?: string;
     formText?: string;
     lockOrder?: boolean;
@@ -195,7 +203,21 @@ export const createForm = async (
   if (opts?.maxDataOwnerDocs) form.maxDataOwnerDocs = opts.maxDataOwnerDocs;
   if (opts?.formDataOwner) form.formDataOwner = opts.formDataOwner;
   if (opts?.fillerIsFormDataOwner) form.fillerIsFormDataOwner = opts.fillerIsFormDataOwner;
-  if (opts?.formDataDefaultPrivileges) form.formDataDefaultPrivileges;
+
+  form.formDataDefaultPrivileges = {
+    read: {
+      ...emptyFormDataPrivileges.read,
+      ...(opts?.formDataDefaultPrivileges?.read || {}),
+    },
+    edit: {
+      ...emptyFormDataPrivileges.edit,
+      ...(opts?.formDataDefaultPrivileges?.edit || {}),
+    },
+    delete: {
+      ...emptyFormDataPrivileges.delete,
+      ...(opts?.formDataDefaultPrivileges?.delete || {}),
+    },
+  };
 
   const createdForm = await form.save();
   for (let i = 0; i < privileges.length; i++) {
@@ -214,19 +236,33 @@ export const createForm = async (
 export const createFormData = async (
   formId: string,
   url: string,
-  privileges: FormDataPrivileges,
+  privileges: Partial<{
+    read: Partial<Partial<AllPrivilegeProps>>;
+    edit: Partial<Partial<AllPrivilegeProps>>;
+    delete: Partial<Partial<AllPrivilegeProps>>;
+  }>,
   data: {
     elemId: string;
     orderNr: number;
     value: unknown;
     valueType: FormDataValueType;
-    privileges?: Omit<FormDataPrivileges, 'create'>;
+    privileges?: Partial<Omit<FormDataPrivileges, 'create'>>;
   }[],
   opts?: {
     owner?: Types.ObjectId;
   }
 ) => {
   const adminId = await createSysAdmin();
+
+  if (privileges.read) {
+    privileges.read = { ...emptyPrivileges, ...privileges.read };
+  }
+  if (privileges.edit) {
+    privileges.edit = { ...emptyPrivileges, ...privileges.edit };
+  }
+  if (privileges.delete) {
+    privileges.delete = { ...emptyPrivileges, ...privileges.delete };
+  }
 
   const formData = new DBFormDataModel({
     formId,
