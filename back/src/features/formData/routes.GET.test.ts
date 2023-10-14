@@ -920,11 +920,305 @@ describe('formData', () => {
     expect(data.length).toBe(0);
   });
 
-  //   - is signed in but not in users nor groups list
-  //   - is in excluded users
-  //   - is in eccluded groups (and user is in that group)
-  // should succesfully GET two public formData items only
-  // should succesfully GET public one formData item as flat object
+  it('should GET nothing when user is signed in but not in users nor groups list', async () => {
+    await createUser('myusername');
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: { public: 'false' as PublicPrivilegeProp, users: [], groups: [] },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: { public: 'false', requireCsrfHeader: true, users: [], groups: [] },
+        },
+      }
+    );
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 15, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some other string', valueType: 'string' },
+    ]);
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    const response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?getForm=true&dataId=all`,
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FormDataGetReply;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    const form = body.$form as GetFormReply;
+    const data = body.data as FormDataGetReply[][];
+    expect(form).toBe('FORBIDDEN');
+    expect(Array.isArray(data)).toBeTruthy();
+    expect(data.length).toBe(0);
+  });
+
+  it('should GET nothing when user is signed in but is in excluded users', async () => {
+    const userId = await createUser('myusername');
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: {
+        public: 'false' as PublicPrivilegeProp,
+        users: [userId],
+        excludeUsers: [userId],
+      },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [userId],
+            excludeUsers: [userId],
+          },
+        },
+      }
+    );
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 15, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some other string', valueType: 'string' },
+    ]);
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    const response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?getForm=true&dataId=all`,
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FormDataGetReply;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    const form = body.$form as GetFormReply;
+    const data = body.data as FormDataGetReply[][];
+    expect(form).toBe('FORBIDDEN');
+    expect(Array.isArray(data)).toBeTruthy();
+    expect(data.length).toBe(0);
+  });
+
+  it('should GET nothing when user is signed in but is in excluded groups (and user is in that group)', async () => {
+    const userId = await createUser('myusername');
+    const groupId = await createGroup('mygroup', userId, [userId], true);
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: {
+        public: 'false' as PublicPrivilegeProp,
+        users: [userId],
+        excludeGroups: [groupId],
+      },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [userId],
+            excludeGroups: [groupId],
+          },
+        },
+      }
+    );
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 15, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some other string', valueType: 'string' },
+    ]);
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    const response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?getForm=true&dataId=all`,
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FormDataGetReply;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    const form = body.$form as GetFormReply;
+    const data = body.data as FormDataGetReply[][];
+    expect(form).toBe('FORBIDDEN');
+    expect(Array.isArray(data)).toBeTruthy();
+    expect(data.length).toBe(0);
+  });
+
+  it('should succesfully GET two public formData items only as a signed in user', async () => {
+    await createUser('myusername');
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: { public: 'true' as PublicPrivilegeProp },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: { public: 'true', requireCsrfHeader: true },
+        },
+      }
+    );
+    const formDataId1 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+    ]);
+    const formDataId2 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 15, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some other string', valueType: 'string' },
+    ]);
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    const response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=${formDataId1.toString()}&dataId=${formDataId2.toString()}`,
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FormDataGetReply;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(2);
+    const data = body.data as FormDataGetReply[][];
+    expect(Array.isArray(data)).toBeTruthy();
+    expect(data.length).toBe(0);
+    const pagination = body.$pagination as object;
+    expect(Object.keys(pagination).length > 4).toBeTruthy();
+  });
+
+  // should succesfully GET two public formData items only as a public user
+  // it('should succesfully GET public one formData item as flat object', async () => {
+  //   console.log('Prööt');
+  // });
   // should succesfully GET non-public one formData item only as flat object when in privilege users
   // should succesfully GET non-public one formData item only as flat object when in privilege groups (and user is in that group)
   // should succesfully GET non-public one formData item only as flat object as a super admin
