@@ -252,17 +252,24 @@ export const createFormData = async (
     owner?: Types.ObjectId;
   }
 ) => {
+  const form = await DBFormModel.findOne({ simpleId: formId });
   const adminId = await createSysAdmin();
 
-  if (privileges.read) {
-    privileges.read = { ...emptyPrivileges, ...privileges.read };
-  }
-  if (privileges.edit) {
-    privileges.edit = { ...emptyPrivileges, ...privileges.edit };
-  }
-  if (privileges.delete) {
-    privileges.delete = { ...emptyPrivileges, ...privileges.delete };
-  }
+  privileges.read = {
+    ...emptyPrivileges,
+    ...(form?.formDataDefaultPrivileges?.read || {}),
+    ...(privileges.read || {}),
+  };
+  privileges.edit = {
+    ...emptyPrivileges,
+    ...(form?.formDataDefaultPrivileges?.edit || {}),
+    ...(privileges.edit || {}),
+  };
+  privileges.delete = {
+    ...emptyPrivileges,
+    ...(form?.formDataDefaultPrivileges?.delete || {}),
+    ...(privileges.delete || {}),
+  };
 
   const formData = new DBFormDataModel({
     formId,

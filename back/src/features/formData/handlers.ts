@@ -136,7 +136,6 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
       let paginatedData;
       if (userData.isSignedIn) {
-        console.log('herestingll1', userData);
         paginatedData = await DBFormDataModel.paginate<DBFormData>({
           $and: [
             { formId: form.simpleId },
@@ -268,12 +267,12 @@ const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood: boole
               $and: [
                 {
                   $or: [
-                    { 'privileges.read.users': { $in: [userData.userId] } },
+                    { 'privileges.read.users': userData.userId },
                     { 'privileges.read.groups': { $in: userData.userGroups } },
                   ],
                 },
-                { 'privileges.read.excludedUsers': { $not: { $in: [userData.userId] } } },
-                { 'privileges.read.excludedGroups': { $not: { $in: userData.userGroups } } },
+                { 'privileges.read.excludeUsers': { $ne: userData.userId } },
+                { 'privileges.read.excludeGroups': { $nin: userData.userGroups } },
               ],
             },
           ],

@@ -1147,7 +1147,94 @@ describe('formData', () => {
   });
 
   it('should succesfully GET two public formData items only as a signed in user', async () => {
-    await createUser('myusername');
+    const userId = await createUser('myusername');
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: { public: 'true' as PublicPrivilegeProp },
+    };
+    await createForm(
+      formId,
+      url,
+      [
+        {
+          elemId: 'myElem',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: { public: 'false', requireCsrfHeader: true, users: [userId] },
+        },
+      }
+    );
+    const formDataId1 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+    ]);
+    const formDataId2 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 15, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some other string', valueType: 'string' },
+    ]);
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    const response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=${formDataId1.toString()}&dataId=${formDataId2.toString()}`,
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FormDataGetReply;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(2);
+
+    const data = body.data as FormDataGetReply[][];
+    expect(Array.isArray(data)).toBeTruthy();
+    expect(data.length).toBe(2);
+    expect(data.length).toBe(2);
+    expect(data[0][0].elemId).toBe('myElem1');
+    expect(data[0][0].orderNr).toBe(0);
+    expect(data[0][0].value).toBe(12);
+    expect(data[0][0].valueType).toBe('number');
+    expect(data[0][1].elemId).toBe('myElem2');
+    expect(data[0][1].orderNr).toBe(1);
+    expect(data[0][1].value).toBe('Some string');
+    expect(data[0][1].valueType).toBe('string');
+    expect(data[1][0].elemId).toBe('myElem1');
+    expect(data[1][0].orderNr).toBe(0);
+    expect(data[1][0].value).toBe(15);
+    expect(data[1][0].valueType).toBe('number');
+    expect(data[1][1].elemId).toBe('myElem2');
+    expect(data[1][1].orderNr).toBe(1);
+    expect(data[1][1].value).toBe('Some other string');
+    expect(data[1][1].valueType).toBe('string');
+
+    const pagination = body.$pagination as object;
+    expect(Object.keys(pagination).length).toBe(7);
+  });
+
+  it('should succesfully GET two public formData items only as a public user', async () => {
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -1186,36 +1273,39 @@ describe('formData', () => {
       { elemId: 'myElem2', orderNr: 1, value: 'Some other string', valueType: 'string' },
     ]);
 
-    const loginResponse = await app.inject({
-      method: 'POST',
-      path: '/api/v1/login',
-      body: {
-        usernameOrEmail: 'myusername',
-        pass: 'password',
-        loginMethod: 'username',
-        agentId: validAgentId,
-      },
-      ...csrfHeader,
-    });
-    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
-
     const response = await app.inject({
       method: 'GET',
       path: `/api/v1${url}?dataId=${formDataId1.toString()}&dataId=${formDataId2.toString()}`,
-      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
     expect(Object.keys(body).length).toBe(2);
+
     const data = body.data as FormDataGetReply[][];
     expect(Array.isArray(data)).toBeTruthy();
-    expect(data.length).toBe(0);
+    expect(data.length).toBe(2);
+    expect(data[0][0].elemId).toBe('myElem1');
+    expect(data[0][0].orderNr).toBe(0);
+    expect(data[0][0].value).toBe(12);
+    expect(data[0][0].valueType).toBe('number');
+    expect(data[0][1].elemId).toBe('myElem2');
+    expect(data[0][1].orderNr).toBe(1);
+    expect(data[0][1].value).toBe('Some string');
+    expect(data[0][1].valueType).toBe('string');
+    expect(data[1][0].elemId).toBe('myElem1');
+    expect(data[1][0].orderNr).toBe(0);
+    expect(data[1][0].value).toBe(15);
+    expect(data[1][0].valueType).toBe('number');
+    expect(data[1][1].elemId).toBe('myElem2');
+    expect(data[1][1].orderNr).toBe(1);
+    expect(data[1][1].value).toBe('Some other string');
+    expect(data[1][1].valueType).toBe('string');
+
     const pagination = body.$pagination as object;
-    expect(Object.keys(pagination).length > 4).toBeTruthy();
+    expect(Object.keys(pagination).length).toBe(7);
   });
 
-  // should succesfully GET two public formData items only as a public user
   // it('should succesfully GET public one formData item as flat object', async () => {
   //   console.log('Prööt');
   // });
