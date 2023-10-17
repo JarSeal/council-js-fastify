@@ -8,7 +8,13 @@ import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import type { AllPrivilegeProps } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
-import { type UserData, getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
+import {
+  type UserData,
+  getUserData,
+  isPrivBlocked,
+  readDataAsSignedInPrivilegesQuery,
+  readDataAsSignedOutPrivilegesQuery,
+} from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl, getPaginationData } from '../../utils/parsingAndConverting';
 
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -205,8 +211,10 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     }
 
     if (oneItem && flat) {
-      for (let i = 0; i < data.length; i++) {
-        returnObject[data[0][i].elemId] = data[0][i].value;
+      if (data?.length) {
+        for (let i = 0; i < data[0].length; i++) {
+          returnObject[data[0][i].elemId] = data[0][i].value;
+        }
       }
     } else if (oneItem) {
       returnObject['data'] = data[0];
@@ -248,46 +256,3 @@ const checkAndSetReadData = (
   }
   return returnData;
 };
-
-const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood: boolean) => [
-  { 'privileges.read.public': { $ne: 'onlyPublic' } },
-  {
-    $or: [
-      { 'privileges.read.requireCsrfHeader': false },
-      { 'privileges.read.requireCsrfHeader': csrfIsGood },
-    ],
-  },
-  ...(userData.isSysAdmin
-    ? []
-    : [
-        {
-          $or: [
-            { 'privileges.read.public': 'true' },
-            {
-              $and: [
-                {
-                  $or: [
-                    { 'privileges.read.users': userData.userId },
-                    { 'privileges.read.groups': { $in: userData.userGroups } },
-                  ],
-                },
-                { 'privileges.read.excludeUsers': { $ne: userData.userId } },
-                { 'privileges.read.excludeGroups': { $nin: userData.userGroups } },
-              ],
-            },
-          ],
-        },
-      ]),
-];
-
-const readDataAsSignedOutPrivilegesQuery = (csrfIsGood: boolean) => [
-  {
-    $or: [{ 'privileges.read.public': 'true' }, { 'privileges.read.public': 'onlyPublic' }],
-  },
-  {
-    $or: [
-      { 'privileges.read.requireCsrfHeader': false },
-      { 'privileges.read.requireCsrfHeader': csrfIsGood },
-    ],
-  },
-];

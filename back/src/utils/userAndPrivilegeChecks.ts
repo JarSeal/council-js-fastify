@@ -132,3 +132,46 @@ const checkExcludedGroups = (userData: UserData, excludedGroups: Types.ObjectId[
   }
   return null;
 };
+
+export const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood: boolean) => [
+  { 'privileges.read.public': { $ne: 'onlyPublic' } },
+  {
+    $or: [
+      { 'privileges.read.requireCsrfHeader': false },
+      { 'privileges.read.requireCsrfHeader': csrfIsGood },
+    ],
+  },
+  ...(userData.isSysAdmin
+    ? []
+    : [
+        {
+          $or: [
+            { 'privileges.read.public': 'true' },
+            {
+              $and: [
+                {
+                  $or: [
+                    { 'privileges.read.users': userData.userId },
+                    { 'privileges.read.groups': { $in: userData.userGroups } },
+                  ],
+                },
+                { 'privileges.read.excludeUsers': { $ne: userData.userId } },
+                { 'privileges.read.excludeGroups': { $nin: userData.userGroups } },
+              ],
+            },
+          ],
+        },
+      ]),
+];
+
+export const readDataAsSignedOutPrivilegesQuery = (csrfIsGood: boolean) => [
+  {
+    $or: [{ 'privileges.read.public': 'true' }, { 'privileges.read.public': 'onlyPublic' }],
+  },
+  {
+    $or: [
+      { 'privileges.read.requireCsrfHeader': false },
+      { 'privileges.read.requireCsrfHeader': csrfIsGood },
+    ],
+  },
+];
