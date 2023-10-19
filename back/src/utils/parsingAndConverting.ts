@@ -6,7 +6,19 @@ import { apiRoot } from '../core/app';
 export const getApiPathFromReqUrl = (reqUrl: string) =>
   reqUrl.split('?')[0].replace(apiRoot + apiVersion, '');
 
-export const getPaginationData = <T>(paginationData: PaginateResult<T> | null) =>
+export type PaginationData = {
+  totalCount: number;
+  limit: number;
+  offset: number;
+  page: number | undefined;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+};
+
+export const getPaginationData = <T>(
+  paginationData: PaginateResult<T> | null
+): PaginationData | null =>
   paginationData
     ? {
         totalCount: paginationData.totalDocs,

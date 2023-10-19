@@ -142,21 +142,27 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
       let paginatedData;
       if (userData.isSignedIn) {
-        paginatedData = await DBFormDataModel.paginate<DBFormData>({
-          $and: [
-            { formId: form.simpleId },
-            { _id: { $in: dataObjectIds } },
-            ...readDataAsSignedInPrivilegesQuery(userData, csrfIsGood),
-          ],
-        });
+        paginatedData = await DBFormDataModel.paginate<DBFormData>(
+          {
+            $and: [
+              { formId: form.simpleId },
+              { _id: { $in: dataObjectIds } },
+              ...readDataAsSignedInPrivilegesQuery(userData, csrfIsGood),
+            ],
+          },
+          paginationOptions
+        );
       } else {
-        paginatedData = await DBFormDataModel.paginate<DBFormData>({
-          $and: [
-            { formId: form.simpleId },
-            { _id: { $in: dataObjectIds } },
-            ...readDataAsSignedOutPrivilegesQuery(csrfIsGood),
-          ],
-        });
+        paginatedData = await DBFormDataModel.paginate<DBFormData>(
+          {
+            $and: [
+              { formId: form.simpleId },
+              { _id: { $in: dataObjectIds } },
+              ...readDataAsSignedOutPrivilegesQuery(csrfIsGood),
+            ],
+          },
+          paginationOptions
+        );
       }
 
       formData = paginatedData.docs;
@@ -223,7 +229,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     }
   }
 
-  console.log('TADAAAAAAAAAAA GET', elemId, offset, orderBy, orderDir, s);
+  console.log('TADAAAAAAAAAAA GET', elemId, orderBy, orderDir, s);
   return res.send(returnObject);
 };
 

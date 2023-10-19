@@ -15,6 +15,7 @@ import {
 } from '../../test/utils';
 import type { PublicPrivilegeProp } from '../../dbModels/_modelTypePartials';
 import { SESSION_COOKIE_NAME } from '../../core/config';
+import type { PaginationData } from '../../utils/parsingAndConverting';
 
 describe('formData', () => {
   let app: FastifyInstance;
@@ -2100,5 +2101,89 @@ describe('formData', () => {
     expect(Object.keys(body).length).toBe(0);
   });
 
-  // should succesfully GET multiple public formData items and correct pagination data
+  it('should succesfully GET multiple public formData items and correct pagination data', async () => {
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: { public: 'false' as PublicPrivilegeProp },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: { public: 'true', requireCsrfHeader: true },
+        },
+      }
+    );
+    const formDataId1 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+    ]);
+    const formDataId2 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 11, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some long string', valueType: 'string' },
+    ]);
+    const formDataId3 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some beautiful string', valueType: 'string' },
+    ]);
+    const formDataId4 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 0, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some ugly string', valueType: 'string' },
+    ]);
+
+    const responseP1 = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?limit=2&dataId=${formDataId1.toString()}&dataId=${formDataId2.toString()}&dataId=${formDataId3.toString()}&dataId=${formDataId4.toString()}`,
+      ...csrfHeader,
+    });
+    const bodyP1 = JSON.parse(responseP1.body) as FormDataGetReply;
+    expect(responseP1.statusCode).toBe(200);
+    expect(Object.keys(bodyP1).length).toBe(2);
+
+    const paginationP1 = bodyP1.$pagination as PaginationData;
+    expect(Object.keys(paginationP1).length).toBe(7);
+    expect(paginationP1.totalCount).toBe(4);
+    expect(paginationP1.limit).toBe(2);
+    expect(paginationP1.offset).toBe(0);
+    expect(paginationP1.page).toBe(1);
+    expect(paginationP1.totalPages).toBe(2);
+    expect(paginationP1.hasNextPage).toBeTruthy();
+    expect(paginationP1.hasPrevPage).toBeFalsy();
+
+    const responseP2 = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?limit=2&offset=2&dataId=${formDataId1.toString()}&dataId=${formDataId2.toString()}&dataId=${formDataId3.toString()}&dataId=${formDataId4.toString()}`,
+      ...csrfHeader,
+    });
+    const bodyP2 = JSON.parse(responseP2.body) as FormDataGetReply;
+    expect(responseP2.statusCode).toBe(200);
+    expect(Object.keys(bodyP2).length).toBe(2);
+
+    const paginationP2 = bodyP2.$pagination as PaginationData;
+    expect(Object.keys(paginationP2).length).toBe(7);
+    expect(paginationP2.totalCount).toBe(4);
+    expect(paginationP2.limit).toBe(2);
+    expect(paginationP2.offset).toBe(2);
+    expect(paginationP2.page).toBe(2);
+    expect(paginationP2.totalPages).toBe(2);
+    expect(paginationP2.hasNextPage).toBeFalsy();
+    expect(paginationP2.hasPrevPage).toBeTruthy();
+  });
 });
