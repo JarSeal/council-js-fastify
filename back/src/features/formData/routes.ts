@@ -42,7 +42,7 @@ export const getQuerystringSchema = Type.Object({
       Type.Literal('valueTypeAndValue'),
     ])
   ),
-  orderDir: Type.Optional(Type.Union([Type.Literal('asc'), Type.Literal('desc')])),
+  orderDir: Type.Optional(Type.Union([Type.Literal('-'), Type.Literal('')])),
   s: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
 });
 export type GetQuerystring = Static<typeof getQuerystringSchema>;

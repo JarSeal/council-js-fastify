@@ -104,9 +104,13 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     // @TODO: set a upper limit of maximum dataItems per request
     const MAX_LIMIT = 500;
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
+    // @TODO: create a helper function to white list these orderBy parameters:
+    // 'created', 'edited', 'value', 'elemId', 'valueTypeAndValue'
+    const sorter = { [orderBy || 'created.date']: orderDir !== '-' ? 1 : -1 };
     const paginationOptions = {
       offset: offset || 0,
       limit: limiter,
+      sort: sorter,
       collation: {
         locale: 'en', // @TODO: add locale support
       },
@@ -229,7 +233,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     }
   }
 
-  console.log('TADAAAAAAAAAAA GET', elemId, orderBy, orderDir, s);
+  console.log('TADAAAAAAAAAAA GET', elemId, s);
   return res.send(returnObject);
 };
 
