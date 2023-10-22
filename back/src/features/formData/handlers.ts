@@ -12,8 +12,7 @@ import {
   type UserData,
   getUserData,
   isPrivBlocked,
-  readDataAsSignedInPrivilegesQuery,
-  readDataAsSignedOutPrivilegesQuery,
+  readDataPrivilegesQuery,
 } from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl, getPaginationData } from '../../utils/parsingAndConverting';
 
@@ -119,56 +118,28 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     if (dataId && dataId[0] === 'all') {
       // Get all formData (respects possible search, orderBy, orderDir, offset, and limit)
       // @TODO: implement search, orderBy, orderDir, and offset
-      let paginatedData;
-      if (userData.isSignedIn) {
-        paginatedData = await DBFormDataModel.paginate<DBFormData>(
-          {
-            $and: [
-              { formId: form.simpleId },
-              ...readDataAsSignedInPrivilegesQuery(userData, csrfIsGood),
-            ],
-          },
-          paginationOptions
-        );
-      } else {
-        paginatedData = await DBFormDataModel.paginate<DBFormData>(
-          {
-            $and: [{ formId: form.simpleId }, ...readDataAsSignedOutPrivilegesQuery(csrfIsGood)],
-          },
-          paginationOptions
-        );
-      }
+      const paginatedData = await DBFormDataModel.paginate<DBFormData>(
+        {
+          $and: [{ formId: form.simpleId }, ...readDataPrivilegesQuery(userData, csrfIsGood)],
+        },
+        paginationOptions
+      );
       formData = paginatedData.docs || [];
       paginationData = paginatedData;
     } else if (Array.isArray(dataId) && dataId?.length > 1) {
       // Get specific multiple formData items (respects possible search, orderBy, orderDir, offset, and limit)
       // @TODO: implement search, orderBy, orderDir, and offset
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
-      let paginatedData;
-      if (userData.isSignedIn) {
-        paginatedData = await DBFormDataModel.paginate<DBFormData>(
-          {
-            $and: [
-              { formId: form.simpleId },
-              { _id: { $in: dataObjectIds } },
-              ...readDataAsSignedInPrivilegesQuery(userData, csrfIsGood),
-            ],
-          },
-          paginationOptions
-        );
-      } else {
-        paginatedData = await DBFormDataModel.paginate<DBFormData>(
-          {
-            $and: [
-              { formId: form.simpleId },
-              { _id: { $in: dataObjectIds } },
-              ...readDataAsSignedOutPrivilegesQuery(csrfIsGood),
-            ],
-          },
-          paginationOptions
-        );
-      }
-
+      const paginatedData = await DBFormDataModel.paginate<DBFormData>(
+        {
+          $and: [
+            { formId: form.simpleId },
+            { _id: { $in: dataObjectIds } },
+            ...readDataPrivilegesQuery(userData, csrfIsGood),
+          ],
+        },
+        paginationOptions
+      );
       formData = paginatedData.docs;
       paginationData = paginatedData;
     } else if (dataId) {

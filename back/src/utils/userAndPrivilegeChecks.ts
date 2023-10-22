@@ -175,3 +175,10 @@ export const readDataAsSignedOutPrivilegesQuery = (csrfIsGood: boolean) => [
     ],
   },
 ];
+
+export const readDataPrivilegesQuery = (userData: UserData, csrfIsGood: boolean) => {
+  if (userData.isSignedIn) {
+    return readDataAsSignedInPrivilegesQuery(userData, csrfIsGood);
+  }
+  return readDataAsSignedOutPrivilegesQuery(csrfIsGood);
+};
