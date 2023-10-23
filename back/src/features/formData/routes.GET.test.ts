@@ -10,12 +10,12 @@ import {
   createSysAdmin,
   createUser,
   csrfHeader,
-  emptyFormDataPrivileges,
   validAgentId,
 } from '../../test/utils';
 import type { PublicPrivilegeProp } from '../../dbModels/_modelTypePartials';
 import { SESSION_COOKIE_NAME } from '../../core/config';
 import type { PaginationData } from '../../utils/parsingAndConverting';
+import { emptyFormDataPrivileges } from '../../utils/userAndPrivilegeChecks';
 
 describe('formData', () => {
   let app: FastifyInstance;

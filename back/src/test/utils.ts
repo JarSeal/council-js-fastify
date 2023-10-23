@@ -13,6 +13,7 @@ import type {
 } from '../dbModels/_modelTypePartials';
 import DBFormDataModel from '../dbModels/formData';
 import DBPrivilegeModel from '../dbModels/privilege';
+import { emptyFormDataPrivileges, emptyPrivilege } from '../utils/userAndPrivilegeChecks';
 
 export const csrfHeader = { headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE } };
 export const validAgentId = '726616f4bb878fab94f1f1dbc8c6ed79';
@@ -256,17 +257,17 @@ export const createFormData = async (
   const adminId = await createSysAdmin();
 
   privileges.read = {
-    ...emptyPrivileges,
+    ...emptyPrivilege,
     ...(form?.formDataDefaultPrivileges?.read || {}),
     ...(privileges.read || {}),
   };
   privileges.edit = {
-    ...emptyPrivileges,
+    ...emptyPrivilege,
     ...(form?.formDataDefaultPrivileges?.edit || {}),
     ...(privileges.edit || {}),
   };
   privileges.delete = {
-    ...emptyPrivileges,
+    ...emptyPrivilege,
     ...(form?.formDataDefaultPrivileges?.delete || {}),
     ...(privileges.delete || {}),
   };
@@ -304,26 +305,10 @@ export const createPrivilege = async (
     name: opts?.name || `${priCategoryId}, ${priTargetId}, ${priAccessId}`,
     description: opts?.description || 'Privilege description',
     created: opts?.created || new Date(),
-    privilegeAccess: { ...emptyPrivileges, ...privilegeAccess },
+    privilegeAccess: { ...emptyPrivilege, ...privilegeAccess },
   });
 
   const createdPrivilege = await privilege.save();
 
   return createdPrivilege._id;
-};
-
-export const emptyPrivileges: AllPrivilegeProps = {
-  public: 'false',
-  requireCsrfHeader: true,
-  users: [],
-  groups: [],
-  excludeUsers: [],
-  excludeGroups: [],
-};
-
-export const emptyFormDataPrivileges = {
-  read: emptyPrivileges,
-  create: emptyPrivileges,
-  edit: emptyPrivileges,
-  delete: emptyPrivileges,
 };

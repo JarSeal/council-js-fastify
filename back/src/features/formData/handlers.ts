@@ -13,8 +13,10 @@ import {
   getUserData,
   isPrivBlocked,
   readDataPrivilegesQuery,
+  combinePrivileges,
 } from '../../utils/userAndPrivilegeChecks';
-import { getApiPathFromReqUrl, getPaginationData } from '../../utils/parsingAndConverting';
+import { createPaginationPayload, getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
+import { getConfig } from '../../core/config';
 
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
   const body = req.body;
@@ -71,7 +73,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
     const privError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
     // White list the props to be returned with the form
-    const formElemsWithoutPrivileges = privError
+    const formElemsWithoutPrivilegesProp = privError
       ? []
       : form.form.formElems.map((elem) => ({
           elemId: elem.elemId,
@@ -90,7 +92,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         }));
     returnObject['$form'] = privError?.code || {
       ...form.form,
-      formElems: formElemsWithoutPrivileges,
+      formElems: formElemsWithoutPrivilegesProp,
     };
   }
 
@@ -100,8 +102,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       oneItem = false;
     const data: Data[][] = [];
 
-    // @TODO: set a upper limit of maximum dataItems per request
-    const MAX_LIMIT = 500;
+    const MAX_LIMIT = getConfig<number>('dataItemsMaxLimit', 500);
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
     // @TODO: create a helper function to white list these orderBy parameters:
     // 'created', 'edited', 'value', 'elemId', 'valueTypeAndValue'
@@ -111,7 +112,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       limit: limiter,
       sort: sorter,
       collation: {
-        locale: 'en', // @TODO: add locale support
+        locale: 'en', // @TODO: add locale support (to config file, as a systemSetting, and possibly to form as well)
       },
     };
 
@@ -145,17 +146,24 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     } else if (dataId) {
       oneItem = true;
       // Get one formData item
-      formData = await DBFormDataModel.findById<DBFormData>(dataId[0]).limit(1);
+      // formData = await DBFormDataModel.find<DBFormData>(dataId[0]).limit(1);
+      formData = await DBFormDataModel.findOne<DBFormData>({
+        $and: [
+          { formId: form.simpleId },
+          { _id: dataId[0] },
+          ...readDataPrivilegesQuery(userData, csrfIsGood),
+        ],
+      });
     }
 
     if (Array.isArray(formData)) {
       // Check multiple formData privileges
       for (let i = 0; i < formData.length; i++) {
         const fd = formData[i];
-        const mainPrivileges = {
-          ...form.formDataDefaultPrivileges.read,
-          ...(fd.privileges?.read || {}),
-        };
+        const mainPrivileges = combinePrivileges(
+          form.formDataDefaultPrivileges.read,
+          fd.privileges?.read || {}
+        );
         const rawData = fd.data || [];
         const dataSet = checkAndSetReadData(
           rawData,
@@ -169,14 +177,13 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         }
       }
       if (paginationData) {
-        returnObject['$pagination'] = getPaginationData(paginationData);
+        returnObject['$pagination'] = createPaginationPayload(paginationData);
       }
     } else {
-      // Check single formData privileges
-      const mainPrivileges = {
-        ...form.formDataDefaultPrivileges.read,
-        ...(formData?.privileges?.read || {}),
-      };
+      const mainPrivileges = combinePrivileges(
+        form.formDataDefaultPrivileges.read,
+        formData?.privileges?.read || {}
+      );
       const mainPrivError = isPrivBlocked(mainPrivileges, userData, csrfIsGood);
       const rawData = formData?.data || [];
       const dataSet = checkAndSetReadData(
@@ -220,7 +227,7 @@ const checkAndSetReadData = (
     const elem = rawData[i];
     let privError = null;
     if (hasElemPrivileges && elem.privileges?.read) {
-      const elemPrivileges = { ...mainPrivileges, ...elem.privileges.read };
+      const elemPrivileges = combinePrivileges(mainPrivileges, elem.privileges.read);
       privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
     }
     // Data can be accessed if there is not a mainPrivError or if there is,

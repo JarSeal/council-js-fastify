@@ -56,8 +56,8 @@ const getFormConfigs = async () => {
             required: true,
           },
           {
-            elemId: 'testElem0',
-            orderNr: 0,
+            elemId: 'testElem1',
+            orderNr: 1,
             elemType: 'inputText',
             valueType: createValueType('inputText'),
             elemData: createElemData('inputText'),
@@ -70,7 +70,6 @@ const getFormConfigs = async () => {
         ],
         formDataPrivileges: {
           read: { groups: [basicUsersId] },
-          create: { groups: [basicUsersId] },
           edit: { groups: [basicUsersId] },
           delete: { groups: [basicUsersId] },
         },
@@ -81,7 +80,6 @@ const getFormConfigs = async () => {
             owner: null,
             privileges: {
               read: { groups: [basicUsersId] },
-              create: { groups: [basicUsersId] },
               edit: { groups: [basicUsersId] },
               delete: { groups: [basicUsersId] },
             },
@@ -128,6 +126,176 @@ const getFormConfigs = async () => {
       description: 'Basic user is the owner of this form',
       url: '/testform2',
       formDataOwner: basicUserId,
+    },
+    {
+      formId: 'testform3',
+      name: 'Public data sets',
+      description: 'Five public data sets',
+      url: '/testform3',
+      opts: {
+        formElems: [
+          {
+            elemId: 'testElem0',
+            orderNr: 0,
+            elemType: 'inputText',
+            valueType: createValueType('inputText'),
+            elemData: createElemData('inputText'),
+            label: { langKey: 'Label 1' },
+            required: true,
+          },
+          {
+            elemId: 'testElem1',
+            orderNr: 1,
+            elemType: 'inputNumber',
+            valueType: createValueType('inputNumber'),
+            elemData: createElemData('inputNumber'),
+            label: { langKey: 'Label 2' },
+            required: true,
+          },
+        ],
+        formDataPrivileges: {
+          read: { public: 'true' },
+          edit: { groups: [basicUsersId] },
+          delete: { groups: [basicUsersId] },
+        },
+        formData: [
+          {
+            formId: 'testform3',
+            url: '/testform3',
+            owner: null,
+            privileges: {
+              read: { public: 'true' },
+              edit: { groups: [basicUsersId] },
+              delete: { groups: [basicUsersId] },
+            },
+            data: [
+              {
+                elemId: 'testElem0',
+                orderNr: 0,
+                value: 'Some text input data 1',
+                valueType: createValueType('inputText'),
+              },
+              {
+                elemId: 'testElem1',
+                orderNr: 1,
+                value: 12,
+                valueType: createValueType('inputNumber'),
+              },
+            ],
+          },
+          {
+            formId: 'testform3',
+            url: '/testform3',
+            owner: null,
+            privileges: {
+              read: { public: 'true' },
+              edit: { groups: [basicUsersId] },
+              delete: { groups: [basicUsersId] },
+            },
+            data: [
+              {
+                elemId: 'testElem0',
+                orderNr: 0,
+                value: 'Some text input data 2',
+                valueType: createValueType('inputText'),
+              },
+              {
+                elemId: 'testElem1',
+                orderNr: 1,
+                value: 2,
+                valueType: createValueType('inputNumber'),
+              },
+            ],
+          },
+          {
+            formId: 'testform3',
+            url: '/testform3',
+            owner: null,
+            privileges: {
+              read: { public: 'true' },
+              edit: { groups: [basicUsersId] },
+              delete: { groups: [basicUsersId] },
+            },
+            data: [
+              {
+                elemId: 'testElem0',
+                orderNr: 0,
+                value: 'Some text input data 3',
+                valueType: createValueType('inputText'),
+              },
+              {
+                elemId: 'testElem1',
+                orderNr: 1,
+                value: 1245,
+                valueType: createValueType('inputNumber'),
+              },
+            ],
+          },
+          {
+            formId: 'testform3',
+            url: '/testform3',
+            owner: null,
+            privileges: {
+              read: { public: 'true' },
+              edit: { groups: [basicUsersId] },
+              delete: { groups: [basicUsersId] },
+            },
+            data: [
+              {
+                elemId: 'testElem0',
+                orderNr: 0,
+                value: 'Some text input data 4',
+                valueType: createValueType('inputText'),
+              },
+              {
+                elemId: 'testElem1',
+                orderNr: 1,
+                value: 5431254,
+                valueType: createValueType('inputNumber'),
+              },
+            ],
+          },
+          {
+            formId: 'testform3',
+            url: '/testform3',
+            owner: null,
+            privileges: {
+              read: { public: 'true' },
+              edit: { groups: [basicUsersId] },
+              delete: { groups: [basicUsersId] },
+            },
+            data: [
+              {
+                elemId: 'testElem0',
+                orderNr: 0,
+                value: 'Some text input data 5',
+                valueType: createValueType('inputText'),
+              },
+              {
+                elemId: 'testElem1',
+                orderNr: 1,
+                value: 0,
+                valueType: createValueType('inputNumber'),
+              },
+            ],
+          },
+        ],
+        privileges: [
+          {
+            priCategoryId: 'form',
+            priTargetId: 'testform3',
+            priAccessId: 'canUseForm',
+            privilegeAccess: {
+              public: 'true',
+              requireCsrfHeader: true,
+              users: [],
+              groups: [],
+              excludeUsers: [],
+              excludeGroups: [],
+            },
+          },
+        ],
+      },
     },
   ];
 };
@@ -411,9 +579,9 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
       if (!opts.formData[i].created)
         opts.formData[i].created = { user: superAdminId, date: new Date() };
       if (!opts.formData[i].owner) opts.formData[i].owner = superAdminId;
-      if (!opts.formData[i].hasElemPrivileges) opts.formData[i].hasElemPrivileges = true;
+      if (!opts.formData[i].hasElemPrivileges) opts.formData[i].hasElemPrivileges = false;
       const formData = new DBFormDataModel(opts.formData[i]);
-      formData.save();
+      await formData.save();
       formDataCount++;
     }
   }

@@ -5,6 +5,22 @@ import DBGroupModel from '../dbModels/group';
 import type { AllPrivilegeProps } from '../dbModels/_modelTypePartials';
 import { errors } from '../core/errors';
 
+export const emptyPrivilege: AllPrivilegeProps = {
+  public: 'false',
+  requireCsrfHeader: true,
+  users: [],
+  groups: [],
+  excludeUsers: [],
+  excludeGroups: [],
+};
+
+export const emptyFormDataPrivileges = {
+  read: emptyPrivilege,
+  create: emptyPrivilege,
+  edit: emptyPrivilege,
+  delete: emptyPrivilege,
+};
+
 export type UserData = {
   isSignedIn: boolean;
   userId: Types.ObjectId | null;
@@ -45,12 +61,7 @@ export const isPrivBlocked = (
 
   // Normalize privilege
   const priv: AllPrivilegeProps = {
-    public: 'false',
-    requireCsrfHeader: true,
-    users: [],
-    groups: [],
-    excludeUsers: [],
-    excludeGroups: [],
+    ...emptyPrivilege,
     ...privilege,
   };
 
@@ -94,6 +105,7 @@ export const isPrivBlocked = (
     for (let i = 0; i < priv.groups.length; i++) {
       for (let j = 0; j < userData.userGroups.length; j++) {
         if (userData.userGroups[j].equals(priv.groups[i])) {
+          // Good to go, if not in excluded users nor groups
           return (
             checkExcludedUsers(userData, priv.excludeUsers) ||
             checkExcludedGroups(userData, priv.excludeGroups)
@@ -137,7 +149,7 @@ export const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood
   { 'privileges.read.public': { $ne: 'onlyPublic' } },
   {
     $or: [
-      { 'privileges.read.requireCsrfHeader': false },
+      { 'privileges.read.requireCsrfHeader': { $ne: true } },
       { 'privileges.read.requireCsrfHeader': csrfIsGood },
     ],
   },
@@ -170,7 +182,7 @@ export const readDataAsSignedOutPrivilegesQuery = (csrfIsGood: boolean) => [
   },
   {
     $or: [
-      { 'privileges.read.requireCsrfHeader': false },
+      { 'privileges.read.requireCsrfHeader': { $ne: true } },
       { 'privileges.read.requireCsrfHeader': csrfIsGood },
     ],
   },
@@ -181,4 +193,20 @@ export const readDataPrivilegesQuery = (userData: UserData, csrfIsGood: boolean)
     return readDataAsSignedInPrivilegesQuery(userData, csrfIsGood);
   }
   return readDataAsSignedOutPrivilegesQuery(csrfIsGood);
+};
+
+export const combinePrivileges = (
+  ...privileges: Partial<AllPrivilegeProps>[]
+): AllPrivilegeProps => {
+  const combined = emptyPrivilege;
+  for (let i = 0; i < privileges.length; i++) {
+    const priv = privileges[i];
+    if (priv.public !== undefined) combined.public = priv.public;
+    if (priv.requireCsrfHeader !== undefined) combined.requireCsrfHeader = priv.requireCsrfHeader;
+    if (priv.users !== undefined) combined.users = priv.users;
+    if (priv.groups !== undefined) combined.groups = priv.groups;
+    if (priv.excludeUsers !== undefined) combined.excludeUsers = priv.excludeUsers;
+    if (priv.excludeGroups !== undefined) combined.excludeGroups = priv.excludeGroups;
+  }
+  return combined;
 };

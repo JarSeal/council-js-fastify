@@ -1,7 +1,7 @@
 import { type Types, type PaginateModel, Schema, model } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-import { simpleIdDBSchema, dateDBSchema, formDataPrivilegesSchema } from './_schemaPartials';
+import { dateDBSchema, formDataPrivilegesSchema } from './_schemaPartials';
 import type { Edited, FormDataPrivileges, FormDataValueType } from './_modelTypePartials';
 
 export interface DBFormData {
@@ -49,7 +49,7 @@ export interface DBFormData {
 }
 
 const formDataSchema = new Schema<DBFormData>({
-  formId: { ...simpleIdDBSchema, unique: false },
+  formId: { type: String, required: true, index: false },
   url: { type: String, required: true },
   created: {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, default: null },

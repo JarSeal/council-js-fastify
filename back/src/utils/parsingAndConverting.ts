@@ -16,7 +16,7 @@ export type PaginationData = {
   hasPrevPage: boolean;
 };
 
-export const getPaginationData = <T>(
+export const createPaginationPayload = <T>(
   paginationData: PaginateResult<T> | null
 ): PaginationData | null =>
   paginationData

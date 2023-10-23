@@ -15,6 +15,7 @@ module.exports = {
         // Add super user as the creator and owner (owner is important)
         systemGroups[i].created.user = superUser._id;
         systemGroups[i].owner = superUser._id;
+        systemGroups[i].members = [superUser._id];
         await db.collection('groups').insertOne(systemGroups[i]);
       }
     }
