@@ -105,8 +105,11 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     const MAX_LIMIT = getConfig<number>('dataItemsMaxLimit', 500);
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
     // @TODO: create a helper function to white list these orderBy parameters:
-    // 'created', 'edited', 'value', 'elemId', 'valueTypeAndValue'
-    const sorter = { [orderBy || 'created.date']: orderDir !== '-' ? 1 : -1 };
+    // '+-created', '+-edited', +-[index], +-(elemId)
+    // const sorter = { [orderBy || 'data[1].value']: orderDir !== '-' ? 1 : -1 };
+    const sorter = 'data.12.value -created.date';
+    orderBy;
+    orderDir;
     const paginationOptions = {
       offset: offset || 0,
       limit: limiter,

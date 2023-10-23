@@ -73,7 +73,7 @@ const formDataSchema = new Schema<DBFormData>({
       _id: false,
       elemId: { type: String, required: true },
       orderNr: { type: Number, required: true },
-      value: { type: Schema.Types.Mixed, required: true },
+      value: { type: Schema.Types.Mixed, required: true, index: true },
       valueType: { type: String, required: true },
       privileges: formDataPrivilegesSchema,
     },

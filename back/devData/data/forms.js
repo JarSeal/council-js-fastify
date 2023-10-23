@@ -130,7 +130,7 @@ const getFormConfigs = async () => {
     {
       formId: 'testform3',
       name: 'Public data sets',
-      description: 'Five public data sets',
+      description: 'Multiple public data sets',
       url: '/testform3',
       opts: {
         formElems: [
@@ -269,6 +269,30 @@ const getFormConfigs = async () => {
                 elemId: 'testElem0',
                 orderNr: 0,
                 value: 'Some text input data 5',
+                valueType: createValueType('inputText'),
+              },
+              {
+                elemId: 'testElem1',
+                orderNr: 1,
+                value: 0,
+                valueType: createValueType('inputNumber'),
+              },
+            ],
+          },
+          {
+            formId: 'testform3',
+            url: '/testform3',
+            owner: null,
+            privileges: {
+              read: { public: 'true' },
+              edit: { groups: [basicUsersId] },
+              delete: { groups: [basicUsersId] },
+            },
+            data: [
+              {
+                elemId: 'testElem0',
+                orderNr: 0,
+                value: 'Some text input data 6',
                 valueType: createValueType('inputText'),
               },
               {
