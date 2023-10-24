@@ -15,8 +15,14 @@ import {
   readDataPrivilegesQuery,
   combinePrivileges,
 } from '../../utils/userAndPrivilegeChecks';
-import { createPaginationPayload, getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
+import {
+  createPaginationPayload,
+  getApiPathFromReqUrl,
+  parseFormDataSortStringFromQueryString,
+  parseSearchQuery,
+} from '../../utils/parsingAndConverting';
 import { getConfig } from '../../core/config';
+import type { TransText } from '../../@types/form';
 
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
   const body = req.body;
@@ -44,7 +50,19 @@ type Data = {
 
 export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   // Query string
-  const { getForm, dataId, elemId, flat, offset, limit, orderBy, orderDir, s } = req.query;
+  const {
+    getForm,
+    dataId,
+    elemId,
+    flat,
+    offset,
+    limit,
+    sort,
+    s,
+    sOper,
+    includeDataIds,
+    includeLabels,
+  } = req.query;
   const url = getApiPathFromReqUrl(req.url);
 
   // Get form and check that form exists
@@ -61,6 +79,15 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     );
   }
 
+  // Create possible labels (for embedding them into data)
+  const labels: { [key: string]: TransText } = {};
+  if (includeLabels === 'embed') {
+    for (let i = 0; i < form.form.formElems.length; i++) {
+      const elem = form.form.formElems[i];
+      labels[elem.elemId] = (elem.label as TransText) || {};
+    }
+  }
+
   // Get CSRF result
   const csrfIsGood = isCsrfGood(req);
 
@@ -73,26 +100,23 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
     const privError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
     // White list the props to be returned with the form
-    const formElemsWithoutPrivilegesProp = privError
-      ? []
-      : form.form.formElems.map((elem) => ({
-          elemId: elem.elemId,
-          orderNr: elem.orderNr,
-          elemType: elem.elemType,
-          valueType: elem.valueType,
-          classes: elem.classes,
-          elemData: elem.elemData,
-          label: elem.label,
-          required: elem.required,
-          validationRegExp: elem.validationRegExp,
-          mustMatchValue: elem.mustMatchValue,
-          validationFn: elem.validationFn,
-          inputErrors: elem.inputErrors,
-          doNotSave: elem.doNotSave,
-        }));
     returnObject['$form'] = privError?.code || {
       ...form.form,
-      formElems: formElemsWithoutPrivilegesProp,
+      formElems: form.form.formElems.map((elem) => ({
+        elemId: elem.elemId,
+        orderNr: elem.orderNr,
+        elemType: elem.elemType,
+        valueType: elem.valueType,
+        classes: elem.classes,
+        elemData: elem.elemData,
+        label: elem.label,
+        required: elem.required,
+        validationRegExp: elem.validationRegExp,
+        mustMatchValue: elem.mustMatchValue,
+        validationFn: elem.validationFn,
+        inputErrors: elem.inputErrors,
+        doNotSave: elem.doNotSave,
+      })),
     };
   }
 
@@ -104,35 +128,39 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 
     const MAX_LIMIT = getConfig<number>('dataItemsMaxLimit', 500);
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
-    // @TODO: create a helper function to white list these orderBy parameters:
-    // '+-created', '+-edited', +-[index], +-(elemId)
-    // const sorter = { [orderBy || 'data[1].value']: orderDir !== '-' ? 1 : -1 };
-    const sorter = 'data.12.value -created.date';
-    orderBy;
-    orderDir;
+    const sorter = parseFormDataSortStringFromQueryString(sort, form);
     const paginationOptions = {
       offset: offset || 0,
       limit: limiter,
       sort: sorter,
       collation: {
-        locale: 'en', // @TODO: add locale support (to config file, as a systemSetting, and possibly to form as well)
+        // https://www.mongodb.com/docs/manual/reference/collation-locales-defaults/#std-label-collation-languages-locales
+        locale: getConfig<string>('dataCollationLocale', 'en'), // @TODO: add locale support (as a systemSetting and possibly to form as well)
       },
     };
 
     if (dataId && dataId[0] === 'all') {
-      // Get all formData (respects possible search, orderBy, orderDir, offset, and limit)
-      // @TODO: implement search, orderBy, orderDir, and offset
+      // Get all possible formData (paginated)
+
+      const searchQuery = parseSearchQuery(s, sOper, form);
+
       const paginatedData = await DBFormDataModel.paginate<DBFormData>(
         {
-          $and: [{ formId: form.simpleId }, ...readDataPrivilegesQuery(userData, csrfIsGood)],
+          $and: [
+            { formId: form.simpleId },
+            ...readDataPrivilegesQuery(userData, csrfIsGood),
+            ...searchQuery,
+          ],
         },
         paginationOptions
       );
       formData = paginatedData.docs || [];
       paginationData = paginatedData;
     } else if (Array.isArray(dataId) && dataId?.length > 1) {
-      // Get specific multiple formData items (respects possible search, orderBy, orderDir, offset, and limit)
-      // @TODO: implement search, orderBy, orderDir, and offset
+      // Get specific multiple formData items (paginated)
+
+      const searchQuery = parseSearchQuery(s, sOper, form);
+
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
       const paginatedData = await DBFormDataModel.paginate<DBFormData>(
         {
@@ -140,6 +168,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
             { formId: form.simpleId },
             { _id: { $in: dataObjectIds } },
             ...readDataPrivilegesQuery(userData, csrfIsGood),
+            ...searchQuery,
           ],
         },
         paginationOptions
@@ -148,8 +177,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       paginationData = paginatedData;
     } else if (dataId) {
       oneItem = true;
-      // Get one formData item
-      // formData = await DBFormDataModel.find<DBFormData>(dataId[0]).limit(1);
+      // Get one formData item with dataId (search is ignored)
       formData = await DBFormDataModel.findOne<DBFormData>({
         $and: [
           { formId: form.simpleId },
@@ -161,6 +189,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 
     if (Array.isArray(formData)) {
       // Check multiple formData privileges
+      const dataIds: string[] = [];
       for (let i = 0; i < formData.length; i++) {
         const fd = formData[i];
         const mainPrivileges = combinePrivileges(
@@ -168,11 +197,16 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
           fd.privileges?.read || {}
         );
         const rawData = fd.data || [];
+        const dataId = fd._id.toString();
+        dataIds.push(dataId);
         const dataSet = checkAndSetReadData(
           rawData,
           mainPrivileges,
           userData,
           csrfIsGood,
+          includeDataIds === 'embed' ? dataId : null,
+          includeLabels === 'embed' ? labels : null,
+          elemId,
           fd.hasElemPrivileges
         );
         if (dataSet.length) {
@@ -182,6 +216,9 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       if (paginationData) {
         returnObject['$pagination'] = createPaginationPayload(paginationData);
       }
+      if (includeDataIds === 'true') {
+        returnObject['$dataIds'] = dataIds;
+      }
     } else {
       const mainPrivileges = combinePrivileges(
         form.formDataDefaultPrivileges.read,
@@ -189,16 +226,30 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       );
       const mainPrivError = isPrivBlocked(mainPrivileges, userData, csrfIsGood);
       const rawData = formData?.data || [];
+      const formDataId = formData ? formData._id?.toString() : null;
       const dataSet = checkAndSetReadData(
         rawData,
         mainPrivileges,
         userData,
         csrfIsGood,
+        includeDataIds === 'embed' && formDataId ? formDataId : null,
+        includeLabels === 'embed' ? labels : null,
+        elemId,
         formData?.hasElemPrivileges
       );
       if (!mainPrivError && dataSet.length) {
         data.push(dataSet);
       }
+      if (includeDataIds === 'true') {
+        returnObject['$dataIds'] = [formDataId];
+      }
+    }
+
+    if (includeLabels === 'true' && data[0]?.length) {
+      for (let i = 0; i < data[0].length; i++) {
+        labels[data[0][i].elemId] = (form.form.formElems[i].label as TransText) || {};
+      }
+      returnObject['$labels'] = labels;
     }
 
     if (oneItem && flat) {
@@ -208,13 +259,12 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         }
       }
     } else if (oneItem) {
-      returnObject['data'] = data[0];
+      returnObject['data'] = data[0] || [];
     } else {
       returnObject['data'] = data;
     }
   }
 
-  console.log('TADAAAAAAAAAAA GET', elemId, s);
   return res.send(returnObject);
 };
 
@@ -223,6 +273,9 @@ const checkAndSetReadData = (
   mainPrivileges: AllPrivilegeProps,
   userData: UserData,
   csrfIsGood: boolean,
+  dataId: string | null,
+  labels: { [key: string]: TransText } | null,
+  elemId: string | string[] | undefined,
   hasElemPrivileges?: boolean
 ): Data[] => {
   const returnData: Data[] = [];
@@ -235,13 +288,15 @@ const checkAndSetReadData = (
     }
     // Data can be accessed if there is not a mainPrivError or if there is,
     // the elem has overriding elem privileges that does not have an error
-    if (!privError) {
+    if (!privError && (!elemId || elemId.includes(elem.elemId))) {
       // White list the data props to be returned
       returnData.push({
         elemId: elem.elemId,
         orderNr: i,
         value: elem.value,
         valueType: elem.valueType,
+        ...(dataId ? { dataId } : {}),
+        ...(labels ? { label: labels[elem.elemId] } : {}),
       });
     }
   }

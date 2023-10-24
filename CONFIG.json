@@ -14,5 +14,6 @@
     "maxLoginLogs": 5,
     "maxLoginAttemptLogs": 5
   },
-  "dataItemsMaxLimit": 500
+  "dataItemsMaxLimit": 500,
+  "dataCollationLocale": "fi"
 }

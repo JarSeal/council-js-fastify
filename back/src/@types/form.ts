@@ -24,6 +24,7 @@ export const transTextSchema = Type.Optional(
     langKey: Type.Optional(Type.String()),
   })
 );
+export type TransText = Static<typeof transTextSchema>;
 
 export const basicPrivilegePropsSchema = Type.Object({
   users: Type.Optional(mongoIdArraySchema),
