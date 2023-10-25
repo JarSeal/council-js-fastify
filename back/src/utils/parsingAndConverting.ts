@@ -1,8 +1,9 @@
-import type { PaginateResult } from 'mongoose';
+import type { PaginateResult, Types } from 'mongoose';
 
 import { apiVersion } from '../core/apis';
 import { apiRoot } from '../core/app';
 import type { DBForm } from '../dbModels/form';
+import type { UserData } from './userAndPrivilegeChecks';
 
 export const getApiPathFromReqUrl = (reqUrl: string) =>
   reqUrl.split('?')[0].replace(apiRoot + apiVersion, '');
@@ -87,12 +88,18 @@ export const parseFormDataSortStringFromQueryString = (
   return sortStringArray.join(' ');
 };
 
-type SearchQuery = { [key: string]: { $regex: string; $options: string } | number }[];
+type SearchQuery = {
+  $and: (
+    | { [key: string]: { $regex: string; $options: string } | number }
+    | { $or: { [key: string]: boolean | Types.ObjectId | null }[] }
+  )[];
+}[];
 
 export const parseSearchQuery = (
   s: string | string[] | undefined,
   sOper: string | undefined,
-  form: DBForm
+  form: DBForm,
+  userData: UserData
 ) => {
   if (!s) return [];
   let searchQuery: SearchQuery = [];
@@ -128,16 +135,8 @@ export const parseSearchQuery = (
     if (index === null) continue;
 
     const valueType = elems[index].valueType;
-    const query = getSearchQueryByValueType(valueType, index, searchTerm);
+    const query = getSearchQueryByValueType(valueType, index, searchTerm, userData);
     if (query) searchQuery.push(query);
-    // switch (valueType) {
-    //   case 'string':
-    //     searchQuery.push({ [`data.${index}.value`]: { $regex: searchTerm, $options: 'i' } });
-    //     break;
-    //   case 'number':
-    //     searchQuery.push({ [`data.${index}.value`]: Number(searchTerm) });
-    //     break;
-    // }
   }
 
   if (fullSearch) {
@@ -145,7 +144,7 @@ export const parseSearchQuery = (
     for (let i = 0; i < elems.length; i++) {
       if (!elems[i].doNotSave) {
         const valueType = elems[i].valueType;
-        const query = getSearchQueryByValueType(valueType, elemIndex, searchTerm);
+        const query = getSearchQueryByValueType(valueType, elemIndex, searchTerm, userData);
         if (query) searchQuery.push(query);
         elemIndex++;
       }
@@ -156,12 +155,25 @@ export const parseSearchQuery = (
   return searchQuery;
 };
 
-const getSearchQueryByValueType = (valueType: string, index: number, searchTerm: string) => {
+const getSearchQueryByValueType = (
+  valueType: string,
+  index: number,
+  searchTerm: string,
+  userData: UserData
+) => {
+  const hasNotElemPrivs: { $or: { [key: string]: boolean | Types.ObjectId | null }[] } = {
+    $or: [{ hasElemPrivileges: false }, { hasElemPrivileges: userData.isSysAdmin }],
+  };
+  if (userData.userId) {
+    hasNotElemPrivs.$or.push({ owner: userData.userId });
+  }
   switch (valueType) {
     case 'string':
-      return { [`data.${index}.value`]: { $regex: searchTerm, $options: 'i' } };
+      return {
+        $and: [hasNotElemPrivs, { [`data.${index}.value`]: { $regex: searchTerm, $options: 'i' } }],
+      };
     case 'number':
-      return { [`data.${index}.value`]: Number(searchTerm) };
+      return { $and: [hasNotElemPrivs, { [`data.${index}.value`]: Number(searchTerm) }] };
     default:
       return null;
   }
