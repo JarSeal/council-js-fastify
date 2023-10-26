@@ -1,9 +1,9 @@
-import type { PaginateResult, Types } from 'mongoose';
+import type { PaginateResult } from 'mongoose';
 
 import { apiVersion } from '../core/apis';
 import { apiRoot } from '../core/app';
 import type { DBForm } from '../dbModels/form';
-import type { UserData } from './userAndPrivilegeChecks';
+import { getFormDataElemPrivilegesQuery, type UserData } from './userAndPrivilegeChecks';
 
 export const getApiPathFromReqUrl = (reqUrl: string) =>
   reqUrl.split('?')[0].replace(apiRoot + apiVersion, '');
@@ -91,7 +91,7 @@ export const parseFormDataSortStringFromQueryString = (
 type SearchQuery = {
   $and: (
     | { [key: string]: { $regex: string; $options: string } | number }
-    | { $or: { [key: string]: boolean | Types.ObjectId | null }[] }
+    | { $or: { [key: string]: unknown }[] }
   )[];
 }[];
 
@@ -99,7 +99,8 @@ export const parseSearchQuery = (
   s: string | string[] | undefined,
   sOper: string | undefined,
   form: DBForm,
-  userData: UserData
+  userData: UserData,
+  csrfIsGood: boolean
 ) => {
   if (!s) return [];
   let searchQuery: SearchQuery = [];
@@ -133,9 +134,10 @@ export const parseSearchQuery = (
       index = parseInt(elemIdOrIndex);
     }
     if (index === null) continue;
+    console.log('INDEX', index);
 
     const valueType = elems[index].valueType;
-    const query = getSearchQueryByValueType(valueType, index, searchTerm, userData);
+    const query = getSearchQueryByValueType(valueType, index, searchTerm, userData, csrfIsGood);
     if (query) searchQuery.push(query);
   }
 
@@ -144,7 +146,13 @@ export const parseSearchQuery = (
     for (let i = 0; i < elems.length; i++) {
       if (!elems[i].doNotSave) {
         const valueType = elems[i].valueType;
-        const query = getSearchQueryByValueType(valueType, elemIndex, searchTerm, userData);
+        const query = getSearchQueryByValueType(
+          valueType,
+          elemIndex,
+          searchTerm,
+          userData,
+          csrfIsGood
+        );
         if (query) searchQuery.push(query);
         elemIndex++;
       }
@@ -159,21 +167,18 @@ const getSearchQueryByValueType = (
   valueType: string,
   index: number,
   searchTerm: string,
-  userData: UserData
+  userData: UserData,
+  csrfIsGood: boolean
 ) => {
-  const hasNotElemPrivs: { $or: { [key: string]: boolean | Types.ObjectId | null }[] } = {
-    $or: [{ hasElemPrivileges: false }, { hasElemPrivileges: userData.isSysAdmin }],
-  };
-  if (userData.userId) {
-    hasNotElemPrivs.$or.push({ owner: userData.userId });
-  }
+  const currentElemReadPrivs = `data.${index}.privileges.read`;
+  const elemPrivsCheck = getFormDataElemPrivilegesQuery(currentElemReadPrivs, userData, csrfIsGood);
   switch (valueType) {
     case 'string':
       return {
-        $and: [hasNotElemPrivs, { [`data.${index}.value`]: { $regex: searchTerm, $options: 'i' } }],
+        $and: [elemPrivsCheck, { [`data.${index}.value`]: { $regex: searchTerm, $options: 'i' } }],
       };
     case 'number':
-      return { $and: [hasNotElemPrivs, { [`data.${index}.value`]: Number(searchTerm) }] };
+      return { $and: [elemPrivsCheck, { [`data.${index}.value`]: Number(searchTerm) }] };
     default:
       return null;
   }

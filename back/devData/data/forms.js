@@ -90,6 +90,9 @@ const getFormConfigs = async () => {
                 orderNr: 0,
                 value: 'Some text input data',
                 valueType: createValueType('inputText'),
+                privileges: {
+                  read: { public: 'true' },
+                },
               },
               {
                 elemId: 'testElem1',

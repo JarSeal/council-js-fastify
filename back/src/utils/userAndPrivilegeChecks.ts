@@ -210,3 +210,53 @@ export const combinePrivileges = (
   }
   return combined;
 };
+
+export const getFormDataElemPrivilegesQuery = (
+  currentElemPrivs: string,
+  userData: UserData,
+  csrfIsGood: boolean
+) => ({
+  $or: [
+    { hasElemPrivileges: false },
+    { hasElemPrivileges: userData.isSysAdmin },
+    { [currentElemPrivs]: { $exists: false } },
+    ...(userData.isSignedIn ? [{ owner: userData.userId }] : []),
+    {
+      $and: [
+        {
+          $or: [
+            { [`${currentElemPrivs}.requireCsrfHeader`]: { $ne: true } },
+            { [`${currentElemPrivs}.requireCsrfHeader`]: csrfIsGood },
+          ],
+        },
+        userData.isSignedIn
+          ? {
+              // Signed in
+              $or: [
+                { [`${currentElemPrivs}.public`]: 'true' },
+                {
+                  $and: [
+                    { [`${currentElemPrivs}.public`]: { $ne: 'onlyPublic' } },
+                    {
+                      $or: [
+                        { [`${currentElemPrivs}.users`]: userData.userId },
+                        { [`${currentElemPrivs}.groups`]: { $in: userData.userGroups } },
+                      ],
+                    },
+                    { [`${currentElemPrivs}.excludeUsers`]: { $ne: userData.userId } },
+                    { [`${currentElemPrivs}.excludeGroups`]: { $nin: userData.userGroups } },
+                  ],
+                },
+              ],
+            }
+          : {
+              // Signed out
+              $or: [
+                { [`${currentElemPrivs}.public`]: 'true' },
+                { [`${currentElemPrivs}.public`]: 'onlyPublic' },
+              ],
+            },
+      ],
+    },
+  ],
+});
