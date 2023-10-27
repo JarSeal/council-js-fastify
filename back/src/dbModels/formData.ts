@@ -49,7 +49,7 @@ export interface DBFormData {
 }
 
 const formDataSchema = new Schema<DBFormData>({
-  formId: { type: String, required: true, index: false },
+  formId: { type: String, required: true, index: true },
   url: { type: String, required: true },
   created: {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true, default: null },
