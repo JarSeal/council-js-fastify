@@ -90,7 +90,13 @@ export const parseFormDataSortStringFromQueryString = (
 
 type SearchQuery = {
   $and: (
-    | { [key: string]: { $regex: string; $options: string } | number }
+    | {
+        [key: string]:
+          | { $regex: string; $options: string }
+          | { $gt: string }
+          | { $lt: string }
+          | number;
+      }
     | { $or: { [key: string]: unknown }[] }
   )[];
 }[];
@@ -109,6 +115,7 @@ export const parseSearchQuery = (
     searchTerm = '';
 
   for (let i = 0; i < s.length; i++) {
+    let dateSearch = null;
     const elemIdOrIndex = s[i].split(':')[0];
     searchTerm = s[i].replace(elemIdOrIndex + ':', '');
     if (elemIdOrIndex === '$all') {
@@ -116,6 +123,8 @@ export const parseSearchQuery = (
       searchQuery = [];
       break;
     }
+    if (elemIdOrIndex === 'created') dateSearch = 'created';
+    if (elemIdOrIndex === 'edited') dateSearch = 'edited';
     if (!elemIdOrIndex) continue;
 
     let index = null;
@@ -128,16 +137,20 @@ export const parseSearchQuery = (
           break;
         }
       }
+      if (index === null) index = -1;
     } else if (isNaN(Number(elemIdOrIndex))) {
-      continue;
+      index = -1;
     } else {
       index = parseInt(elemIdOrIndex);
     }
-    if (index === null) continue;
-    console.log('INDEX', index);
 
-    const valueType = elems[index].valueType;
-    const query = getSearchQueryByValueType(valueType, index, searchTerm, userData, csrfIsGood);
+    let query;
+    if (dateSearch) {
+      query = getSearchQueryByValueType(dateSearch, 0, searchTerm, userData, csrfIsGood);
+    } else {
+      const valueType = index === -1 ? '' : elems[index].valueType;
+      query = getSearchQueryByValueType(valueType, index, searchTerm, userData, csrfIsGood);
+    }
     if (query) searchQuery.push(query);
   }
 
@@ -173,13 +186,26 @@ const getSearchQueryByValueType = (
   const currentElemReadPrivs = `data.${index}.privileges.read`;
   const elemPrivsCheck = getFormDataElemPrivilegesQuery(currentElemReadPrivs, userData, csrfIsGood);
   switch (valueType) {
+    case 'number':
+      return { $and: [elemPrivsCheck, { [`data.${index}.value`]: Number(searchTerm) }] };
+    case 'created':
+      return {
+        $and: [
+          elemPrivsCheck,
+          { 'created.date': index === 0 ? { $gt: searchTerm } : { $lt: searchTerm } },
+        ],
+      };
+    case 'edited':
+      return {
+        $and: [
+          elemPrivsCheck,
+          { 'edited.0.date': index === 0 ? { $gt: searchTerm } : { $lt: searchTerm } },
+        ],
+      };
     case 'string':
+    default:
       return {
         $and: [elemPrivsCheck, { [`data.${index}.value`]: { $regex: searchTerm, $options: 'i' } }],
       };
-    case 'number':
-      return { $and: [elemPrivsCheck, { [`data.${index}.value`]: Number(searchTerm) }] };
-    default:
-      return null;
   }
 };
