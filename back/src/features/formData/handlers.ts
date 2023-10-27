@@ -99,24 +99,29 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     const privilegeId = `form__${form.simpleId}__canUseForm`;
     const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
     const privError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
-    // White list the props to be returned with the form
     returnObject['$form'] = privError?.code || {
       ...form.form,
-      formElems: form.form.formElems.map((elem) => ({
-        elemId: elem.elemId,
-        orderNr: elem.orderNr,
-        elemType: elem.elemType,
-        valueType: elem.valueType,
-        classes: elem.classes,
-        elemData: elem.elemData,
-        label: elem.label,
-        required: elem.required,
-        validationRegExp: elem.validationRegExp,
-        mustMatchValue: elem.mustMatchValue,
-        validationFn: elem.validationFn,
-        inputErrors: elem.inputErrors,
-        doNotSave: elem.doNotSave,
-      })),
+      formElems: form.form.formElems
+        .filter(
+          (elem) =>
+            !elem.privileges?.read || !isPrivBlocked(elem.privileges?.read, userData, csrfIsGood)
+        )
+        // White list the formElem props to be returned with the form and normalize orderNr
+        .map((elem, index) => ({
+          elemId: elem.elemId,
+          orderNr: index,
+          elemType: elem.elemType,
+          valueType: elem.valueType,
+          classes: elem.classes,
+          elemData: elem.elemData,
+          label: elem.label,
+          required: elem.required,
+          validationRegExp: elem.validationRegExp,
+          mustMatchValue: elem.mustMatchValue,
+          validationFn: elem.validationFn,
+          inputErrors: elem.inputErrors,
+          doNotSave: elem.doNotSave,
+        })),
     };
   }
 
@@ -247,9 +252,13 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 
     if (includeLabels === 'true' && data[0]?.length) {
       for (let i = 0; i < data[0].length; i++) {
-        labels[data[0][i].elemId] = (form.form.formElems[i].label as TransText) || {};
+        const elemId = data[0][i].elemId;
+        const formElem = form.form.formElems.find((elem) => elem.elemId === elemId);
+        labels[elemId] = (formElem?.label as TransText) || {};
       }
-      returnObject['$labels'] = labels;
+      returnObject['$dataLabels'] = labels;
+    } else if (includeLabels === 'true') {
+      returnObject['$dataLabels'] = labels;
     }
 
     if (oneItem && flat) {
