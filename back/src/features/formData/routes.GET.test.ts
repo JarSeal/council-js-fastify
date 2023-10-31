@@ -1862,7 +1862,8 @@ describe('formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(0);
+    expect(Object.keys(body)).toHaveLength(1);
+    expect(body.data).toHaveLength(0);
   });
 
   it('should GET nothing when trying to get a non-public formData item and when user in excluded formData users privileges', async () => {
@@ -1927,7 +1928,8 @@ describe('formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(0);
+    expect(Object.keys(body)).toHaveLength(1);
+    expect(body.data).toHaveLength(0);
   });
 
   it('should GET nothing when trying to get a non-public formData item and when user in excluded formData groups privileges', async () => {
@@ -1993,7 +1995,8 @@ describe('formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(0);
+    expect(Object.keys(body)).toHaveLength(1);
+    expect(body.data).toHaveLength(0);
   });
 
   it('should GET nothing when trying to get a onlyPublic formData item and when user is signed in', async () => {
@@ -2053,7 +2056,8 @@ describe('formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(0);
+    expect(Object.keys(body)).toHaveLength(1);
+    expect(body.data).toHaveLength(0);
   });
 
   it('should GET nothing when trying to get a non-public formData item and when user is not signed in', async () => {
@@ -2098,7 +2102,8 @@ describe('formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(0);
+    expect(Object.keys(body)).toHaveLength(1);
+    expect(body.data).toHaveLength(0);
   });
 
   it('should succesfully GET multiple public formData items and correct pagination data', async () => {
