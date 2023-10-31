@@ -62,6 +62,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     sOper,
     includeDataIds,
     includeLabels,
+    includeMeta,
   } = req.query;
   const url = getApiPathFromReqUrl(req.url);
 
@@ -130,6 +131,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       paginationData = null,
       oneItem = false;
     const data: Data[][] = [];
+    const meta: { owner?: string | null; created: Date; edited: Date | null }[] = [];
 
     const MAX_LIMIT = getConfig<number>('dataItemsMaxLimit', 500);
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
@@ -145,7 +147,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     };
 
     if (dataId && dataId[0] === 'all') {
-      // Get all possible formData (paginated)
+      // Get all possible paginated formData
 
       const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood);
 
@@ -162,7 +164,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       formData = paginatedData.docs || [];
       paginationData = paginatedData;
     } else if (Array.isArray(dataId) && dataId?.length > 1) {
-      // Get specific multiple formData items (paginated)
+      // Get specific multiple paginated formData items
 
       const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood);
 
@@ -204,6 +206,21 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         const rawData = fd.data || [];
         const dataId = fd._id.toString();
         dataIds.push(dataId);
+        let dataMetaData = null;
+        if (includeMeta === 'embed' || includeMeta === 'true') {
+          dataMetaData = {
+            created: fd.created.date,
+            edited: fd.edited.length ? fd.edited[0].date : null,
+            // @TODO: get actual usernames (maybe)
+            ...(userData.isSysAdmin
+              ? {
+                  owner: fd?.owner?.toString() || null,
+                  createdBy: fd?.created.user?.toString() || null,
+                  editedBy: fd?.edited[0]?.user?.toString() || null,
+                }
+              : {}),
+          };
+        }
         const dataSet = checkAndSetReadData(
           rawData,
           mainPrivileges,
@@ -211,11 +228,15 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
           csrfIsGood,
           includeDataIds === 'embed' ? dataId : null,
           includeLabels === 'embed' ? labels : null,
+          includeMeta === 'embed' ? dataMetaData : null,
           elemId,
           fd.hasElemPrivileges
         );
         if (dataSet.length) {
           data.push(dataSet);
+          if (includeMeta === 'true' && dataMetaData) {
+            meta.push(dataMetaData);
+          }
         }
       }
       if (paginationData) {
@@ -223,6 +244,9 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       }
       if (includeDataIds === 'true') {
         returnObject['$dataIds'] = dataIds;
+      }
+      if (includeMeta === 'true') {
+        returnObject['$dataMetaData'] = meta;
       }
     } else {
       const mainPrivileges = combinePrivileges(
@@ -232,6 +256,21 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       const mainPrivError = isPrivBlocked(mainPrivileges, userData, csrfIsGood);
       const rawData = formData?.data || [];
       const formDataId = formData ? formData._id?.toString() : null;
+      let dataMetaData = null;
+      if ((includeMeta === 'embed' || includeMeta === 'true') && formData) {
+        dataMetaData = {
+          created: formData?.created.date,
+          edited: formData?.edited.length ? formData.edited[0].date : null,
+          // @TODO: get actual usernames (maybe)
+          ...(userData.isSysAdmin
+            ? {
+                owner: formData?.owner?.toString() || null,
+                createdBy: formData?.created.user?.toString() || null,
+                editedBy: formData?.edited[0]?.user?.toString() || null,
+              }
+            : {}),
+        };
+      }
       const dataSet = checkAndSetReadData(
         rawData,
         mainPrivileges,
@@ -239,6 +278,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         csrfIsGood,
         includeDataIds === 'embed' && formDataId ? formDataId : null,
         includeLabels === 'embed' ? labels : null,
+        includeMeta === 'embed' ? dataMetaData : null,
         elemId,
         formData?.hasElemPrivileges
       );
@@ -246,7 +286,10 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         data.push(dataSet);
       }
       if (includeDataIds === 'true') {
-        returnObject['$dataIds'] = [formDataId];
+        returnObject['$dataIds'] = formDataId ? [formDataId] : [];
+      }
+      if (includeMeta === 'true') {
+        returnObject['$dataMetaData'] = dataMetaData ? [dataMetaData] : [];
       }
     }
 
@@ -284,10 +327,19 @@ const checkAndSetReadData = (
   csrfIsGood: boolean,
   dataId: string | null,
   labels: { [key: string]: TransText } | null,
+  meta: {
+    owner?: string | null;
+    created: Date | undefined;
+    edited: Date | null;
+    createdBy?: string | null;
+    editedBy?: string | null;
+  } | null,
   elemId: string | string[] | undefined,
   hasElemPrivileges?: boolean
 ): Data[] => {
   const returnData: Data[] = [];
+  const embedIds = dataId ? { dataId } : {};
+  const embedMeta = meta ? { dataMetaData: meta } : {};
   for (let i = 0; i < rawData.length; i++) {
     const elem = rawData[i];
     let privError = null;
@@ -304,8 +356,9 @@ const checkAndSetReadData = (
         orderNr: i,
         value: elem.value,
         valueType: elem.valueType,
-        ...(dataId ? { dataId } : {}),
+        ...embedIds,
         ...(labels ? { label: labels[elem.elemId] } : {}),
+        ...embedMeta,
       });
     }
   }

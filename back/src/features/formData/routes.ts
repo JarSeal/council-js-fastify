@@ -38,6 +38,7 @@ export const getQuerystringSchema = Type.Object({
   sOper: Type.Optional(Type.String()),
   includeDataIds: Type.Optional(Type.String()),
   includeLabels: Type.Optional(Type.String()),
+  includeMeta: Type.Optional(Type.String()),
 });
 export type GetQuerystring = Static<typeof getQuerystringSchema>;
 
