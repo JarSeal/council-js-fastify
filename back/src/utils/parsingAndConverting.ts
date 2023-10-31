@@ -112,7 +112,9 @@ export const parseSearchQuery = (
   let searchQuery: SearchQuery = [];
   const elems = form.form.formElems;
   let fullSearch = false,
-    searchTerm = '';
+    searchTerm = '',
+    createdIndex = 0,
+    editedIndex = 0;
 
   for (let i = 0; i < s.length; i++) {
     let dateSearch = null;
@@ -123,8 +125,14 @@ export const parseSearchQuery = (
       searchQuery = [];
       break;
     }
-    if (elemIdOrIndex === 'created') dateSearch = 'created';
-    if (elemIdOrIndex === 'edited') dateSearch = 'edited';
+    if (elemIdOrIndex === 'created') {
+      dateSearch = 'created';
+      createdIndex++;
+    }
+    if (elemIdOrIndex === 'edited') {
+      dateSearch = 'edited';
+      editedIndex++;
+    }
     if (!elemIdOrIndex) continue;
 
     let index = null;
@@ -146,7 +154,13 @@ export const parseSearchQuery = (
 
     let query;
     if (dateSearch) {
-      query = getSearchQueryByValueType(dateSearch, 0, searchTerm, userData, csrfIsGood);
+      query = getSearchQueryByValueType(
+        dateSearch,
+        dateSearch === 'created' ? createdIndex : editedIndex,
+        searchTerm,
+        userData,
+        csrfIsGood
+      );
     } else {
       const valueType = index === -1 ? '' : elems[index].valueType;
       query = getSearchQueryByValueType(valueType, index, searchTerm, userData, csrfIsGood);
