@@ -113,8 +113,8 @@ export const parseSearchQuery = (
   const elems = form.form.formElems;
   let fullSearch = false,
     searchTerm = '',
-    createdIndex = 0,
-    editedIndex = 0;
+    createdIndex = -1,
+    editedIndex = -1;
 
   for (let i = 0; i < s.length; i++) {
     let dateSearch = null;
