@@ -246,112 +246,6 @@ describe('formData', () => {
     expect(keys.includes('privileges')).toBeFalsy();
   });
 
-  it('should succesfully GET a public formData (dataId=all) and form', async () => {
-    const url = '/myform';
-    const formId = 'myForm';
-    const privilege = {
-      priCategoryId: 'form',
-      priTargetId: formId,
-      priAccessId: 'canUseForm',
-      privilegeAccess: { public: 'true' as PublicPrivilegeProp },
-    };
-    await createForm(
-      'myForm',
-      url,
-      [
-        {
-          elemId: 'myElem1',
-          orderNr: 0,
-          elemType: 'inputNumber',
-          valueType: 'number',
-          label: { langKey: 'Number' },
-        },
-        {
-          elemId: 'myElem2',
-          orderNr: 1,
-          elemType: 'inputText',
-          valueType: 'string',
-          label: { langKey: 'String' },
-        },
-      ],
-      [privilege],
-      { formTitle: 'My Form', formText: 'This is my form' }
-    );
-    await createFormData(
-      formId,
-      url,
-      {
-        read: { public: 'true', requireCsrfHeader: true },
-      },
-      [
-        { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
-        { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
-      ]
-    );
-    await createFormData(
-      formId,
-      url,
-      {
-        read: { public: 'true', requireCsrfHeader: true },
-      },
-      [
-        { elemId: 'myElem1', orderNr: 0, value: 15, valueType: 'number' },
-        { elemId: 'myElem2', orderNr: 1, value: 'Some other string', valueType: 'string' },
-      ]
-    );
-
-    const response = await app.inject({
-      method: 'GET',
-      path: `/api/v1${url}?getForm=true&dataId=all`,
-      ...csrfHeader,
-    });
-    const body = JSON.parse(response.body) as FormDataGetReply;
-    const form = body.$form as GetFormReply;
-    const formElems = form.formElems;
-    expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
-    expect(form.formTitle?.langKey).toBe('My Form');
-    expect(form.formText?.langKey).toBe('This is my form');
-    expect(formElems.length).toBe(2);
-    expect(formElems[0].elemId).toBe('myElem1');
-    expect(formElems[0].orderNr).toBe(0);
-    expect(formElems[0].elemType).toBe('inputNumber');
-    expect(formElems[0].valueType).toBe('number');
-    expect(formElems[0].classes?.length).toBe(0);
-    expect(formElems[0].label?.langKey).toBe('Number');
-    expect(formElems[0].inputErrors?.length).toBe(0);
-    expect(formElems[0].doNotSave).toBeFalsy();
-    expect(formElems[1].elemId).toBe('myElem2');
-    expect(formElems[1].orderNr).toBe(1);
-    expect(formElems[1].elemType).toBe('inputText');
-    expect(formElems[1].valueType).toBe('string');
-    expect(formElems[1].classes?.length).toBe(0);
-    expect(formElems[1].label?.langKey).toBe('String');
-    expect(formElems[1].inputErrors?.length).toBe(0);
-    expect(formElems[1].doNotSave).toBeFalsy();
-    const keys = Object.keys(formElems[0]);
-    expect(keys.includes('privileges')).toBeFalsy();
-
-    const data = body.data as FormDataGetReply[][];
-    expect(data.length).toBe(2);
-    expect(data[0][0].elemId).toBe('myElem1');
-    expect(data[0][0].orderNr).toBe(0);
-    expect(data[0][0].value).toBe(12);
-    expect(data[0][0].valueType).toBe('number');
-    expect(data[0][1].elemId).toBe('myElem2');
-    expect(data[0][1].orderNr).toBe(1);
-    expect(data[0][1].value).toBe('Some string');
-    expect(data[0][1].valueType).toBe('string');
-    expect(data[1][0].elemId).toBe('myElem1');
-    expect(data[1][0].orderNr).toBe(0);
-    expect(data[1][0].value).toBe(15);
-    expect(data[1][0].valueType).toBe('number');
-    expect(data[1][1].elemId).toBe('myElem2');
-    expect(data[1][1].orderNr).toBe(1);
-    expect(data[1][1].value).toBe('Some other string');
-    expect(data[1][1].valueType).toBe('string');
-  });
-
   it('should succesfully GET a non-public form and nothing else', async () => {
     const userId = await createUser('myusername');
     const url = '/myform';
@@ -480,6 +374,112 @@ describe('formData', () => {
     expect(formElems[0].doNotSave).toBeFalsy();
     const keys = Object.keys(formElems[0]);
     expect(keys.includes('privileges')).toBeFalsy();
+  });
+
+  it('should succesfully GET a public formData (dataId=all) and form', async () => {
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: { public: 'true' as PublicPrivilegeProp },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem1',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'String' },
+        },
+      ],
+      [privilege],
+      { formTitle: 'My Form', formText: 'This is my form' }
+    );
+    await createFormData(
+      formId,
+      url,
+      {
+        read: { public: 'true', requireCsrfHeader: true },
+      },
+      [
+        { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+        { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+      ]
+    );
+    await createFormData(
+      formId,
+      url,
+      {
+        read: { public: 'true', requireCsrfHeader: true },
+      },
+      [
+        { elemId: 'myElem1', orderNr: 0, value: 15, valueType: 'number' },
+        { elemId: 'myElem2', orderNr: 1, value: 'Some other string', valueType: 'string' },
+      ]
+    );
+
+    const response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?getForm=true&dataId=all`,
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FormDataGetReply;
+    const form = body.$form as GetFormReply;
+    const formElems = form.formElems;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    expect(form.formTitle?.langKey).toBe('My Form');
+    expect(form.formText?.langKey).toBe('This is my form');
+    expect(formElems.length).toBe(2);
+    expect(formElems[0].elemId).toBe('myElem1');
+    expect(formElems[0].orderNr).toBe(0);
+    expect(formElems[0].elemType).toBe('inputNumber');
+    expect(formElems[0].valueType).toBe('number');
+    expect(formElems[0].classes?.length).toBe(0);
+    expect(formElems[0].label?.langKey).toBe('Number');
+    expect(formElems[0].inputErrors?.length).toBe(0);
+    expect(formElems[0].doNotSave).toBeFalsy();
+    expect(formElems[1].elemId).toBe('myElem2');
+    expect(formElems[1].orderNr).toBe(1);
+    expect(formElems[1].elemType).toBe('inputText');
+    expect(formElems[1].valueType).toBe('string');
+    expect(formElems[1].classes?.length).toBe(0);
+    expect(formElems[1].label?.langKey).toBe('String');
+    expect(formElems[1].inputErrors?.length).toBe(0);
+    expect(formElems[1].doNotSave).toBeFalsy();
+    const keys = Object.keys(formElems[0]);
+    expect(keys.includes('privileges')).toBeFalsy();
+
+    const data = body.data as FormDataGetReply[][];
+    expect(data.length).toBe(2);
+    expect(data[0][0].elemId).toBe('myElem1');
+    expect(data[0][0].orderNr).toBe(0);
+    expect(data[0][0].value).toBe(12);
+    expect(data[0][0].valueType).toBe('number');
+    expect(data[0][1].elemId).toBe('myElem2');
+    expect(data[0][1].orderNr).toBe(1);
+    expect(data[0][1].value).toBe('Some string');
+    expect(data[0][1].valueType).toBe('string');
+    expect(data[1][0].elemId).toBe('myElem1');
+    expect(data[1][0].orderNr).toBe(0);
+    expect(data[1][0].value).toBe(15);
+    expect(data[1][0].valueType).toBe('number');
+    expect(data[1][1].elemId).toBe('myElem2');
+    expect(data[1][1].orderNr).toBe(1);
+    expect(data[1][1].value).toBe('Some other string');
+    expect(data[1][1].valueType).toBe('string');
   });
 
   it('should succesfully GET non-public formData (dataId=all) and form when in privilege users', async () => {
