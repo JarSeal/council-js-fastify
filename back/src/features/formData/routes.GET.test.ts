@@ -12,10 +12,11 @@ import {
   csrfHeader,
   validAgentId,
 } from '../../test/utils';
-import type { PublicPrivilegeProp } from '../../dbModels/_modelTypePartials';
+import type { PublicPrivilegeProp, TransText } from '../../dbModels/_modelTypePartials';
 import { SESSION_COOKIE_NAME } from '../../core/config';
 import type { PaginationData } from '../../utils/parsingAndConverting';
 import { emptyFormDataPrivileges } from '../../utils/userAndPrivilegeChecks';
+import type { Data } from './handlers';
 
 describe('formData', () => {
   let app: FastifyInstance;
@@ -2190,5 +2191,263 @@ describe('formData', () => {
     expect(paginationP2.totalPages).toBe(2);
     expect(paginationP2.hasNextPage).toBeFalsy();
     expect(paginationP2.hasPrevPage).toBeTruthy();
+  });
+
+  it('should return the data, $dataIds, $dataLabels, and $dataMetaData, and also sort the data accordingly', async () => {
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: { public: 'false' as PublicPrivilegeProp },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem1',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: { public: 'true', requireCsrfHeader: true },
+        },
+      }
+    );
+    const formDataId1 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+    ]);
+    const formDataId2 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 11, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some long string', valueType: 'string' },
+    ]);
+    const formDataId3 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some beautiful string', valueType: 'string' },
+    ]);
+    const formDataId4 = await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 0, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some ugly string', valueType: 'string' },
+    ]);
+
+    let response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeDataIds=true&sort=created`,
+      ...csrfHeader,
+    });
+    let body = JSON.parse(response.body) as FormDataGetReply;
+    let data = body.data as Data[][];
+    let dataIds = body.$dataIds as string[];
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    expect(data).toHaveLength(4);
+    expect(data[0][0].value).toBe(12);
+    expect(data[0][1].value).toBe('Some string');
+    expect(data[3][0].value).toBe(0);
+    expect(data[3][1].value).toBe('Some ugly string');
+    expect(dataIds).toHaveLength(4);
+    expect(dataIds[0]).toBe(formDataId1.toString());
+    expect(dataIds[1]).toBe(formDataId2.toString());
+    expect(dataIds[2]).toBe(formDataId3.toString());
+    expect(dataIds[3]).toBe(formDataId4.toString());
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeDataIds=true&sort=-created`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    data = body.data as Data[][];
+    dataIds = body.$dataIds as string[];
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    expect(data).toHaveLength(4);
+    expect(data[0][0].value).toBe(0);
+    expect(data[0][1].value).toBe('Some ugly string');
+    expect(data[3][0].value).toBe(12);
+    expect(data[3][1].value).toBe('Some string');
+    expect(dataIds).toHaveLength(4);
+    expect(dataIds[0]).toBe(formDataId4.toString());
+    expect(dataIds[1]).toBe(formDataId3.toString());
+    expect(dataIds[2]).toBe(formDataId2.toString());
+    expect(dataIds[3]).toBe(formDataId1.toString());
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeDataIds=embed&sort=-created`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    data = body.data as Data[][];
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(2);
+    expect(data).toHaveLength(4);
+    expect(data[0][0].value).toBe(0);
+    expect(data[0][0].dataId).toBe(formDataId4.toString());
+    expect(data[0][1].value).toBe('Some ugly string');
+    expect(data[0][1].dataId).toBe(formDataId4.toString());
+    expect(data[3][0].value).toBe(12);
+    expect(data[3][0].dataId).toBe(formDataId1.toString());
+    expect(data[3][1].value).toBe('Some string');
+    expect(data[3][1].dataId).toBe(formDataId1.toString());
+    expect(dataIds).toHaveLength(4);
+
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeLabels=true&sort=0`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    data = body.data as Data[][];
+    const labels = body.$dataLabels as { [key: string]: TransText };
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    expect(data[0][0].value).toBe(0);
+    expect(data[0][1].value).toBe('Some ugly string');
+    expect(data[1][0].value).toBe(11);
+    expect(data[1][1].value).toBe('Some long string');
+    expect(data[2][0].value).toBe(12);
+    expect(data[2][1].value).toBe('Some string');
+    expect(data[3][0].value).toBe(152);
+    expect(data[3][1].value).toBe('Some beautiful string');
+    expect(labels.myElem1.langKey).toBe('Number');
+    expect(labels.myElem2.langKey).toBe('Text');
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeLabels=true&sort=-0`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    data = body.data as Data[][];
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    expect(data[0][0].value).toBe(152);
+    expect(data[0][1].value).toBe('Some beautiful string');
+    expect(data[1][0].value).toBe(12);
+    expect(data[1][1].value).toBe('Some string');
+    expect(data[2][0].value).toBe(11);
+    expect(data[2][1].value).toBe('Some long string');
+    expect(data[3][0].value).toBe(0);
+    expect(data[3][1].value).toBe('Some ugly string');
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeLabels=embed&sort=(myElem2)`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    data = body.data as Data[][];
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(2);
+    expect(data[0][0].value).toBe(152);
+    expect(data[0][0].label?.langKey).toBe('Number');
+    expect(data[0][1].value).toBe('Some beautiful string');
+    expect(data[0][1].label?.langKey).toBe('Text');
+    expect(data[1][0].value).toBe(11);
+    expect(data[1][0].label?.langKey).toBe('Number');
+    expect(data[1][1].value).toBe('Some long string');
+    expect(data[1][1].label?.langKey).toBe('Text');
+    expect(data[2][0].value).toBe(12);
+    expect(data[2][0].label?.langKey).toBe('Number');
+    expect(data[2][1].value).toBe('Some string');
+    expect(data[2][1].label?.langKey).toBe('Text');
+    expect(data[3][0].value).toBe(0);
+    expect(data[3][0].label?.langKey).toBe('Number');
+    expect(data[3][1].value).toBe('Some ugly string');
+    expect(data[3][1].label?.langKey).toBe('Text');
+
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeMeta=true&sort=-(myElem2)`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    data = body.data as Data[][];
+    const meta = body.$dataMetaData as { created: Date; edited: Data | null }[];
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    expect(data[0][0].value).toBe(0);
+    expect(data[0][1].value).toBe('Some ugly string');
+    expect(data[1][0].value).toBe(12);
+    expect(data[1][1].value).toBe('Some string');
+    expect(data[2][0].value).toBe(11);
+    expect(data[2][1].value).toBe('Some long string');
+    expect(data[3][0].value).toBe(152);
+    expect(data[3][1].value).toBe('Some beautiful string');
+    expect(meta).toHaveLength(4);
+    expect(typeof meta[0].created).toBe('string');
+    expect(meta[0].edited).toBe(null);
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeMeta=embed`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    data = body.data as Data[][];
+    expect(data[0][0].value).toBe(12);
+    expect(typeof data[0][0].dataMetaData?.created).toBe('string');
+    expect(data[0][0].dataMetaData?.edited).toBe(null);
+    expect(data[0][1].value).toBe('Some string');
+    expect(typeof data[0][1].dataMetaData?.created).toBe('string');
+    expect(data[0][1].dataMetaData?.edited).toBe(null);
+    expect(data[3][0].value).toBe(0);
+    expect(typeof data[3][0].dataMetaData?.created).toBe('string');
+    expect(data[3][0].dataMetaData?.edited).toBe(null);
+    expect(data[3][1].value).toBe('Some ugly string');
+    expect(typeof data[3][1].dataMetaData?.created).toBe('string');
+    expect(data[3][1].dataMetaData?.edited).toBe(null);
+
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includeMeta=true&includeDataIds=true&includeLabels=true`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(5);
+    expect(body.$pagination).toBeTruthy();
+    expect(body.$dataIds).toBeTruthy();
+    expect(body.$dataLabels).toBeTruthy();
+    expect(body.$dataMetaData).toBeTruthy();
+    expect(body.data).toBeTruthy();
+
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?flat=true&dataId=${formDataId1.toString()}&includeMeta=true&includeDataIds=true&includeLabels=true`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(5);
+    expect(body.$dataIds).toBeTruthy();
+    expect(body.$dataLabels).toBeTruthy();
+    expect(body.$dataMetaData).toBeTruthy();
+    expect(body.myElem1).toBeTruthy();
+    expect(body.myElem2).toBeTruthy();
+
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?flat=true&dataId=${formDataId1.toString()}&includeMeta=embed&includeDataIds=embed&includeLabels=embed`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(2);
+    expect(body.myElem1).toBe(12);
+    expect(body.myElem2).toBe('Some string');
   });
 });

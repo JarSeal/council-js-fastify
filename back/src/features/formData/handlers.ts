@@ -32,20 +32,24 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   if (!form) {
     return res.send(new errors.NOT_FOUND(`Could not find formData with formId: '${body.formId}'`));
   }
-  console.log('formData', form);
-  // @TODO: check CSRF header (if enabled in form data)
-  // @TODO: check authorization
-  // @TODO: validate incoming body fields against the form data
-
-  console.log('TADAAAAAAAAAAA POST');
+  form;
   return res.send({ ok: true });
 };
 
-type Data = {
+export type Data = {
   elemId: string;
   orderNr: number;
   value: unknown;
   valueType: string;
+  label?: TransText;
+  dataId?: string;
+  dataMetaData?: {
+    created: Date | undefined;
+    edited: Date | null;
+    owner?: string | null;
+    createdBy?: string | null;
+    editedBy?: string | null;
+  };
 };
 
 export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
