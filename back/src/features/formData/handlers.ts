@@ -161,6 +161,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
             { formId: form.simpleId },
             ...readDataPrivilegesQuery(userData, csrfIsGood),
             ...searchQuery,
+            ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
           ],
         },
         paginationOptions
@@ -180,6 +181,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
             { _id: { $in: dataObjectIds } },
             ...readDataPrivilegesQuery(userData, csrfIsGood),
             ...searchQuery,
+            ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
           ],
         },
         paginationOptions
@@ -194,6 +196,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
           { formId: form.simpleId },
           { _id: dataId[0] },
           ...readDataPrivilegesQuery(userData, csrfIsGood),
+          ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
         ],
       });
     }
@@ -209,7 +212,6 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         );
         const rawData = fd.data || [];
         const dataId = fd._id.toString();
-        dataIds.push(dataId);
         let dataMetaData = null;
         if (includeMeta === 'embed' || includeMeta === 'true') {
           dataMetaData = {
@@ -237,6 +239,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
           fd.hasElemPrivileges
         );
         if (dataSet.length) {
+          dataIds.push(dataId);
           data.push(dataSet);
           if (includeMeta === 'true' && dataMetaData) {
             meta.push(dataMetaData);
@@ -289,10 +292,10 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       if (!mainPrivError && dataSet.length) {
         data.push(dataSet);
       }
-      if (includeDataIds === 'true') {
+      if (includeDataIds === 'true' && dataSet.length) {
         returnObject['$dataIds'] = formDataId ? [formDataId] : [];
       }
-      if (includeMeta === 'true') {
+      if (includeMeta === 'true' && dataSet.length) {
         returnObject['$dataMetaData'] = dataMetaData ? [dataMetaData] : [];
       }
     }
@@ -357,7 +360,7 @@ const checkAndSetReadData = (
       // White list the data props to be returned
       returnData.push({
         elemId: elem.elemId,
-        orderNr: i,
+        orderNr: returnData.length,
         value: elem.value,
         valueType: elem.valueType,
         ...embedIds,

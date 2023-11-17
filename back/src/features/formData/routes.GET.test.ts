@@ -2451,7 +2451,98 @@ describe('formData', () => {
     expect(body.myElem2).toBe('Some string');
   });
 
-  // ElemId
+  it('should return all data, but only with specified elemIds and should not return data if elemId not found', async () => {
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: { public: 'false' as PublicPrivilegeProp },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem1',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: { public: 'true', requireCsrfHeader: true },
+        },
+      }
+    );
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some string', valueType: 'string' },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 11, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some long string', valueType: 'string' },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some beautiful string', valueType: 'string' },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 0, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Some ugly string', valueType: 'string' },
+    ]);
+
+    let response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&elemId=myElem2`,
+      ...csrfHeader,
+    });
+    let body = JSON.parse(response.body) as FormDataGetReply;
+    let pagination = body.$pagination as PaginationData;
+    let data = body.data as Data[];
+    expect(pagination.totalCount).toBe(4);
+    expect(data.length).toBe(4);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem2', orderNr: 0, value: 'Some string', valueType: 'string' },
+    ]);
+    expect(data[1]).toStrictEqual([
+      { elemId: 'myElem2', orderNr: 0, value: 'Some long string', valueType: 'string' },
+    ]);
+    expect(data[2]).toStrictEqual([
+      { elemId: 'myElem2', orderNr: 0, value: 'Some beautiful string', valueType: 'string' },
+    ]);
+    expect(data[3]).toStrictEqual([
+      { elemId: 'myElem2', orderNr: 0, value: 'Some ugly string', valueType: 'string' },
+    ]);
+
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&elemId=myElem555&includeDataIds=true&includeMeta=true&includeLabels=true`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    const dataIds = body.$dataIds as string[];
+    expect(pagination.totalCount).toBe(0);
+    expect(data.length).toBe(0);
+    expect(dataIds.length).toBe(0);
+    expect(body.$dataMetaData).toStrictEqual([]);
+    expect(body.$dataLabels).toStrictEqual({});
+  });
 
   // Search and search operator (sOPer)
 });
