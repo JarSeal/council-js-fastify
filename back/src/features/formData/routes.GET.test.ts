@@ -2505,6 +2505,7 @@ describe('formData', () => {
       { elemId: 'myElem2', orderNr: 1, value: 'Some ugly string', valueType: 'string' },
     ]);
 
+    // Should not return anything if any elemId is not found
     let response = await app.inject({
       method: 'GET',
       path: `/api/v1${url}?dataId=all&elemId=myElem2`,
