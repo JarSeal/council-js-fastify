@@ -2778,7 +2778,7 @@ describe('formData', () => {
     expect(pagination.totalCount).toBe(0);
     expect(data.length).toBe(0);
 
-    // Find from specific elemId and as case insensitive search (should not find any dataSets)
+    // Find from specific elemId and as case insensitive search (should find a dataSets)
     response = await app.inject({
       method: 'GET',
       path: `/api/v1${url}?dataId=all&s=(myElem2):weird&sCase=true`,
