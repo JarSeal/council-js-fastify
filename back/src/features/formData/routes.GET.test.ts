@@ -2545,8 +2545,7 @@ describe('formData', () => {
     expect(body.$dataLabels).toStrictEqual({});
   });
 
-  // Search and search operator (sOPer)
-  it('should return all data, but only with specified elemIds and should not return data if elemId not found', async () => {
+  it('should return searched data', async () => {
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -2605,19 +2604,164 @@ describe('formData', () => {
       { elemId: 'myElem2', orderNr: 1, value: 'Ugly duckling string', valueType: 'string' },
     ]);
 
-    const response = await app.inject({
+    // Find from all elemIds
+    let response = await app.inject({
       method: 'GET',
       path: `/api/v1${url}?dataId=all&s=$all:lonely`,
       ...csrfHeader,
     });
-
-    console.log('RESP****************', response.body);
-    const body = JSON.parse(response.body) as FormDataGetReply;
-    const pagination = body.$pagination as PaginationData;
-    const data = body.data as Data[];
+    let body = JSON.parse(response.body) as FormDataGetReply;
+    let pagination = body.$pagination as PaginationData;
+    let data = body.data as Data[];
     expect(pagination.totalCount).toBe(1);
     expect(data.length).toBe(1);
     expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Lonely words', valueType: 'string' },
+    ]);
+
+    // Find multiple results with all search
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=$all:152`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(2);
+    expect(data.length).toBe(2);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: -11, valueType: 'number' },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        value: 'A very long sentence with some weird signs $@{}[] and numbers 152, 12',
+        valueType: 'string',
+      },
+    ]);
+    expect(data[1]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Lonely words', valueType: 'string' },
+    ]);
+
+    // Find from specific elemId
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=(myElem1):-11`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(1);
+    expect(data.length).toBe(1);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: -11, valueType: 'number' },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        value: 'A very long sentence with some weird signs $@{}[] and numbers 152, 12',
+        valueType: 'string',
+      },
+    ]);
+
+    // Find from specific elemId index
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=0:-11`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(1);
+    expect(data.length).toBe(1);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: -11, valueType: 'number' },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        value: 'A very long sentence with some weird signs $@{}[] and numbers 152, 12',
+        valueType: 'string',
+      },
+    ]);
+
+    // Multiple search criteria (with "and" operator), but shouldn't return a result
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=(myElem1):-11&s=(myElem2):lonely`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(0);
+    expect(data.length).toBe(0);
+
+    // Multiple search criteria (with "and" operator) and should return a result
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=(myElem1):-11&s=(myElem2):sentence`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(1);
+    expect(data.length).toBe(1);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: -11, valueType: 'number' },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        value: 'A very long sentence with some weird signs $@{}[] and numbers 152, 12',
+        valueType: 'string',
+      },
+    ]);
+
+    // Multiple search criteria (with "or" operator) and should return a result
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=(myElem1):-11&s=(myElem2):giberish&sOper=or`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(1);
+    expect(data.length).toBe(1);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: -11, valueType: 'number' },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        value: 'A very long sentence with some weird signs $@{}[] and numbers 152, 12',
+        valueType: 'string',
+      },
+    ]);
+
+    // Multiple search criteria (with "or" operator) and should return two dataSets
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=(myElem1):-11&s=(myElem2):lonely&sOper=or`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(2);
+    expect(data.length).toBe(2);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: -11, valueType: 'number' },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        value: 'A very long sentence with some weird signs $@{}[] and numbers 152, 12',
+        valueType: 'string',
+      },
+    ]);
+    expect(data[1]).toStrictEqual([
       { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
       { elemId: 'myElem2', orderNr: 1, value: 'Lonely words', valueType: 'string' },
     ]);
