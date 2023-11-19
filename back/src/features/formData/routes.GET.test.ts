@@ -2546,4 +2546,80 @@ describe('formData', () => {
   });
 
   // Search and search operator (sOPer)
+  it('should return all data, but only with specified elemIds and should not return data if elemId not found', async () => {
+    const url = '/myform';
+    const formId = 'myForm';
+    const privilege = {
+      priCategoryId: 'form',
+      priTargetId: formId,
+      priAccessId: 'canUseForm',
+      privilegeAccess: { public: 'false' as PublicPrivilegeProp },
+    };
+    await createForm(
+      'myForm',
+      url,
+      [
+        {
+          elemId: 'myElem1',
+          orderNr: 0,
+          elemType: 'inputNumber',
+          valueType: 'number',
+          label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
+        },
+      ],
+      [privilege],
+      {
+        formTitle: 'My Form',
+        formText: 'This is my form',
+        formDataDefaultPrivileges: {
+          read: { public: 'true', requireCsrfHeader: true },
+        },
+      }
+    );
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 12, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'My first string', valueType: 'string' },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: -11, valueType: 'number' },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        value: 'A very long sentence with some weird signs $@{}[] and numbers 152, 12',
+        valueType: 'string',
+      },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Lonely words', valueType: 'string' },
+    ]);
+    await createFormData(formId, url, {}, [
+      { elemId: 'myElem1', orderNr: 0, value: 0, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Ugly duckling string', valueType: 'string' },
+    ]);
+
+    const response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=$all:lonely`,
+      ...csrfHeader,
+    });
+
+    console.log('RESP****************', response.body);
+    const body = JSON.parse(response.body) as FormDataGetReply;
+    const pagination = body.$pagination as PaginationData;
+    const data = body.data as Data[];
+    expect(pagination.totalCount).toBe(1);
+    expect(data.length).toBe(1);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
+      { elemId: 'myElem2', orderNr: 1, value: 'Lonely words', valueType: 'string' },
+    ]);
+  });
 });

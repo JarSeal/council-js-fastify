@@ -186,7 +186,7 @@ export const parseSearchQuery = (
     }
   }
 
-  if (sOper === 'or') return [{ $or: searchQuery }];
+  if (sOper === 'or' || fullSearch) return [{ $or: searchQuery }];
   return searchQuery;
 };
 
