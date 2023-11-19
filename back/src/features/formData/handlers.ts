@@ -151,15 +151,18 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       },
     };
 
-    if (dataId && dataId[0] === 'all') {
+    const isMultipleDataIds = Array.isArray(dataId) && dataId?.length > 1;
+    if (dataId && (dataId[0] === 'all' || isMultipleDataIds)) {
       // Get all possible paginated formData
 
       const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
 
+      const dataObjectIds = isMultipleDataIds ? dataId.map((id) => new Types.ObjectId(id)) : null;
       const paginatedData = await DBFormDataModel.paginate<DBFormData>(
         {
           $and: [
             { formId: form.simpleId },
+            ...(isMultipleDataIds ? [{ _id: { $in: dataObjectIds } }] : []),
             ...readDataPrivilegesQuery(userData, csrfIsGood),
             ...searchQuery,
             ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
@@ -168,26 +171,6 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         paginationOptions
       );
       formData = paginatedData.docs || [];
-      paginationData = paginatedData;
-    } else if (Array.isArray(dataId) && dataId?.length > 1) {
-      // Get specific multiple paginated formData items
-
-      const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
-
-      const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
-      const paginatedData = await DBFormDataModel.paginate<DBFormData>(
-        {
-          $and: [
-            { formId: form.simpleId },
-            { _id: { $in: dataObjectIds } },
-            ...readDataPrivilegesQuery(userData, csrfIsGood),
-            ...searchQuery,
-            ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
-          ],
-        },
-        paginationOptions
-      );
-      formData = paginatedData.docs;
       paginationData = paginatedData;
     } else if (dataId) {
       oneItem = true;
