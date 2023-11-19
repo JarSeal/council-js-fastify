@@ -37,15 +37,20 @@ export const mongoIdArraySchema = [
   },
 ];
 
+export const transTextDbSchema = {
+  langs: { type: Object },
+  langKey: { type: String },
+};
+
 export const basicPrivilegePropsSchema = {
-  users: mongoIdArraySchema,
-  groups: mongoIdArraySchema,
-  excludeUsers: mongoIdArraySchema,
-  excludeGroups: mongoIdArraySchema,
+  users: { type: mongoIdArraySchema, default: undefined },
+  groups: { type: mongoIdArraySchema, default: undefined },
+  excludeUsers: { type: mongoIdArraySchema, default: undefined },
+  excludeGroups: { type: mongoIdArraySchema, default: undefined },
 };
 
 export const allPrivilegePropsSchema = {
-  public: { type: String, required: true, default: 'false' },
+  public: { type: String },
   requireCsrfHeader: { type: Boolean },
   ...basicPrivilegePropsSchema,
 };
@@ -53,8 +58,8 @@ export const allPrivilegePropsSchema = {
 export const formDataPrivilegesSchema = {
   read: allPrivilegePropsSchema,
   create: allPrivilegePropsSchema,
-  edit: basicPrivilegePropsSchema,
-  delete: basicPrivilegePropsSchema,
+  edit: allPrivilegePropsSchema,
+  delete: allPrivilegePropsSchema,
 };
 
 export const formElemDbSchema = {
@@ -65,19 +70,18 @@ export const formElemDbSchema = {
   valueType: { type: String, required: true, default: 'unknown' },
   classes: [{ _id: false, type: String }],
   elemData: { type: Object },
-  label: { type: Object },
-  labelLangKey: { type: String },
+  label: transTextDbSchema,
   required: { type: Boolean },
   validationRegExp: { type: String },
   mustMatchValue: { type: String },
   validationFn: { type: String },
   inputErrors: [
     {
+      _id: false,
       errorId: String,
-      message: Object,
-      messageLangKey: String,
+      message: transTextDbSchema,
     },
   ],
   doNotSave: { type: Boolean, default: false },
-  privileges: formDataPrivilegesSchema,
+  privileges: Schema.Types.Mixed,
 };

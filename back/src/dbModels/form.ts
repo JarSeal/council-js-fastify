@@ -5,12 +5,19 @@ import {
   dateDBSchema,
   formElemDbSchema,
   formDataPrivilegesSchema,
+  transTextDbSchema,
 } from './_schemaPartials';
-import type { Edited, FormDataOwner, FormDataPrivileges, FormElem } from './_modelTypePartials';
+import type { Edited, FormDataPrivileges, FormElem, TransText } from './_modelTypePartials';
 
 export interface DBForm {
-  id?: string;
+  // Mongo ID
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
+
+  // Council simpleId
   simpleId: string;
+
+  // Metadata and logs
   name: string;
   description: string;
   created: {
@@ -19,21 +26,40 @@ export interface DBForm {
   };
   edited: Edited;
   systemDocument: boolean;
-  owner: Types.ObjectId;
+  owner: Types.ObjectId | null;
+
+  // API url
   url: string;
+
+  // Form
   form: {
-    formTitle?: { [key: string]: string };
-    formTitleLangKey?: string;
-    formText?: { [key: string]: string };
-    formTextLangKey?: string;
+    // Form metadata
+    formTitle?: TransText;
+    formText?: TransText;
     classes?: string[];
-    disablePartialSaving?: boolean;
+
+    // Whether the formElems' order can be changed or not
     lockOrder?: boolean;
-    maxDataOwnerItems?: number;
-    formDataOwner: FormDataOwner;
+
+    // Form elements
     formElems: FormElem[];
   };
-  formDataPrivileges?: FormDataPrivileges;
+
+  // Whether the form can be sent with only partial payload
+  disablePartialSaving?: boolean;
+
+  // How many documents can be sent with this form per user/owner (must be signed in)
+  // Usually this is either undefined or 1 (undefined = infinite)
+  maxDataOwnerDocs?: number;
+
+  // Form data owner
+  formDataOwner?: Types.ObjectId | null;
+
+  // Whether the formData owner is the one who fills the form (formDataOwner must be undefind or null)
+  fillerIsFormDataOwner?: boolean;
+
+  // Default privileges to be passed to the formData document
+  formDataDefaultPrivileges: Omit<FormDataPrivileges, 'create'>;
 }
 
 const formSchema = new Schema<DBForm>({
@@ -41,34 +67,31 @@ const formSchema = new Schema<DBForm>({
   name: { type: String, required: true, default: null },
   description: { type: String, required: true, default: null },
   created: {
-    user: { type: Schema.Types.ObjectId, required: true, default: null },
+    user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     date: dateDBSchema,
   },
   edited: [
     {
       _id: false,
-      user: {
-        type: Schema.Types.ObjectId,
-      },
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
       date: dateDBSchema,
     },
   ],
   systemDocument: { type: Boolean, default: false },
-  owner: { type: Schema.Types.ObjectId, required: true },
+  owner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   url: { type: String, unique: true, required: true },
   form: {
-    formTitle: Object,
-    formTitleLangKey: String,
-    formText: Object,
-    formTextLangKey: String,
+    formTitle: transTextDbSchema,
+    formText: transTextDbSchema,
     classes: [{ _id: false, type: String }],
-    disablePartialSaving: { type: Boolean },
     lockOrder: { type: Boolean, default: false },
-    maxDataOwnerItems: { type: Number },
-    formDataOwner: { type: String, required: true, default: 'none' },
     formElems: [formElemDbSchema],
   },
-  formDataPrivileges: formDataPrivilegesSchema,
+  disablePartialSaving: { type: Boolean },
+  maxDataOwnerDocs: { type: Number },
+  formDataOwner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+  fillerIsFormDataOwner: { type: Boolean },
+  formDataDefaultPrivileges: formDataPrivilegesSchema,
 });
 
 formSchema.set('toJSON', {

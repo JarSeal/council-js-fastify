@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, type Types, model } from 'mongoose';
 
 import {
   simpleIdDBSchema,
@@ -9,25 +9,43 @@ import {
 import type { AllPrivilegeProps, Edited } from './_modelTypePartials';
 
 export interface DBPrivilege {
-  id?: string;
+  // Mongo Id
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
+
+  // Council Id
   simpleId: string;
+
+  // First part of simpleId (eg. 'form')
   priCategoryId: string;
-  priOwnerId: string;
+
+  // Second part of simpleId (eg. 'publicSignUp', in this case the formId)
+  priTargetId: string;
+
+  // Third part of simpleId (eg. 'canUseForm')
   priAccessId: string;
+
+  // Metadata and logs
   name: string;
   description: string;
   created: Date;
   edited: Edited;
   systemDocument?: boolean;
+
+  // Who can view this privilege doc in the system (admin stuff)
   privilegeViewAccess: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
+
+  // Who can edit this privilege doc in the system (admin stuff)
   privilegeEditAccess: Omit<AllPrivilegeProps, 'public' | 'requireCsrfHeader'>;
+
+  // The actual privilege data
   privilegeAccess: AllPrivilegeProps;
 }
 
 const privilegeSchema = new Schema<DBPrivilege>({
   simpleId: simpleIdDBSchema,
   priCategoryId: { type: String, required: true },
-  priOwnerId: { type: String, required: true },
+  priTargetId: { type: String, required: true },
   priAccessId: { type: String, required: true },
   name: { type: String, required: true },
   description: String,

@@ -1,10 +1,19 @@
-import mongoose from 'mongoose';
+import mongoose, { type Types } from 'mongoose';
 
 import { simpleIdDBSchema } from './_schemaPartials';
 
 export interface DBMonitor {
+  // Mongo Id
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
+
+  // Council Id
   simpleId: string;
+
+  // Whether the document is a system document or not
   systemDocument?: boolean;
+
+  // Monitoring data
   data: object;
 }
 

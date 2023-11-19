@@ -19,6 +19,7 @@ export enum ErrorCodes {
   SESSION_SET_TO_STORE_ERR = 'SESSION_SET_TO_STORE_ERR',
   SESSION_GET_FROM_STORE_ERR = 'SESSION_GET_FROM_STORE_ERR',
   SESSION_DEL_ERROR = 'SESSION_DEL_ERROR',
+  FORM_DATA_BAD_REQUEST = 'FORM_DATA_BAD_REQUEST',
 }
 
 const createError = (code: ErrorCodes, message: string, statusCode?: number) =>
@@ -71,6 +72,7 @@ const errors = {
     500
   ),
   SESSION_DEL_ERR: createError(ErrorCodes.SESSION_DEL_ERROR, '%s', 500),
+  FORM_DATA_BAD_REQUEST: createError(ErrorCodes.FORM_DATA_BAD_REQUEST, '%s', 400),
 };
 
 export { errors };

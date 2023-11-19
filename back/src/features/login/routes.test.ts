@@ -5,9 +5,7 @@ import initApp from '../../core/app';
 import { SESSION_COOKIE_NAME, getConfig } from '../../core/config';
 import type { LoginRoute } from './schemas';
 import type { LogoutRoute } from '../logout/schemas';
-import { csrfHeader } from '../../test/utils';
-
-const validAgentId = '726616f4bb878fab94f1f1dbc8c6ed79';
+import { csrfHeader, validAgentId } from '../../test/utils';
 
 describe('login', () => {
   let app: FastifyInstance;

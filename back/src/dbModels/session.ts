@@ -1,13 +1,18 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, type Types } from 'mongoose';
 
 import { simpleIdDBSchema } from './_schemaPartials';
 import { getConfig } from '../core/config';
 
 export interface Session {
+  // Whether the current user is signed in or not
   isSignedIn: boolean;
+
+  // user and client data
   username: string;
-  userId: string;
+  userId: Types.ObjectId;
   agentId: string;
+
+  // Cookie
   cookie: {
     path?: string;
     secure?: boolean | 'auto';
@@ -28,7 +33,7 @@ export interface DBSession {
   systemDocument?: boolean;
 }
 
-const sessionSchema = new mongoose.Schema<DBSession>({
+const sessionSchema = new Schema<DBSession>({
   sessionId: String,
   username: simpleIdDBSchema,
   expires: { type: Date, required: true },
@@ -36,7 +41,7 @@ const sessionSchema = new mongoose.Schema<DBSession>({
   session: {
     isSignedIn: Boolean,
     username: String,
-    userId: String,
+    userId: Schema.Types.ObjectId,
     agentId: String,
     cookie: {
       path: { type: String, default: '/' },

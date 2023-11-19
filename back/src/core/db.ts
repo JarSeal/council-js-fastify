@@ -9,7 +9,7 @@ export const initDB = async (app?: FastifyInstance) => {
     await mongoose.connect(dbURI || '');
     if (app) {
       app.log.info('Connected to DB');
-    } else {
+    } else if (ENVIRONMENT !== 'test') {
       // eslint-disable-next-line no-console
       console.log('Connected to DB');
     }
@@ -29,7 +29,7 @@ export const closeDB = async (app?: FastifyInstance) => {
     await mongoose.disconnect();
     if (app) {
       app.log.info('Disconnected from DB');
-    } else {
+    } else if (ENVIRONMENT !== 'test') {
       // eslint-disable-next-line no-console
       console.log('Disconnected from DB');
     }

@@ -10,6 +10,11 @@ export type Token = {
   tokenId?: string | null;
 };
 
+export type TransText = {
+  langs?: { [key: string]: string };
+  langKey?: string;
+};
+
 export type FormElemType =
   | 'text'
   | 'button'
@@ -35,9 +40,11 @@ export type FormDataValueType =
   | 'none'
   | 'unknown';
 
+export type PublicPrivilegeProp = 'true' | 'false' | 'onlyPublic';
+
 export type AllPrivilegeProps = {
-  public: 'true' | 'false' | 'onlyPublic' | 'onlySignedIn';
-  requireCsrfHeader?: boolean;
+  public: PublicPrivilegeProp;
+  requireCsrfHeader: boolean;
   users: Types.ObjectId[];
   groups: Types.ObjectId[];
   excludeUsers: Types.ObjectId[];
@@ -51,27 +58,43 @@ export type FormDataPrivileges = {
   delete: AllPrivilegeProps;
 };
 
-export type FormDataOwner = 'none' | 'user' | Types.ObjectId;
-
 export type FormElem = {
-  _id?: boolean;
+  // Form element ID (simpleId)
   elemId: string;
+
+  // Order number
   orderNr: number;
+
+  // Element type
   elemType: FormElemType;
-  classes?: string[];
-  elemData?: { [key: string]: unknown };
+
+  // Value type
   valueType: FormDataValueType;
-  label?: { [key: string]: string };
-  labelLangKey?: string;
-  required: boolean;
+
+  // CSS classes
+  classes?: string[];
+
+  // Specific element type element data
+  elemData?: { [key: string]: unknown };
+
+  // Label
+  label?: TransText;
+
+  // Validation
+  required?: boolean;
   validationRegExp?: string[];
   mustMatchValue?: string;
   validationFn?: string;
-  inputErrors: {
+
+  // All possible errors to be shown in the client
+  inputErrors?: {
     errorId: string;
-    message?: { [langKey: string]: string };
-    messageLangKey?: string;
+    message?: TransText;
   }[];
+
+  // Whether to save or not save this value to formData document
   doNotSave?: boolean;
-  privileges?: FormDataPrivileges;
+
+  // Form data privileges
+  privileges?: FormDataPrivileges | null;
 };

@@ -28,10 +28,8 @@ module.exports = {
         .collection('privileges')
         .findOne({ simpleId: privileges[i].simpleId });
       if (!foundCanUseForm) {
-        privileges[i].created.user = superUser._id;
         privileges[i].edited = [];
         privileges[i].systemDocument = true;
-        privileges[i].owner = superUser._id;
         privileges[i].privilegeViewAccess = {
           users: [],
           groups: [],

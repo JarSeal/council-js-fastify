@@ -4,8 +4,14 @@ import { simpleIdDBSchema, dateDBSchema, mongoIdArraySchema } from './_schemaPar
 import type { Edited } from './_modelTypePartials';
 
 export interface DBGroup {
-  id?: string;
+  // Mongo Id
+  _id?: Types.ObjectId;
+  id?: Types.ObjectId;
+
+  // Council simpleId
   simpleId: string;
+
+  // Group metadata and logs
   name: string;
   description: string;
   created: {
@@ -15,6 +21,8 @@ export interface DBGroup {
   edited: Edited;
   systemDocument?: boolean;
   owner: Types.ObjectId;
+
+  // Group members' user Ids
   members: Types.ObjectId[];
 }
 

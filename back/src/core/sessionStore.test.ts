@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import type { FastifyInstance, Session } from 'fastify';
 
 import { sessionStore } from './sessionStore';
@@ -24,7 +24,7 @@ describe('sessionStore', () => {
 
   it('should set to, get from, and destroy from sessionStore successfully', async () => {
     const username = 'myusername';
-    const userId = 'userId';
+    const userId = new Types.ObjectId();
     const expires = new Date(Date.now() + 20000);
     const session = {
       isSignedIn: true,
@@ -51,7 +51,7 @@ describe('sessionStore', () => {
     expect(savedSession?.session.agentId).toBe(validAgentId);
     expect(savedSession?.session.isSignedIn).toBeTruthy();
     expect(savedSession?.session.username).toBe(username);
-    expect(savedSession?.session.userId).toBe(userId);
+    expect(savedSession?.session.userId).toStrictEqual(userId);
     expect(savedSession?.session.cookie).toBeTruthy();
     expect(savedSession?.session.cookie.path).toBe('/');
     expect((savedSession?.session.cookie._expires || new Date()).getTime()).toBeCloseTo(
@@ -62,7 +62,7 @@ describe('sessionStore', () => {
     await sessionStore.get(sessionId, (_, fetchedSession) => {
       expect(fetchedSession?.isSignedIn).toBeTruthy();
       expect(fetchedSession?.username).toBe(username);
-      expect(fetchedSession?.userId).toBe(userId);
+      expect(fetchedSession?.userId).toStrictEqual(userId);
       expect(fetchedSession?.agentId).toBe(validAgentId);
       expect(fetchedSession?.cookie).toBeTruthy();
       expect(fetchedSession?.cookie.path).toBe('/');

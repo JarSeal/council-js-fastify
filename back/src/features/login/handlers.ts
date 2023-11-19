@@ -27,7 +27,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
     user = await DBUserModel.findOne<DBUser>({ 'emails.email': email });
     username = user ? user.simpleId : null;
   }
-  if (!user) {
+  if (!user?._id) {
     return res.send(new errors.LOGIN_USER_OR_PASS_WRONG(loginMethod));
   }
 
@@ -61,7 +61,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   // Create session
   req.session.isSignedIn = true;
   req.session.username = user.simpleId;
-  req.session.userId = String(user.id);
+  req.session.userId = user._id;
   req.session.agentId = agentId;
 
   return res.status(200).send({ ok: true });
@@ -104,7 +104,7 @@ const checkCoolDown = async (user: DBUser, agentId: string): Promise<null | Fast
         `coolDownStarted: ${user.security.coolDownStarted.toDateString()} ${
           process.env.TZ || ''
         }, ` +
-        `coolDownTime: ${coolDownAge}, userId: ${user.id || ''}`
+        `coolDownTime: ${coolDownAge}, userId: ${user._id?.toString() || ''}`
     );
   } else {
     // User is not anymore under cool down,
