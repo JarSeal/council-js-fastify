@@ -152,7 +152,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     };
 
     const isMultipleDataIds = Array.isArray(dataId) && dataId?.length > 1;
-    if (dataId && (dataId[0] === 'all' || isMultipleDataIds)) {
+    if (dataId[0] === 'all' || isMultipleDataIds) {
       // Get all possible paginated formData
 
       const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
