@@ -64,6 +64,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     sort,
     s,
     sOper,
+    sCase,
     includeDataIds,
     includeLabels,
     includeMeta,
@@ -153,7 +154,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     if (dataId && dataId[0] === 'all') {
       // Get all possible paginated formData
 
-      const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood);
+      const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
 
       const paginatedData = await DBFormDataModel.paginate<DBFormData>(
         {
@@ -171,7 +172,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     } else if (Array.isArray(dataId) && dataId?.length > 1) {
       // Get specific multiple paginated formData items
 
-      const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood);
+      const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
 
       const dataObjectIds = dataId.map((id) => new Types.ObjectId(id));
       const paginatedData = await DBFormDataModel.paginate<DBFormData>(

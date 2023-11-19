@@ -106,7 +106,8 @@ export const parseSearchQuery = (
   sOper: string | undefined,
   form: DBForm,
   userData: UserData,
-  csrfIsGood: boolean
+  csrfIsGood: boolean,
+  sCase?: boolean
 ) => {
   if (!s) return [];
   let searchQuery: SearchQuery = [];
@@ -159,11 +160,12 @@ export const parseSearchQuery = (
         dateSearch === 'created' ? createdIndex : editedIndex,
         searchTerm,
         userData,
-        csrfIsGood
+        csrfIsGood,
+        sCase
       );
     } else {
       const valueType = index === -1 ? '' : elems[index].valueType;
-      query = getSearchQueryByValueType(valueType, index, searchTerm, userData, csrfIsGood);
+      query = getSearchQueryByValueType(valueType, index, searchTerm, userData, csrfIsGood, sCase);
     }
     if (query) searchQuery.push(query);
   }
@@ -178,7 +180,8 @@ export const parseSearchQuery = (
           elemIndex,
           searchTerm,
           userData,
-          csrfIsGood
+          csrfIsGood,
+          sCase
         );
         if (query) searchQuery.push(query);
         elemIndex++;
@@ -195,7 +198,8 @@ const getSearchQueryByValueType = (
   index: number,
   searchTerm: string,
   userData: UserData,
-  csrfIsGood: boolean
+  csrfIsGood: boolean,
+  sCase?: boolean
 ) => {
   const currentElemReadPrivs = `data.${index}.privileges.read`;
   const elemPrivsCheck = getFormDataElemPrivilegesQuery(currentElemReadPrivs, userData, csrfIsGood);
@@ -219,7 +223,10 @@ const getSearchQueryByValueType = (
     case 'string':
     default:
       return {
-        $and: [elemPrivsCheck, { [`data.${index}.value`]: { $regex: searchTerm, $options: 'i' } }],
+        $and: [
+          elemPrivsCheck,
+          { [`data.${index}.value`]: { $regex: searchTerm, $options: sCase ? '' : 'i' } },
+        ],
       };
   }
 };

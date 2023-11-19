@@ -2765,5 +2765,38 @@ describe('formData', () => {
       { elemId: 'myElem1', orderNr: 0, value: 152, valueType: 'number' },
       { elemId: 'myElem2', orderNr: 1, value: 'Lonely words', valueType: 'string' },
     ]);
+
+    // Find from specific elemId and as case insensitive search (should not find any dataSets)
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=(myElem2):Weird&sCase=true`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(0);
+    expect(data.length).toBe(0);
+
+    // Find from specific elemId and as case insensitive search (should not find any dataSets)
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&s=(myElem2):weird&sCase=true`,
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    pagination = body.$pagination as PaginationData;
+    data = body.data as Data[];
+    expect(pagination.totalCount).toBe(1);
+    expect(data.length).toBe(1);
+    expect(data[0]).toStrictEqual([
+      { elemId: 'myElem1', orderNr: 0, value: -11, valueType: 'number' },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        value: 'A very long sentence with some weird signs $@{}[] and numbers 152, 12',
+        valueType: 'string',
+      },
+    ]);
   });
 });

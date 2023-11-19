@@ -36,6 +36,7 @@ export const getQuerystringSchema = Type.Object({
   sort: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
   s: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
   sOper: Type.Optional(Type.String()),
+  sCase: Type.Optional(Type.Boolean()),
   includeDataIds: Type.Optional(Type.String()),
   includeLabels: Type.Optional(Type.String()),
   includeMeta: Type.Optional(Type.String()),
