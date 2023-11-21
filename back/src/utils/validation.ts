@@ -56,3 +56,18 @@ export const validateSimpleId = (simpleId: string) => {
   const regex = new RegExp(simpleIdRegExp[0], simpleIdRegExp[1]);
   return regex.test(simpleId);
 };
+
+export const isValueAndTypeValid = (valueType: string, value: unknown): boolean => {
+  switch (valueType) {
+    case 'string':
+      return typeof value === 'string';
+    case 'number':
+      return typeof value === 'number';
+    case 'date':
+      return new Date(String(value)).toISOString() === value;
+    case 'unknown':
+    case 'none':
+      return true;
+  }
+  return false;
+};

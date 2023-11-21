@@ -23,6 +23,7 @@ import {
 } from '../../utils/parsingAndConverting';
 import { getConfig } from '../../core/config';
 import type { TransText } from '../../@types/form';
+import { isValueAndTypeValid } from '../../utils/validation';
 
 // Create
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -42,7 +43,44 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     return res.send(new errors.UNAUTHORIZED(`User not privileged to use form: '${body.formId}'`));
   }
 
-  // Validate formData values
+  // Validate formData values against form elems
+  const formElems = form.form.formElems;
+  const formData = body.formData;
+  // let saveData = [];
+  for (let i = 0; i < formElems.length; i++) {
+    const elem = formElems[i];
+    if (!elem.doNotSave) {
+      // Find elemId and value
+      const sentElem = formData.find((item) => item.elemId === elem.elemId);
+      if (sentElem?.value === undefined && elem.required) {
+        // @TODO: custom errors
+        return res.send(
+          new errors.FORM_DATA_BAD_REQUEST(
+            `Could not save new formData, elemId '${elem.elemId}' value is required.`
+          )
+        );
+      }
+      if (sentElem) {
+        if (!isValueAndTypeValid(elem.valueType, sentElem.value)) {
+          // @TODO: custom errors
+          return res.send(
+            new errors.FORM_DATA_BAD_REQUEST(
+              `Could not save new formData, elemId '${elem.elemId}' value is not of required valueType ('${elem.valueType}')`
+            )
+          );
+        }
+        if (elem.mustMatchValue) {
+          // compare values
+        }
+        if (elem.validationFn) {
+          // find Fn and validate
+        }
+        if (elem.validationRegExp) {
+          // create regex and validate
+        }
+      }
+    }
+  }
 
   return res.send({ ok: true });
 };
