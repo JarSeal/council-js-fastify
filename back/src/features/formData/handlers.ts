@@ -24,15 +24,26 @@ import {
 import { getConfig } from '../../core/config';
 import type { TransText } from '../../@types/form';
 
+// Create
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
   const body = req.body;
 
-  // @TODO: get current form
-  const form = await DBFormModel.findOne<unknown>({ simpleId: body.formId || null });
+  // Get and check form privileges
+  const form = await DBFormModel.findOne<DBForm>({ simpleId: body.formId || null });
   if (!form) {
-    return res.send(new errors.NOT_FOUND(`Could not find formData with formId: '${body.formId}'`));
+    return res.send(new errors.NOT_FOUND(`Could not find form with formId: '${body.formId}'`));
   }
-  form;
+  const csrfIsGood = isCsrfGood(req);
+  const userData = await getUserData(req);
+  const privilegeId = `form__${form.simpleId}__canUseForm`;
+  const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
+  const privError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
+  if (!privError) {
+    return res.send(new errors.UNAUTHORIZED(`User not privileged to use form: '${body.formId}'`));
+  }
+
+  // Validate formData values
+
   return res.send({ ok: true });
 };
 
@@ -52,6 +63,7 @@ export type Data = {
   };
 };
 
+// Read
 export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   // Query string
   const {

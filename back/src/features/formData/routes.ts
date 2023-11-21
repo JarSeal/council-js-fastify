@@ -6,6 +6,12 @@ import { formElemPublicSchema, transTextSchema } from '../../@types/form';
 
 export const postBodySchema = Type.Object({
   formId: Type.String(),
+  formData: Type.Array(
+    Type.Object({
+      elemId: Type.String(),
+      value: Type.Unknown(),
+    })
+  ),
 });
 export type FormDataPostBody = Static<typeof postBodySchema>;
 
