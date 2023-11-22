@@ -43,13 +43,29 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     return res.send(new errors.UNAUTHORIZED(`User not privileged to use form: '${body.formId}'`));
   }
 
+  // @TODO: check form default privileges and elem privileges (create)
+
   // Validate formData values against form elems
   const formElems = form.form.formElems;
   const formData = body.formData;
-  // let saveData = [];
-  const validationError = validateFormDataInput(formElems, formData);
-  if (validationError) {
-    return res.send(validationError);
+  const saveData = [];
+  const validatorError = validateFormDataInput(formElems, formData);
+  if (validatorError) {
+    return res.status(400).send({ ok: false, validatorError });
+  }
+
+  // Get new data
+  for (let i = 0; i < formData.length; i++) {
+    const elem = formElems.find((elem) => elem.elemId === formData[i].elemId);
+    if (!elem || elem.doNotSave) continue;
+    saveData.push({
+      elemId: elem.elemId,
+      orderNr: i,
+      value: formData[i].value,
+      valueType: elem.valueType,
+      ...(elem.privileges ? { privileges: elem.privileges } : {}),
+    });
+    console.log('DATA********************', formElems[i].privileges);
   }
 
   return res.send({ ok: true });

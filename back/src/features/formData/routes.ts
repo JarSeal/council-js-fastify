@@ -15,9 +15,22 @@ export const postBodySchema = Type.Object({
 });
 export type FormDataPostBody = Static<typeof postBodySchema>;
 
+export const postBodyReplySchema = Type.Object({
+  ok: Type.Boolean(),
+  validatorError: Type.Optional(
+    Type.Object({
+      errorId: Type.String(),
+      message: Type.String(),
+      elemId: Type.String(),
+      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
+    })
+  ),
+});
+export type PostBodyReply = Static<typeof postBodyReplySchema>;
+
 export interface FormDataPostRoute extends RouteGenericInterface {
   readonly Body: FormDataPostBody;
-  readonly Reply: { ok: boolean } | FastifyError;
+  readonly Reply: PostBodyReply | FastifyError;
 }
 
 export const getFormReplySchema = Type.Object({
