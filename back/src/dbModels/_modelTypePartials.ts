@@ -82,7 +82,7 @@ export type FormElem = {
 
   // Validation
   required?: boolean;
-  validationRegExp?: string[];
+  validationRegExp?: { pattern: string; flags?: string };
   mustMatchValue?: string;
   validationFn?: string;
 

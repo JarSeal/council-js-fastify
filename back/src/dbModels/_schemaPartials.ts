@@ -72,7 +72,7 @@ export const formElemDbSchema = {
   elemData: { type: Object },
   label: transTextDbSchema,
   required: { type: Boolean },
-  validationRegExp: { type: String },
+  validationRegExp: { pattern: { type: String }, flags: { type: String } },
   mustMatchValue: { type: String },
   validationFn: { type: String },
   inputErrors: [
