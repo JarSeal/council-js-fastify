@@ -45,12 +45,9 @@ export interface DBForm {
     formElems: FormElem[];
   };
 
-  // Whether the form can be sent with only partial payload
-  disablePartialSaving?: boolean;
-
-  // How many documents can be sent with this form per user/owner (must be signed in)
+  // How many documents can be sent with this form per creator.user (must be signed in)
   // Usually this is either undefined or 1 (undefined = infinite)
-  maxDataOwnerDocs?: number;
+  maxDataCreatorDocs?: number;
 
   // Form data owner
   formDataOwner?: Types.ObjectId | null;
@@ -59,7 +56,7 @@ export interface DBForm {
   fillerIsFormDataOwner?: boolean;
 
   // Default privileges to be passed to the formData document
-  formDataDefaultPrivileges: Omit<FormDataPrivileges, 'create'>;
+  formDataDefaultPrivileges: FormDataPrivileges;
 }
 
 const formSchema = new Schema<DBForm>({
@@ -87,8 +84,7 @@ const formSchema = new Schema<DBForm>({
     lockOrder: { type: Boolean, default: false },
     formElems: [formElemDbSchema],
   },
-  disablePartialSaving: { type: Boolean },
-  maxDataOwnerDocs: { type: Number },
+  maxDataCreatorDocs: { type: Number },
   formDataOwner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   fillerIsFormDataOwner: { type: Boolean },
   formDataDefaultPrivileges: formDataPrivilegesSchema,

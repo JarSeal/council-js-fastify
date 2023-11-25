@@ -87,18 +87,14 @@ const getFormConfigs = async () => {
             data: [
               {
                 elemId: 'testElem0',
-                orderNr: 0,
                 value: 'Some text input data',
-                valueType: createValueType('inputText'),
                 privileges: {
                   read: { public: 'true' },
                 },
               },
               {
                 elemId: 'testElem1',
-                orderNr: 1,
                 value: 'Some hidden data',
-                valueType: createValueType('inputText'),
                 privileges: {
                   read: { excludeGroups: [basicUsersId] },
                 },
@@ -158,6 +154,7 @@ const getFormConfigs = async () => {
         ],
         formDataPrivileges: {
           read: { public: 'true' },
+          create: { public: 'true' },
           edit: { groups: [basicUsersId] },
           delete: { groups: [basicUsersId] },
         },
@@ -174,15 +171,11 @@ const getFormConfigs = async () => {
             data: [
               {
                 elemId: 'testElem0',
-                orderNr: 0,
                 value: 'Some text input data 1',
-                valueType: createValueType('inputText'),
               },
               {
                 elemId: 'testElem1',
-                orderNr: 1,
                 value: 12,
-                valueType: createValueType('inputNumber'),
               },
             ],
           },
@@ -198,15 +191,11 @@ const getFormConfigs = async () => {
             data: [
               {
                 elemId: 'testElem0',
-                orderNr: 0,
                 value: 'Some text input data 2',
-                valueType: createValueType('inputText'),
               },
               {
                 elemId: 'testElem1',
-                orderNr: 1,
                 value: 2,
-                valueType: createValueType('inputNumber'),
               },
             ],
           },
@@ -222,15 +211,11 @@ const getFormConfigs = async () => {
             data: [
               {
                 elemId: 'testElem0',
-                orderNr: 0,
                 value: 'Some text input data 3',
-                valueType: createValueType('inputText'),
               },
               {
                 elemId: 'testElem1',
-                orderNr: 1,
                 value: 1245,
-                valueType: createValueType('inputNumber'),
               },
             ],
           },
@@ -246,15 +231,11 @@ const getFormConfigs = async () => {
             data: [
               {
                 elemId: 'testElem0',
-                orderNr: 0,
                 value: 'Some text input data 4',
-                valueType: createValueType('inputText'),
               },
               {
                 elemId: 'testElem1',
-                orderNr: 1,
                 value: 5431254,
-                valueType: createValueType('inputNumber'),
               },
             ],
           },
@@ -270,15 +251,11 @@ const getFormConfigs = async () => {
             data: [
               {
                 elemId: 'testElem0',
-                orderNr: 0,
                 value: 'Some text input data 5',
-                valueType: createValueType('inputText'),
               },
               {
                 elemId: 'testElem1',
-                orderNr: 1,
                 value: 0,
-                valueType: createValueType('inputNumber'),
               },
             ],
           },
@@ -294,15 +271,11 @@ const getFormConfigs = async () => {
             data: [
               {
                 elemId: 'testElem0',
-                orderNr: 0,
                 value: 'äö some text input data 6',
-                valueType: createValueType('inputText'),
               },
               {
                 elemId: 'testElem1',
-                orderNr: 1,
                 value: 0,
-                valueType: createValueType('inputNumber'),
               },
             ],
           },
@@ -318,15 +291,11 @@ const getFormConfigs = async () => {
             data: [
               {
                 elemId: 'testElem0',
-                orderNr: 0,
                 value: 'Ää some text input data 7',
-                valueType: createValueType('inputText'),
               },
               {
                 elemId: 'testElem1',
-                orderNr: 1,
                 value: 12,
-                valueType: createValueType('inputNumber'),
               },
             ],
           },

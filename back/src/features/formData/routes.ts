@@ -5,7 +5,6 @@ import { formDataGet, formDataPost } from './handlers';
 import { formElemPublicSchema, transTextSchema } from '../../@types/form';
 
 export const postBodySchema = Type.Object({
-  formId: Type.String(),
   formData: Type.Array(
     Type.Object({
       elemId: Type.String(),
@@ -17,11 +16,12 @@ export type FormDataPostBody = Static<typeof postBodySchema>;
 
 export const postBodyReplySchema = Type.Object({
   ok: Type.Boolean(),
+  dataId: Type.Optional(Type.String()),
   validatorError: Type.Optional(
     Type.Object({
       errorId: Type.String(),
       message: Type.String(),
-      elemId: Type.String(),
+      elemId: Type.Optional(Type.String()),
       customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
     })
   ),
@@ -84,7 +84,7 @@ const formDataRoute: FastifyPluginAsync = (instance) => {
     handler: formDataPost,
     schema: {
       body: postBodySchema,
-      response: { 200: Type.Object({ ok: Type.Boolean() }) },
+      response: { 200: postBodyReplySchema, 400: postBodyReplySchema },
     },
   });
 

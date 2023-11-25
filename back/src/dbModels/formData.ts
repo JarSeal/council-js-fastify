@@ -2,7 +2,7 @@ import { type Types, type PaginateModel, Schema, model } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
 import { dateDBSchema, formDataPrivilegesSchema } from './_schemaPartials';
-import type { Edited, FormDataPrivileges, FormDataValueType } from './_modelTypePartials';
+import type { Edited, FormDataPrivileges } from './_modelTypePartials';
 
 export interface DBFormData {
   // Mongo ID
@@ -34,14 +34,8 @@ export interface DBFormData {
     // Element Id (simpleId)
     elemId: string;
 
-    // Order number (this is normalised for partial data sets that are returned)
-    orderNr: number;
-
     // Actual data value
     value: unknown;
-
-    // Data value type
-    valueType: FormDataValueType;
 
     // Element specific privileges
     privileges?: Omit<FormDataPrivileges, 'create'>;
@@ -52,7 +46,7 @@ const formDataSchema = new Schema<DBFormData>({
   formId: { type: String, required: true, index: true },
   url: { type: String, required: true },
   created: {
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, default: null },
+    user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     date: dateDBSchema,
   },
   edited: [
@@ -72,9 +66,7 @@ const formDataSchema = new Schema<DBFormData>({
     {
       _id: false,
       elemId: { type: String, required: true },
-      orderNr: { type: Number, required: true },
       value: { type: Schema.Types.Mixed, required: true, index: true },
-      valueType: { type: String, required: true },
       privileges: formDataPrivilegesSchema,
     },
   ],

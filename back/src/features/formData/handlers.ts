@@ -5,7 +5,7 @@ import type { FormDataGetRoute, FormDataPostRoute, FormDataGetReply } from './ro
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
-import type { AllPrivilegeProps } from '../../dbModels/_modelTypePartials';
+import type { AllPrivilegeProps, FormElem } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
 import {
@@ -28,47 +28,131 @@ import { validateFormDataInput } from '../../utils/validation';
 // Create
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
   const body = req.body;
+  const url = getApiPathFromReqUrl(req.url);
 
-  // Get and check form privileges
-  const form = await DBFormModel.findOne<DBForm>({ simpleId: body.formId || null });
-  if (!form) {
-    return res.send(new errors.NOT_FOUND(`Could not find form with formId: '${body.formId}'`));
-  }
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);
-  const privilegeId = `form__${form.simpleId}__canUseForm`;
-  const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-  const privError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
-  if (!privError) {
-    return res.send(new errors.UNAUTHORIZED(`User not privileged to use form: '${body.formId}'`));
+
+  // Get form
+  const form = await DBFormModel.findOne<DBForm>({ url });
+  if (!form) {
+    return res.send(new errors.NOT_FOUND(`Could not find form with url: ${url}`));
   }
 
-  // @TODO: check form default privileges and elem privileges (create)
+  // Get canUseForm privilege (this is also checked when getting the form)
+  const privilegeId = `form__${form.simpleId}__canUseForm`;
+  const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
 
-  // Validate formData values against form elems
+  // Check form's formDataDefaultPrivileges (create)
+  const formDataDefaultCreatePrivileges = combinePrivileges(
+    privilege?.privilegeAccess || {},
+    form.formDataDefaultPrivileges?.create || {}
+  );
+  const createFormDataPrivError = isPrivBlocked(
+    formDataDefaultCreatePrivileges,
+    userData,
+    csrfIsGood
+  );
+  if (createFormDataPrivError) {
+    return res.send(
+      new errors.UNAUTHORIZED(
+        `User not privileged to create formData in POST/create formData handler, formDataDefaultPrivileges, url: ${url}`
+      )
+    );
+  }
+
   const formElems = form.form.formElems;
   const formData = body.formData;
-  const saveData = [];
+
+  // Check maxDataCreatorDocs
+  if (form.maxDataCreatorDocs && userData.isSignedIn) {
+    const count = await DBFormDataModel.countDocuments({
+      $and: [{ formId: form.simpleId }, { 'created.user': userData.userId }],
+    });
+    if (count >= form.maxDataCreatorDocs) {
+      const message = `Max formData documents per creator reached, formId: ${form.simpleId}`;
+      return res.status(403).send({
+        ok: false,
+        validatorError: { errorId: 'maxDataCreatorDocs', message },
+      });
+    }
+  }
+
+  // Check form elems' privileges (create) for the sent elems
+  for (let i = 0; i < formData.length; i++) {
+    const elem = formElems.find((elem) => elem.elemId === formData[i].elemId);
+    if (!elem || elem.doNotSave) continue;
+    if (elem.privileges?.create) {
+      const elemDataCreatePrivileges = combinePrivileges(
+        formDataDefaultCreatePrivileges,
+        elem.privileges.create || {}
+      );
+      const elemFormDataPrivError = isPrivBlocked(elemDataCreatePrivileges, userData, csrfIsGood);
+      if (elemFormDataPrivError) {
+        return res.send(
+          new errors.UNAUTHORIZED(
+            `User not privileged to create formData in POST/create formData handler, elem privileges (elemId: ${elem.elemId}), url: ${url}`
+          )
+        );
+      }
+    }
+  }
+
+  // Validate formData values against form elems
   const validatorError = validateFormDataInput(formElems, formData);
   if (validatorError) {
     return res.status(400).send({ ok: false, validatorError });
   }
 
-  // Get new data
+  // Create formData.data
+  const saveData = [];
+  let hasElemPrivileges = false;
   for (let i = 0; i < formData.length; i++) {
     const elem = formElems.find((elem) => elem.elemId === formData[i].elemId);
     if (!elem || elem.doNotSave) continue;
     saveData.push({
       elemId: elem.elemId,
-      orderNr: i,
       value: formData[i].value,
-      valueType: elem.valueType,
       ...(elem.privileges ? { privileges: elem.privileges } : {}),
     });
-    console.log('DATA********************', formElems[i].privileges);
+    if (elem.privileges) hasElemPrivileges = true;
   }
 
-  return res.send({ ok: true });
+  if (!saveData.length) {
+    return res.status(400).send({
+      ok: false,
+      validatorError: {
+        errorId: 'saveDataEmpty',
+        message:
+          'Form data had no data to save, either because of lacking privileges or no saveable data was sent.',
+      },
+    });
+  }
+
+  // Create formData object and save
+  const newFormData = new DBFormDataModel<DBFormData>({
+    formId: form.simpleId,
+    url,
+    created: {
+      user: userData.userId || null,
+      date: new Date(),
+    },
+    edited: [],
+    owner: form.fillerIsFormDataOwner ? userData.userId || null : form.formDataOwner || null,
+    hasElemPrivileges,
+    privileges: form.formDataDefaultPrivileges,
+    data: saveData,
+  });
+  const savedFormData = await newFormData.save();
+  if (!savedFormData) {
+    return res.send(
+      new errors.DB_GENERAL_ERROR(
+        `could not create/POST new formData for formId: '${form.simpleId}', url: ${url}`
+      )
+    );
+  }
+
+  return res.send({ ok: true, dataId: savedFormData._id.toString() });
 };
 
 export type Data = {
@@ -249,6 +333,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         }
         const dataSet = checkAndSetReadData(
           rawData,
+          form.form.formElems,
           mainPrivileges,
           userData,
           csrfIsGood,
@@ -300,6 +385,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       }
       const dataSet = checkAndSetReadData(
         rawData,
+        form.form.formElems,
         mainPrivileges,
         userData,
         csrfIsGood,
@@ -349,6 +435,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 
 const checkAndSetReadData = (
   rawData: DBFormData['data'],
+  formElems: FormElem[],
   mainPrivileges: AllPrivilegeProps,
   userData: UserData,
   csrfIsGood: boolean,
@@ -377,12 +464,13 @@ const checkAndSetReadData = (
     // Data can be accessed if there is not a mainPrivError or if there is,
     // the elem has overriding elem privileges that does not have an error
     if (!privError && (!elemId || elemId.includes(elem.elemId))) {
+      const formElem = formElems.find((formElem) => formElem.elemId === elem.elemId);
       // White list the data props to be returned
       returnData.push({
         elemId: elem.elemId,
         orderNr: returnData.length,
         value: elem.value,
-        valueType: elem.valueType,
+        valueType: formElem?.valueType || 'unknown',
         ...embedIds,
         ...(labels ? { label: labels[elem.elemId] } : {}),
         ...embedMeta,
