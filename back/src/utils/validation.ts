@@ -83,6 +83,8 @@ export const validateFormDataInput = (
     if (!elem.doNotSave) {
       // Find elemId and value
       const sentElem = formData.find((item) => item.elemId === elem.elemId);
+
+      // required
       if (sentElem?.value === undefined && elem.required) {
         // required error
         const defaultError = `ElemId '${elem.elemId}' value is required.`;
@@ -98,6 +100,8 @@ export const validateFormDataInput = (
           ...(customError?.message ? { customError: customError.message } : {}),
         };
       }
+
+      // valueType check
       if (!isValueAndTypeValid(elem.valueType, sentElem?.value)) {
         // valueType invalid error
         const defaultError = `ElemId '${elem.elemId}' value is not of required valueType ('${elem.valueType}').`;
@@ -113,6 +117,8 @@ export const validateFormDataInput = (
           ...(customError?.message ? { customError: customError.message } : {}),
         };
       }
+
+      // mustMatchValue
       if (elem.mustMatchValue) {
         // compare values
         const compareToValue = formData.find((item) => item.elemId === elem.mustMatchValue)?.value;
@@ -132,12 +138,13 @@ export const validateFormDataInput = (
           };
         }
       }
+
+      // validationFn
       if (elem.validationFn) {
         // find custom validator function and validate
         const validator = customValidators[elem.validationFn];
         if (validator?.validatorFn !== undefined) {
           if (!validator?.validatorFn(sentElem?.value)) {
-            // validationFn error
             const defaultError = `ElemId '${elem.elemId}' value failed validation with ${elem.validationFn} custom validator.`;
             const customError =
               elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'validationFn');
@@ -153,6 +160,8 @@ export const validateFormDataInput = (
           }
         }
       }
+
+      // validationRegExp
       if (
         elem.valueType === 'string' &&
         elem.validationRegExp &&
@@ -161,7 +170,6 @@ export const validateFormDataInput = (
         // create regex and validate
         const regex = new RegExp(elem.validationRegExp.pattern, elem.validationRegExp.flags || '');
         if (!regex.test(sentElem?.value as string)) {
-          // validationRegExp error
           const defaultError = `ElemId '${elem.elemId}' failed to validate for regExp.`;
           const customError =
             elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'validationRegExp');
@@ -176,6 +184,8 @@ export const validateFormDataInput = (
           };
         }
       }
+
+      // elemData validation
     }
   }
   return null;
