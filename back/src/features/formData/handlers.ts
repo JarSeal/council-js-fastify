@@ -73,7 +73,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
       const message = `Max formData documents per creator reached, formId: ${form.simpleId}`;
       return res.status(403).send({
         ok: false,
-        validatorError: { errorId: 'maxDataCreatorDocs', message },
+        error: { errorId: 'maxDataCreatorDocs', message },
       });
     }
   }
@@ -101,7 +101,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   // Validate formData values against form elems
   const validatorError = validateFormDataInput(formElems, formData);
   if (validatorError) {
-    return res.status(400).send({ ok: false, validatorError });
+    return res.status(400).send({ ok: false, error: validatorError });
   }
 
   // Create formData.data
@@ -121,7 +121,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   if (!saveData.length) {
     return res.status(400).send({
       ok: false,
-      validatorError: {
+      error: {
         errorId: 'saveDataEmpty',
         message:
           'Form data had no data to save, either because of lacking privileges or no saveable data was sent.',

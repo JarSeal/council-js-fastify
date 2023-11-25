@@ -17,7 +17,7 @@ export type FormDataPostBody = Static<typeof postBodySchema>;
 export const postBodyReplySchema = Type.Object({
   ok: Type.Boolean(),
   dataId: Type.Optional(Type.String()),
-  validatorError: Type.Optional(
+  error: Type.Optional(
     Type.Object({
       errorId: Type.String(),
       message: Type.String(),
