@@ -4,9 +4,10 @@
     "maxUsernameLength": 32,
     "minPassLength": 8,
     "maxPassLength": 128,
-    "passRegExp": [
-      "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!#$%&?@* \"])[a-zA-Z0-9!#$%&?@* \"]{0,}$"
-    ],
+    "passRegExp": ["^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})"],
+    "passNotValidMessage": {
+      "langKey": "Password is not strong enough or is invalid, must contain a lower case, an upper case, a number, and a special character (!@#$%^&*)."
+    },
     "maxEmails": 2,
     "maxLoginAttempts": 4,
     "sessionMaxAge": 3600,

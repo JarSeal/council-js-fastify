@@ -21,7 +21,6 @@ export const validatePublicSignup = (
     return new errors.USERNAME_TAKEN(username);
   }
 
-  // Check lengths
   const minUserLength =
     options?.minUsernameLength || getConfig<number>('user.minUsernameLength', 2);
   if (username.length < minUserLength) {
@@ -36,6 +35,11 @@ export const validatePublicSignup = (
       `Username is too long, maximum is ${maxUserLength} characters.`
     );
   }
+  if (!validateSimpleId(username)) {
+    return new errors.COUNCL_ERR_VALIDATE(
+      'Username contains invalid characters, only a-z, A-Z, 0-9, -, and _ allowed.'
+    );
+  }
   const minPassLength = options?.minPassLength || getConfig<number>('user.minPassLength', 8);
   if (pass.length < minPassLength) {
     return new errors.COUNCL_ERR_VALIDATE(
@@ -48,25 +52,60 @@ export const validatePublicSignup = (
       `Password is too long, maximum is ${maxPassLength} characters.`
     );
   }
-  // @TODO: add username (simpleId) regex
-  // @TODO: add password regex
+  if (!validatePassword(pass)) {
+    return new errors.COUNCL_ERR_VALIDATE(
+      getConfig<string>('user.passNotValidMessage.langKey', 'Password not valid')
+    );
+  }
   return null;
 };
 
 export const simpleIdRegExp = ['^[a-zA-Z0-9-_]+$', 'gm'];
-export const validateSimpleId = (simpleId: string) => {
+export const validateSimpleId = (simpleId: unknown) => {
+  if (typeof simpleId !== 'string' || !simpleId) return false;
   const regex = new RegExp(simpleIdRegExp[0], simpleIdRegExp[1]);
   return regex.test(simpleId);
 };
 
+export const validateEmail = (value: unknown) =>
+  // case insensitive
+  new RegExp(
+    "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+  ).test(String(value));
+
+export const validatePhoneWithExtraChars = (value: unknown) => {
+  // phone number validation, with extra characters allowed:
+  // +[space]-()
+  if (!value) return false;
+  const strippedNumber = String(value)
+    .replace('+', '')
+    .replaceAll(' ', '')
+    .replaceAll('-', '')
+    .replace('(', '')
+    .replace(')', '');
+  return !isNaN(Number(strippedNumber));
+};
+
+export const validatePassword = (value: unknown, alternateRegex?: string) => {
+  const passRegex = alternateRegex || getConfig<string>('user.passRegExp', '');
+  if (!passRegex) return true;
+  return new RegExp(passRegex).test(String(value));
+};
+
 export const isValueAndTypeValid = (valueType: string, value: unknown): boolean => {
+  let forgedDate;
   switch (valueType) {
     case 'string':
       return typeof value === 'string';
     case 'number':
       return typeof value === 'number';
     case 'date':
-      return new Date(String(value)).toISOString() === value;
+      try {
+        forgedDate = new Date(String(value)).toISOString();
+      } catch (e) {
+        return false;
+      }
+      return forgedDate === value;
     case 'unknown':
     case 'none':
       return true;
@@ -186,7 +225,94 @@ export const validateFormDataInput = (
       }
 
       // elemData validation
+      const elemDataValidationError = elemDataValidation(elem, sentElem);
+      if (elemDataValidationError) {
+        return elemDataValidationError;
+      }
     }
   }
+  return null;
+};
+
+const elemDataValidation = (
+  elem: FormElem,
+  sentElem: { elemId: string; value: unknown } | undefined
+) => {
+  if (elem.valueType === 'string' && sentElem) {
+    const value = sentElem.value as string;
+    // string minLength
+    if (((elem.elemData?.minLength as number) || 0) > value.length) {
+      const defaultError = `ElemId '${elem.elemId}' value is too short (minLength: ${
+        elem.elemData?.minLength as number
+      }).`;
+      const customError =
+        elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'minLength');
+      new errors.FORM_DATA_BAD_REQUEST(
+        `${defaultError}${customError ? ' customError: ' + JSON.stringify(customError) : ''}`
+      );
+      return {
+        errorId: 'minLength',
+        message: defaultError,
+        elemId: elem.elemId,
+        ...(customError?.message ? { customError: customError.message } : {}),
+      };
+    }
+    // string maxLength
+    if (((elem.elemData?.maxLength as number) || 0) < value.length) {
+      const defaultError = `ElemId '${elem.elemId}' value is too long (maxLength: ${
+        elem.elemData?.maxLength as number
+      }).`;
+      const customError =
+        elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'maxLength');
+      new errors.FORM_DATA_BAD_REQUEST(
+        `${defaultError}${customError ? ' customError: ' + JSON.stringify(customError) : ''}`
+      );
+      return {
+        errorId: 'maxLength',
+        message: defaultError,
+        elemId: elem.elemId,
+        ...(customError?.message ? { customError: customError.message } : {}),
+      };
+    }
+  }
+
+  if (elem.valueType === 'number' && sentElem) {
+    const value = sentElem.value as number;
+    // number minValue
+    if (((elem.elemData?.minValue as number) || 0) > value) {
+      const defaultError = `ElemId '${elem.elemId}' value is too small (minValue: ${
+        elem.elemData?.minValue as number
+      }).`;
+      const customError =
+        elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'minValue');
+      new errors.FORM_DATA_BAD_REQUEST(
+        `${defaultError}${customError ? ' customError: ' + JSON.stringify(customError) : ''}`
+      );
+      return {
+        errorId: 'minValue',
+        message: defaultError,
+        elemId: elem.elemId,
+        ...(customError?.message ? { customError: customError.message } : {}),
+      };
+    }
+    // number maxValue
+    if (((elem.elemData?.maxValue as number) || 0) < value) {
+      const defaultError = `ElemId '${elem.elemId}' value is too large (maxValue: ${
+        elem.elemData?.maxValue as number
+      }).`;
+      const customError =
+        elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'maxValue');
+      new errors.FORM_DATA_BAD_REQUEST(
+        `${defaultError}${customError ? ' customError: ' + JSON.stringify(customError) : ''}`
+      );
+      return {
+        errorId: 'maxValue',
+        message: defaultError,
+        elemId: elem.elemId,
+        ...(customError?.message ? { customError: customError.message } : {}),
+      };
+    }
+  }
+
   return null;
 };

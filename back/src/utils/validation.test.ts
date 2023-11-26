@@ -1,4 +1,11 @@
-import { validatePublicSignup } from './validation';
+import {
+  isValueAndTypeValid,
+  validateEmail,
+  validatePassword,
+  validatePhoneWithExtraChars,
+  validatePublicSignup,
+  validateSimpleId,
+} from './validation';
 
 describe('validation util', () => {
   const validationOptions = {
@@ -12,7 +19,7 @@ describe('validation util', () => {
     const validation = validatePublicSignup(
       {
         username: 'myusername',
-        pass: 'somepass',
+        pass: 'myPa$$word1',
         email: 'a@a.com',
       },
       null,
@@ -25,7 +32,7 @@ describe('validation util', () => {
     const validation = validatePublicSignup(
       {
         username: 'myusernameistoolong',
-        pass: 'somepass',
+        pass: 'myPa$$word1',
         email: 'a@a.com',
       },
       null,
@@ -42,7 +49,7 @@ describe('validation util', () => {
     const validation = validatePublicSignup(
       {
         username: 'm',
-        pass: 'somepass',
+        pass: 'myPa$$word1',
         email: 'a@a.com',
       },
       null,
@@ -55,11 +62,28 @@ describe('validation util', () => {
     );
   });
 
+  it('should validate the publicSignUp body and return username invalid', () => {
+    const validation = validatePublicSignup(
+      {
+        username: 'm@',
+        pass: 'myPa$$word1',
+        email: 'a@a.com',
+      },
+      null,
+      validationOptions
+    );
+    expect(validation?.statusCode).toBe(400);
+    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
+    expect(validation?.message).toBe(
+      'New user validation failed: Username contains invalid characters, only a-z, A-Z, 0-9, -, and _ allowed.'
+    );
+  });
+
   it('should validate the publicSignUp body and return password too long error', () => {
     const validation = validatePublicSignup(
       {
         username: 'mysusername',
-        pass: 'somepasswordthatistoolong',
+        pass: 'somepasswordthatistoolonG$1',
         email: 'a@a.com',
       },
       null,
@@ -93,7 +117,7 @@ describe('validation util', () => {
     const validation = validatePublicSignup(
       {
         username: 'myusername',
-        pass: 'somepass',
+        pass: 'myPa$$word1',
         email: 'a@a.com',
       },
       {
@@ -120,5 +144,174 @@ describe('validation util', () => {
     expect(validation?.statusCode).toBe(400);
     expect(validation?.code).toBe('USERNAME_TAKEN');
     expect(validation?.message).toBe("Username 'myusername' is taken");
+  });
+
+  it('should validate a simpleId', () => {
+    const result1 = validateSimpleId('');
+    const result2 = validateSimpleId(null);
+    const result3 = validateSimpleId('a');
+    const result4 = validateSimpleId('simpleId-that--has_all__43023');
+    const result5 = validateSimpleId('Wrong$');
+    const result6 = validateSimpleId('Wrong@');
+
+    expect(result1).toBeFalsy();
+    expect(result2).toBeFalsy();
+    expect(result3).toBeTruthy();
+    expect(result4).toBeTruthy();
+    expect(result5).toBeFalsy();
+    expect(result6).toBeFalsy();
+  });
+
+  it('should validate an email', () => {
+    const result1 = validateEmail('');
+    const result2 = validateEmail(null);
+    const result3 = validateEmail('a');
+    const result4 = validateEmail('first.last@council.js');
+    const result5 = validateEmail('a@a.a');
+    const result6 = validateEmail('@x.x');
+    const result7 = validateEmail('x@x.');
+
+    expect(result1).toBeFalsy();
+    expect(result2).toBeFalsy();
+    expect(result3).toBeFalsy();
+    expect(result4).toBeTruthy();
+    expect(result5).toBeTruthy();
+    expect(result6).toBeFalsy();
+    expect(result7).toBeFalsy();
+  });
+
+  it('should validate a phone number with extra characters', () => {
+    const result1 = validatePhoneWithExtraChars('');
+    const result2 = validatePhoneWithExtraChars(null);
+    const result3 = validatePhoneWithExtraChars('aaa');
+    const result4 = validatePhoneWithExtraChars('1234567890');
+    const result5 = validatePhoneWithExtraChars('+631234567890');
+    const result6 = validatePhoneWithExtraChars('1234u53246');
+    const result7 = validatePhoneWithExtraChars('1235$74387');
+    const result8 = validatePhoneWithExtraChars('+31-(40)-123 3455');
+    const result9 = validatePhoneWithExtraChars('+31 40 123 3455');
+
+    expect(result1).toBeFalsy();
+    expect(result2).toBeFalsy();
+    expect(result3).toBeFalsy();
+    expect(result4).toBeTruthy();
+    expect(result5).toBeTruthy();
+    expect(result6).toBeFalsy();
+    expect(result7).toBeFalsy();
+    expect(result8).toBeTruthy();
+    expect(result9).toBeTruthy();
+  });
+
+  it('should validate a password', () => {
+    const regex = '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})';
+    const result1 = validatePassword('', regex);
+    const result2 = validatePassword(null, regex);
+    const result3 = validatePassword('a', regex);
+    const result4 = validatePassword('mypa$$Word1', regex);
+    const result5 = validatePassword('@notherPassword99', regex);
+    const result6 = validatePassword('$horT1');
+    const result7 = validatePassword('almostGoodPass1');
+    const result8 = validatePassword('almostgooda$$1');
+    const result9 = validatePassword('almostGoodPa$$');
+
+    expect(result1).toBeFalsy();
+    expect(result2).toBeFalsy();
+    expect(result3).toBeFalsy();
+    expect(result4).toBeTruthy();
+    expect(result5).toBeTruthy();
+    expect(result6).toBeFalsy();
+    expect(result7).toBeFalsy();
+    expect(result8).toBeFalsy();
+    expect(result9).toBeFalsy();
+  });
+
+  it('should validate a valueType', () => {
+    const string1 = isValueAndTypeValid('string', null);
+    const string2 = isValueAndTypeValid('string', undefined);
+    const string3 = isValueAndTypeValid('string', '');
+    const string4 = isValueAndTypeValid('string', 'My string');
+    const string5 = isValueAndTypeValid('string', {});
+    const string6 = isValueAndTypeValid('string', []);
+    const string7 = isValueAndTypeValid('string', 1);
+
+    expect(string1).toBeFalsy();
+    expect(string2).toBeFalsy();
+    expect(string3).toBeTruthy();
+    expect(string4).toBeTruthy();
+    expect(string5).toBeFalsy();
+    expect(string6).toBeFalsy();
+    expect(string7).toBeFalsy();
+
+    const number1 = isValueAndTypeValid('number', null);
+    const number2 = isValueAndTypeValid('number', undefined);
+    const number3 = isValueAndTypeValid('number', 0);
+    const number4 = isValueAndTypeValid('number', 1235325);
+    const number5 = isValueAndTypeValid('number', -434);
+    const number6 = isValueAndTypeValid('number', 1.435);
+    const number7 = isValueAndTypeValid('number', 12e3);
+    const number8 = isValueAndTypeValid('number', {});
+    const number9 = isValueAndTypeValid('number', []);
+    const number10 = isValueAndTypeValid('number', '123');
+
+    expect(number1).toBeFalsy();
+    expect(number2).toBeFalsy();
+    expect(number3).toBeTruthy();
+    expect(number4).toBeTruthy();
+    expect(number5).toBeTruthy();
+    expect(number6).toBeTruthy();
+    expect(number7).toBeTruthy();
+    expect(number8).toBeFalsy();
+    expect(number9).toBeFalsy();
+    expect(number10).toBeFalsy();
+
+    const date1 = isValueAndTypeValid('date', null);
+    const date2 = isValueAndTypeValid('date', undefined);
+    const date3 = isValueAndTypeValid('date', new Date().toISOString());
+    const date4 = isValueAndTypeValid('date', '2023-11-26T21:03:13.370Z');
+    const date5 = isValueAndTypeValid('date', new Date('2023-11-26').toISOString());
+    const date6 = isValueAndTypeValid('date', 12);
+    const date7 = isValueAndTypeValid('date', '2021');
+    const date8 = isValueAndTypeValid('date', []);
+    const date9 = isValueAndTypeValid('date', {});
+
+    expect(date1).toBeFalsy();
+    expect(date2).toBeFalsy();
+    expect(date3).toBeTruthy();
+    expect(date4).toBeTruthy();
+    expect(date5).toBeTruthy();
+    expect(date6).toBeFalsy();
+    expect(date7).toBeFalsy();
+    expect(date8).toBeFalsy();
+    expect(date9).toBeFalsy();
+
+    const unknown1 = isValueAndTypeValid('unknown', null);
+    const unknown2 = isValueAndTypeValid('unknown', undefined);
+    const unknown3 = isValueAndTypeValid('unknown', 1);
+    const unknown4 = isValueAndTypeValid('unknown', 'fafa');
+
+    expect(unknown1).toBeTruthy();
+    expect(unknown2).toBeTruthy();
+    expect(unknown3).toBeTruthy();
+    expect(unknown4).toBeTruthy();
+
+    const none1 = isValueAndTypeValid('none', null);
+    const none2 = isValueAndTypeValid('none', undefined);
+    const none3 = isValueAndTypeValid('none', 1);
+    const none4 = isValueAndTypeValid('none', 'fafa');
+
+    expect(none1).toBeTruthy();
+    expect(none2).toBeTruthy();
+    expect(none3).toBeTruthy();
+    expect(none4).toBeTruthy();
+
+    const false1 = isValueAndTypeValid('nonExistingType', null);
+    const false2 = isValueAndTypeValid('nonExistingType', undefined);
+    const false3 = isValueAndTypeValid('nonExistingType', 1);
+    const false4 = isValueAndTypeValid('nonExistingType', 'fafa');
+
+    expect(false1).toBeFalsy();
+    expect(false2).toBeFalsy();
+    expect(false3).toBeFalsy();
+    expect(false4).toBeFalsy();
   });
 });
