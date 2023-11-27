@@ -5,7 +5,7 @@ type CustomValidator = {
   [key: string]: {
     name: TransText;
     description: TransText;
-    errorMsg: TransText;
+    errorMsg: TransText; // @CONSIDER: is this needed? There is the inputError..
     validatorFn: (value: unknown) => boolean;
   };
 };
