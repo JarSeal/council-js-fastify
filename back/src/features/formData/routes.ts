@@ -1,7 +1,8 @@
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 import { type Static, Type } from '@sinclair/typebox';
 
-import { formDataGet, formDataPost } from './handlers';
+import { formDataGet } from './handlers.GET';
+import { formDataPost } from './handlers.POST';
 import { formElemPublicSchema, transTextSchema } from '../../@types/form';
 
 export const postBodySchema = Type.Object({

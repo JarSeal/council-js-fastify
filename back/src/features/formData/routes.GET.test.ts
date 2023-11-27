@@ -16,7 +16,7 @@ import type { PublicPrivilegeProp, TransText } from '../../dbModels/_modelTypePa
 import { SESSION_COOKIE_NAME } from '../../core/config';
 import type { PaginationData } from '../../utils/parsingAndConverting';
 import { emptyFormDataPrivileges } from '../../utils/userAndPrivilegeChecks';
-import type { Data } from './handlers';
+import type { Data } from './handlers.GET';
 
 describe('formData', () => {
   let app: FastifyInstance;
