@@ -79,4 +79,6 @@ describe('parsingAndConverting', () => {
     );
     expect(sorterString).toBe('data.0.value -data.3.value created.date');
   });
+
+  // @TODO: parseSearchQuery
 });
