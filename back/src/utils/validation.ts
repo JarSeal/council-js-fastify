@@ -161,7 +161,7 @@ export const validateFormDataInput = (
       if (elem.mustMatchValue) {
         // compare values
         const compareToValue = formData.find((item) => item.elemId === elem.mustMatchValue)?.value;
-        if (compareToValue !== sentElem) {
+        if (compareToValue !== sentElem?.value) {
           // mustMatchValue error
           const defaultError = `ElemId '${elem.elemId}' must match elemId '${elem.mustMatchValue}' value.`;
           const customError =
@@ -184,7 +184,7 @@ export const validateFormDataInput = (
         const validator = customValidators[elem.validationFn];
         if (validator?.validatorFn !== undefined) {
           if (!validator?.validatorFn(sentElem?.value)) {
-            const defaultError = `ElemId '${elem.elemId}' value failed validation with ${elem.validationFn} custom validator.`;
+            const defaultError = `ElemId '${elem.elemId}' value failed validation with '${elem.validationFn}' validator.`;
             const customError =
               elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'validationFn');
             new errors.FORM_DATA_BAD_REQUEST(
@@ -241,7 +241,10 @@ const elemDataValidation = (
   if (elem.valueType === 'string' && sentElem) {
     const value = sentElem.value as string;
     // string minLength
-    if (((elem.elemData?.minLength as number) || 0) > value.length) {
+    if (
+      elem.elemData?.minLength !== undefined &&
+      (elem.elemData?.minLength as number) > value.length
+    ) {
       const defaultError = `ElemId '${elem.elemId}' value is too short (minLength: ${
         elem.elemData?.minLength as number
       }).`;
@@ -258,7 +261,10 @@ const elemDataValidation = (
       };
     }
     // string maxLength
-    if (((elem.elemData?.maxLength as number) || 0) < value.length) {
+    if (
+      elem.elemData?.maxLength !== undefined &&
+      (elem.elemData?.maxLength as number) < value.length
+    ) {
       const defaultError = `ElemId '${elem.elemId}' value is too long (maxLength: ${
         elem.elemData?.maxLength as number
       }).`;
@@ -279,7 +285,7 @@ const elemDataValidation = (
   if (elem.valueType === 'number' && sentElem) {
     const value = sentElem.value as number;
     // number minValue
-    if (((elem.elemData?.minValue as number) || 0) > value) {
+    if (elem.elemData?.minValue !== undefined && (elem.elemData?.minValue as number) > value) {
       const defaultError = `ElemId '${elem.elemId}' value is too small (minValue: ${
         elem.elemData?.minValue as number
       }).`;
@@ -296,7 +302,7 @@ const elemDataValidation = (
       };
     }
     // number maxValue
-    if (((elem.elemData?.maxValue as number) || 0) < value) {
+    if (elem.elemData?.maxValue !== undefined && (elem.elemData?.maxValue as number) < value) {
       const defaultError = `ElemId '${elem.elemId}' value is too large (maxValue: ${
         elem.elemData?.maxValue as number
       }).`;

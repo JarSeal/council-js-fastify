@@ -1,6 +1,8 @@
+import { type FormElem } from '../dbModels/_modelTypePartials';
 import {
   isValueAndTypeValid,
   validateEmail,
+  validateFormDataInput,
   validatePassword,
   validatePhoneWithExtraChars,
   validatePublicSignup,
@@ -313,5 +315,241 @@ describe('validation util', () => {
     expect(false2).toBeFalsy();
     expect(false3).toBeFalsy();
     expect(false4).toBeFalsy();
+  });
+
+  it('should validate formData input', () => {
+    const formElems1 = [
+      {
+        elemId: 'myElem1',
+        orderNr: 0,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: { minLength: 3, maxLength: 10 },
+        required: true,
+        validationRegExp: { pattern: '[0-9]+$', flags: 'i' },
+        mustMatchValue: undefined,
+        validationFn: undefined,
+        inputErrors: [
+          {
+            errorId: 'minLength',
+            message: { langKey: 'Too short' },
+          },
+        ],
+        doNotSave: false,
+      },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: { minLength: 3, maxLength: 10 },
+        required: true,
+        validationRegExp: { pattern: '[0-9]+$', flags: '' },
+        mustMatchValue: undefined,
+        validationFn: undefined,
+        inputErrors: [
+          {
+            errorId: 'minLength',
+            message: { langKey: 'Too short' },
+          },
+        ],
+        doNotSave: true,
+      },
+    ] as FormElem[];
+    const formData1 = [
+      {
+        elemId: 'myElem1',
+        value: '1',
+      },
+      {
+        elemId: 'myElem2',
+        value: '1',
+      },
+    ];
+    let result = validateFormDataInput(formElems1, formData1);
+    expect(result).toStrictEqual({
+      errorId: 'minLength',
+      message: "ElemId 'myElem1' value is too short (minLength: 3).",
+      elemId: 'myElem1',
+      customError: { langKey: 'Too short' },
+    });
+
+    const formData2 = [
+      {
+        elemId: 'myElem1',
+        value: '141253523532564364534534',
+      },
+      {
+        elemId: 'myElem2',
+        value: '1',
+      },
+    ];
+    result = validateFormDataInput(formElems1, formData2);
+    expect(result).toStrictEqual({
+      errorId: 'maxLength',
+      message: "ElemId 'myElem1' value is too long (maxLength: 10).",
+      elemId: 'myElem1',
+    });
+
+    const formData3 = [
+      {
+        elemId: 'myElem1',
+        value: '141sfsa',
+      },
+      {
+        elemId: 'myElem2',
+        value: '1',
+      },
+    ];
+    result = validateFormDataInput(formElems1, formData3);
+    expect(result).toStrictEqual({
+      errorId: 'validationRegExp',
+      message: "ElemId 'myElem1' failed to validate for regExp.",
+      elemId: 'myElem1',
+    });
+
+    const formData4 = [
+      {
+        elemId: 'myElem1',
+        value: 1234546,
+      },
+      {
+        elemId: 'myElem2',
+        value: '1',
+      },
+    ];
+    result = validateFormDataInput(formElems1, formData4);
+    expect(result).toStrictEqual({
+      errorId: 'invalidValueType',
+      message: "ElemId 'myElem1' value is not of required valueType ('string').",
+      elemId: 'myElem1',
+    });
+
+    const formData5 = [
+      {
+        elemId: 'myElem2',
+        value: '1',
+      },
+    ];
+    result = validateFormDataInput(formElems1, formData5);
+    expect(result).toStrictEqual({
+      errorId: 'required',
+      message: "ElemId 'myElem1' value is required.",
+      elemId: 'myElem1',
+    });
+
+    const formData6 = [
+      {
+        elemId: 'myElem1',
+        value: '1415435',
+      },
+      {
+        elemId: 'myElem2',
+        value: '1',
+      },
+    ];
+    result = validateFormDataInput(formElems1, formData6);
+    expect(result).toBe(null);
+
+    const formElems2 = [
+      {
+        elemId: 'myElem1',
+        orderNr: 0,
+        elemType: 'inputNumber',
+        valueType: 'number',
+        elemData: { minValue: 3, maxValue: 10 },
+        required: true,
+        mustMatchValue: 'myElem2',
+      },
+      {
+        elemId: 'myElem2',
+        orderNr: 1,
+        elemType: 'inputNumber',
+        valueType: 'number',
+        required: true,
+      },
+    ] as FormElem[];
+    const formData7 = [
+      {
+        elemId: 'myElem1',
+        value: 5,
+      },
+      {
+        elemId: 'myElem2',
+        value: 7,
+      },
+    ];
+    result = validateFormDataInput(formElems2, formData7);
+    expect(result).toStrictEqual({
+      errorId: 'mustMatchValue',
+      message: "ElemId 'myElem1' must match elemId 'myElem2' value.",
+      elemId: 'myElem1',
+    });
+
+    const formData8 = [
+      {
+        elemId: 'myElem1',
+        value: 0,
+      },
+      {
+        elemId: 'myElem2',
+        value: 0,
+      },
+    ];
+    result = validateFormDataInput(formElems2, formData8);
+    expect(result).toStrictEqual({
+      errorId: 'minValue',
+      message: "ElemId 'myElem1' value is too small (minValue: 3).",
+      elemId: 'myElem1',
+    });
+
+    const formData9 = [
+      {
+        elemId: 'myElem1',
+        value: 200,
+      },
+      {
+        elemId: 'myElem2',
+        value: 200,
+      },
+    ];
+    result = validateFormDataInput(formElems2, formData9);
+    expect(result).toStrictEqual({
+      errorId: 'maxValue',
+      message: "ElemId 'myElem1' value is too large (maxValue: 10).",
+      elemId: 'myElem1',
+    });
+
+    const formElems3 = [
+      {
+        elemId: 'myElem1',
+        orderNr: 0,
+        elemType: 'inputText',
+        valueType: 'string',
+        validationFn: 'email',
+        required: true,
+      },
+    ] as FormElem[];
+    const formData10 = [
+      {
+        elemId: 'myElem1',
+        value: 'jfkdskj',
+      },
+    ];
+    result = validateFormDataInput(formElems3, formData10);
+    expect(result).toStrictEqual({
+      errorId: 'validationFn',
+      message: "ElemId 'myElem1' value failed validation with 'email' validator.",
+      elemId: 'myElem1',
+    });
+
+    const formData11 = [
+      {
+        elemId: 'myElem1',
+        value: 'firstname.lastname@council.js',
+      },
+    ];
+    result = validateFormDataInput(formElems3, formData11);
+    expect(result).toStrictEqual(null);
   });
 });
