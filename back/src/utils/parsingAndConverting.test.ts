@@ -81,4 +81,28 @@ describe('parsingAndConverting', () => {
   });
 
   // @TODO: parseSearchQuery
+  it('parseSearchQuery', () => {
+    const form = {
+      form: {
+        formElems: [
+          {
+            elemId: 'myelem0',
+          },
+          {
+            elemId: 'myelem1',
+          },
+          {
+            elemId: 'myelem2',
+          },
+          {
+            elemId: 'myelem3',
+          },
+          {
+            elemId: 'myelem4',
+          },
+        ],
+      },
+    } as DBForm;
+    form;
+  });
 });
