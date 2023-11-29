@@ -101,7 +101,9 @@ type SearchQuery = (
         | { $or: { [key: string]: unknown }[] }
       )[];
     }
-  | { notFound: boolean }
+  | { $notFound: boolean }
+  | { 'created.date': { $gt: string } | { $lt: string } }
+  | { 'edited.0.date': { $gt: string } | { $lt: string } }
 )[];
 
 export const parseSearchQuery = (
@@ -204,27 +206,17 @@ const getSearchQueryByValueType = (
   csrfIsGood: boolean,
   sCase?: boolean
 ) => {
-  if (index === -1) return { notFound: true };
+  if (index === -1) return { $notFound: true };
   const currentElemReadPrivs = `data.${index}.privileges.read`;
   const elemPrivsCheck = getFormDataElemPrivilegesQuery(currentElemReadPrivs, userData, csrfIsGood);
   switch (valueType) {
     case 'number':
-      if (isNaN(Number(searchTerm))) return null;
+      if (isNaN(Number(searchTerm))) return { $notFound: true };
       return { $and: [elemPrivsCheck, { [`data.${index}.value`]: Number(searchTerm) }] };
     case 'created':
-      return {
-        $and: [
-          elemPrivsCheck,
-          { 'created.date': index % 2 === 0 ? { $gt: searchTerm } : { $lt: searchTerm } },
-        ],
-      };
+      return { 'created.date': index % 2 === 0 ? { $gt: searchTerm } : { $lt: searchTerm } };
     case 'edited':
-      return {
-        $and: [
-          elemPrivsCheck,
-          { 'edited.0.date': index % 2 === 0 ? { $gt: searchTerm } : { $lt: searchTerm } },
-        ],
-      };
+      return { 'edited.0.date': index % 2 === 0 ? { $gt: searchTerm } : { $lt: searchTerm } };
     case 'string':
     default:
       return {

@@ -118,7 +118,7 @@ describe('parsingAndConverting', () => {
       isSysAdmin: false,
     };
     const csrfIsGood = true;
-    const sCase = false;
+    let sCase = false;
 
     // search by elemId
     let query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
@@ -171,10 +171,57 @@ describe('parsingAndConverting', () => {
     // search by non-existing elemId and sOper = 'or'
     s = ['(elemNotInForm):search string'];
     query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
-    expect(query).toStrictEqual([{ notFound: true }]);
+    expect(query).toStrictEqual([{ $notFound: true }]);
+
+    // sCase string search
+    s = ['(myelem0):search string'];
+    sCase = true;
+    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([
+      {
+        $and: [
+          {
+            $or: [
+              {
+                hasElemPrivileges: false,
+              },
+              {
+                hasElemPrivileges: false,
+              },
+              {
+                'data.0.privileges.read': { $exists: false },
+              },
+              {
+                $and: [
+                  {
+                    $or: [
+                      { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
+                      { 'data.0.privileges.read.requireCsrfHeader': true },
+                    ],
+                  },
+                  {
+                    $or: [
+                      { 'data.0.privileges.read.public': 'true' },
+                      { 'data.0.privileges.read.public': 'onlyPublic' },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            'data.0.value': {
+              $options: '',
+              $regex: 'search string',
+            },
+          },
+        ],
+      },
+    ]);
 
     // search by two strings from index 0 (myelem0) and 1 (myelem1)
     s = ['0:search string', '1:another'];
+    sCase = false;
     query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
@@ -429,6 +476,7 @@ describe('parsingAndConverting', () => {
               },
             ],
           },
+          { $notFound: true },
         ],
       },
     ]);
@@ -477,49 +525,36 @@ describe('parsingAndConverting', () => {
     ]);
 
     // created date search
-    // s = ['created:2023-11-29T00:00:00.000Z'];
-    // sOper = undefined;
-    // query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
-    // expect(query).toStrictEqual([
-    //   {
-    //     $and: [
-    //       {
-    //         $or: [
-    //           {
-    //             hasElemPrivileges: false,
-    //           },
-    //           {
-    //             hasElemPrivileges: false,
-    //           },
-    //           {
-    //             'data.2.privileges.read': { $exists: false },
-    //           },
-    //           {
-    //             $and: [
-    //               {
-    //                 $or: [
-    //                   { 'data.2.privileges.read.requireCsrfHeader': { $ne: true } },
-    //                   { 'data.2.privileges.read.requireCsrfHeader': true },
-    //                 ],
-    //               },
-    //               {
-    //                 $or: [
-    //                   { 'data.2.privileges.read.public': 'true' },
-    //                   { 'data.2.privileges.read.public': 'onlyPublic' },
-    //                 ],
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         'data.2.value': 2,
-    //       },
-    //     ],
-    //   },
-    // ]);
+    s = ['created:2023-11-29T00:00:00.000Z', 'created:2023-11-30T00:00:00.000Z'];
+    sOper = undefined;
+    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([
+      {
+        'created.date': {
+          $gt: '2023-11-29T00:00:00.000Z',
+        },
+      },
+      {
+        'created.date': {
+          $lt: '2023-11-30T00:00:00.000Z',
+        },
+      },
+    ]);
 
     // edited date search
-    // sCase string search
+    s = ['edited:2023-11-29T00:00:00.000Z', 'edited:2023-11-30T00:00:00.000Z'];
+    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([
+      {
+        'edited.0.date': {
+          $gt: '2023-11-29T00:00:00.000Z',
+        },
+      },
+      {
+        'edited.0.date': {
+          $lt: '2023-11-30T00:00:00.000Z',
+        },
+      },
+    ]);
   });
 });
