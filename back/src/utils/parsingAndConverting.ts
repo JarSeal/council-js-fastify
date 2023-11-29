@@ -88,18 +88,21 @@ export const parseFormDataSortStringFromQueryString = (
   return sortStringArray.join(' ');
 };
 
-type SearchQuery = {
-  $and: (
-    | {
-        [key: string]:
-          | { $regex: string; $options: string }
-          | { $gt: string }
-          | { $lt: string }
-          | number;
-      }
-    | { $or: { [key: string]: unknown }[] }
-  )[];
-}[];
+type SearchQuery = (
+  | {
+      $and: (
+        | {
+            [key: string]:
+              | { $regex: string; $options: string }
+              | { $gt: string }
+              | { $lt: string }
+              | number;
+          }
+        | { $or: { [key: string]: unknown }[] }
+      )[];
+    }
+  | { notFound: boolean }
+)[];
 
 export const parseSearchQuery = (
   s: string | string[] | undefined,
@@ -189,7 +192,7 @@ export const parseSearchQuery = (
     }
   }
 
-  if (sOper === 'or' || fullSearch) return [{ $or: searchQuery }];
+  if (sOper === 'or' || (fullSearch && sOper !== 'and')) return [{ $or: searchQuery }];
   return searchQuery;
 };
 
@@ -201,23 +204,25 @@ const getSearchQueryByValueType = (
   csrfIsGood: boolean,
   sCase?: boolean
 ) => {
+  if (index === -1) return { notFound: true };
   const currentElemReadPrivs = `data.${index}.privileges.read`;
   const elemPrivsCheck = getFormDataElemPrivilegesQuery(currentElemReadPrivs, userData, csrfIsGood);
   switch (valueType) {
     case 'number':
+      if (isNaN(Number(searchTerm))) return null;
       return { $and: [elemPrivsCheck, { [`data.${index}.value`]: Number(searchTerm) }] };
     case 'created':
       return {
         $and: [
           elemPrivsCheck,
-          { 'created.date': index === 0 ? { $gt: searchTerm } : { $lt: searchTerm } },
+          { 'created.date': index % 2 === 0 ? { $gt: searchTerm } : { $lt: searchTerm } },
         ],
       };
     case 'edited':
       return {
         $and: [
           elemPrivsCheck,
-          { 'edited.0.date': index === 0 ? { $gt: searchTerm } : { $lt: searchTerm } },
+          { 'edited.0.date': index % 2 === 0 ? { $gt: searchTerm } : { $lt: searchTerm } },
         ],
       };
     case 'string':
