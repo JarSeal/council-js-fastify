@@ -434,7 +434,92 @@ describe('parsingAndConverting', () => {
     ]);
 
     // search a number
+    s = ['(myelem2):2'];
+    sOper = undefined;
+    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([
+      {
+        $and: [
+          {
+            $or: [
+              {
+                hasElemPrivileges: false,
+              },
+              {
+                hasElemPrivileges: false,
+              },
+              {
+                'data.2.privileges.read': { $exists: false },
+              },
+              {
+                $and: [
+                  {
+                    $or: [
+                      { 'data.2.privileges.read.requireCsrfHeader': { $ne: true } },
+                      { 'data.2.privileges.read.requireCsrfHeader': true },
+                    ],
+                  },
+                  {
+                    $or: [
+                      { 'data.2.privileges.read.public': 'true' },
+                      { 'data.2.privileges.read.public': 'onlyPublic' },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            'data.2.value': 2,
+          },
+        ],
+      },
+    ]);
+
     // created date search
+    // s = ['created:2023-11-29T00:00:00.000Z'];
+    // sOper = undefined;
+    // query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    // expect(query).toStrictEqual([
+    //   {
+    //     $and: [
+    //       {
+    //         $or: [
+    //           {
+    //             hasElemPrivileges: false,
+    //           },
+    //           {
+    //             hasElemPrivileges: false,
+    //           },
+    //           {
+    //             'data.2.privileges.read': { $exists: false },
+    //           },
+    //           {
+    //             $and: [
+    //               {
+    //                 $or: [
+    //                   { 'data.2.privileges.read.requireCsrfHeader': { $ne: true } },
+    //                   { 'data.2.privileges.read.requireCsrfHeader': true },
+    //                 ],
+    //               },
+    //               {
+    //                 $or: [
+    //                   { 'data.2.privileges.read.public': 'true' },
+    //                   { 'data.2.privileges.read.public': 'onlyPublic' },
+    //                 ],
+    //               },
+    //             ],
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         'data.2.value': 2,
+    //       },
+    //     ],
+    //   },
+    // ]);
+
     // edited date search
+    // sCase string search
   });
 });
