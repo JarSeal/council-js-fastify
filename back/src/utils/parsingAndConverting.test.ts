@@ -171,7 +171,7 @@ describe('parsingAndConverting', () => {
     // search by non-existing elemId and sOper = 'or'
     s = ['(elemNotInForm):search string'];
     query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
-    expect(query).toStrictEqual([{ $notFound: true }]);
+    expect(query).toStrictEqual([{ __notFound: true }]);
 
     // sCase string search
     s = ['(myelem0):search string'];
@@ -476,7 +476,7 @@ describe('parsingAndConverting', () => {
               },
             ],
           },
-          { $notFound: true },
+          { __notFound: true },
         ],
       },
     ]);
