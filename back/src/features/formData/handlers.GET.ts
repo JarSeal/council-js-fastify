@@ -57,8 +57,8 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     includeDataIds,
     includeLabels,
     includeMeta,
-    // @TODO: meAsCreator (boolean),
-    // @TODO: meAsOwner (boolean),
+    meAsCreator,
+    meAsOwner,
   } = req.query;
   const url = getApiPathFromReqUrl(req.url);
 
@@ -146,7 +146,16 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     if (dataId[0] === 'all' || isMultipleDataIds) {
       // Get all possible paginated formData
 
-      const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+      const searchQuery = parseSearchQuery(
+        s,
+        sOper,
+        form,
+        userData,
+        csrfIsGood,
+        sCase,
+        meAsCreator,
+        meAsOwner
+      );
 
       const dataObjectIds = isMultipleDataIds ? dataId.map((id) => new Types.ObjectId(id)) : null;
       const paginatedData = await DBFormDataModel.paginate<DBFormData>(
@@ -192,7 +201,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
           dataMetaData = {
             created: fd.created.date,
             edited: fd.edited.length ? fd.edited[0].date : null,
-            // @TODO: get actual usernames (maybe)
+            // @TODO: get actual usernames
             ...(userData.isSysAdmin
               ? {
                   owner: fd?.owner?.toString() || null,

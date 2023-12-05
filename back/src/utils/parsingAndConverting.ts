@@ -1,4 +1,4 @@
-import type { PaginateResult } from 'mongoose';
+import type { PaginateResult, Types } from 'mongoose';
 
 import { apiVersion } from '../core/apis';
 import { apiRoot } from '../core/app';
@@ -104,6 +104,8 @@ type SearchQuery = (
   | { __notFound: boolean }
   | { 'created.date': { $gt: string } | { $lt: string } }
   | { 'edited.0.date': { $gt: string } | { $lt: string } }
+  | { 'created.user': Types.ObjectId }
+  | { owner: Types.ObjectId }
 )[];
 
 export const parseSearchQuery = (
@@ -112,9 +114,11 @@ export const parseSearchQuery = (
   form: DBForm,
   userData: UserData,
   csrfIsGood: boolean,
-  sCase?: boolean
+  sCase?: boolean,
+  meAsCreator?: boolean,
+  meAsOwner?: boolean
 ) => {
-  if (!s) return [];
+  if (!s && !meAsCreator && !meAsOwner) return [];
   let searchQuery: SearchQuery = [];
   const elems = form.form.formElems;
   let fullSearch = false,
@@ -122,57 +126,66 @@ export const parseSearchQuery = (
     createdIndex = -1,
     editedIndex = -1;
 
-  for (let i = 0; i < s.length; i++) {
-    let dateSearch = null;
-    const elemIdOrIndex = s[i].split(':')[0];
-    searchTerm = s[i].replace(elemIdOrIndex + ':', '');
-    if (elemIdOrIndex === '$all') {
-      fullSearch = true;
-      searchQuery = [];
-      break;
-    }
-    if (elemIdOrIndex === 'created') {
-      dateSearch = 'created';
-      createdIndex++;
-    }
-    if (elemIdOrIndex === 'edited') {
-      dateSearch = 'edited';
-      editedIndex++;
-    }
-    if (!elemIdOrIndex) continue;
-
-    let index = null;
-    if (elemIdOrIndex.startsWith('(')) {
-      // Find the current index of elemId
-      const elemId = elemIdOrIndex.replace('(', '').replace(')', '');
-      for (let j = 0; j < elems.length; j++) {
-        if (elemId === elems[j].elemId) {
-          index = j;
-          break;
-        }
+  if (s) {
+    for (let i = 0; i < s.length; i++) {
+      let dateSearch = null;
+      const elemIdOrIndex = s[i].split(':')[0];
+      searchTerm = s[i].replace(elemIdOrIndex + ':', '');
+      if (elemIdOrIndex === '$all') {
+        fullSearch = true;
+        searchQuery = [];
+        break;
       }
-      if (index === null) index = -1;
-    } else if (isNaN(Number(elemIdOrIndex))) {
-      index = -1;
-    } else {
-      index = parseInt(elemIdOrIndex);
-    }
+      if (elemIdOrIndex === 'created') {
+        dateSearch = 'created';
+        createdIndex++;
+      }
+      if (elemIdOrIndex === 'edited') {
+        dateSearch = 'edited';
+        editedIndex++;
+      }
+      if (!elemIdOrIndex) continue;
 
-    let query;
-    if (dateSearch) {
-      query = getSearchQueryByValueType(
-        dateSearch,
-        dateSearch === 'created' ? createdIndex : editedIndex,
-        searchTerm,
-        userData,
-        csrfIsGood,
-        sCase
-      );
-    } else {
-      const valueType = index === -1 ? '' : elems[index].valueType;
-      query = getSearchQueryByValueType(valueType, index, searchTerm, userData, csrfIsGood, sCase);
+      let index = null;
+      if (elemIdOrIndex.startsWith('(')) {
+        // Find the current index of elemId
+        const elemId = elemIdOrIndex.replace('(', '').replace(')', '');
+        for (let j = 0; j < elems.length; j++) {
+          if (elemId === elems[j].elemId) {
+            index = j;
+            break;
+          }
+        }
+        if (index === null) index = -1;
+      } else if (isNaN(Number(elemIdOrIndex))) {
+        index = -1;
+      } else {
+        index = parseInt(elemIdOrIndex);
+      }
+
+      let query;
+      if (dateSearch) {
+        query = getSearchQueryByValueType(
+          dateSearch,
+          dateSearch === 'created' ? createdIndex : editedIndex,
+          searchTerm,
+          userData,
+          csrfIsGood,
+          sCase
+        );
+      } else {
+        const valueType = index === -1 ? '' : elems[index].valueType;
+        query = getSearchQueryByValueType(
+          valueType,
+          index,
+          searchTerm,
+          userData,
+          csrfIsGood,
+          sCase
+        );
+      }
+      if (query) searchQuery.push(query);
     }
-    if (query) searchQuery.push(query);
   }
 
   if (fullSearch) {
@@ -194,8 +207,22 @@ export const parseSearchQuery = (
     }
   }
 
-  if (sOper === 'or' || (fullSearch && sOper !== 'and')) return [{ $or: searchQuery }];
-  return searchQuery;
+  const meQuery = [];
+  if (meAsCreator && userData.userId) {
+    meQuery.push({ 'created.user': userData.userId });
+  }
+  if (meAsOwner && userData.userId) {
+    meQuery.push({ owner: userData.userId });
+  }
+
+  let orQuery = null;
+  if (sOper === 'or' || (fullSearch && sOper !== 'and')) {
+    orQuery = { $or: searchQuery };
+  }
+  if (meQuery.length) {
+    return [{ $and: [...meQuery, ...(orQuery ? [orQuery] : searchQuery)] }];
+  }
+  return orQuery ? [orQuery] : searchQuery;
 };
 
 const getSearchQueryByValueType = (
