@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 import type { DBForm } from '../dbModels/form';
 import {
   getApiPathFromReqUrl,
@@ -111,7 +113,7 @@ describe('parsingAndConverting', () => {
 
     let s = ['(myelem0):search string'];
     let sOper = undefined;
-    const userData: UserData = {
+    let userData: UserData = {
       isSignedIn: false,
       userId: null,
       userGroups: [],
@@ -554,6 +556,66 @@ describe('parsingAndConverting', () => {
         'edited.0.date': {
           $lt: '2023-11-30T00:00:00.000Z',
         },
+      },
+    ]);
+
+    // me as creator search
+    s = ['edited:2023-11-29T00:00:00.000Z', 'edited:2023-11-30T00:00:00.000Z'];
+    let objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, true);
+    expect(query).toStrictEqual([
+      {
+        $and: [
+          {
+            'created.user': objId,
+          },
+          {
+            'edited.0.date': {
+              $gt: '2023-11-29T00:00:00.000Z',
+            },
+          },
+          {
+            'edited.0.date': {
+              $lt: '2023-11-30T00:00:00.000Z',
+            },
+          },
+        ],
+      },
+    ]);
+
+    // me as owner search
+    s = ['edited:2023-11-29T00:00:00.000Z', 'edited:2023-11-30T00:00:00.000Z'];
+    objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, undefined, true);
+    expect(query).toStrictEqual([
+      {
+        $and: [
+          {
+            owner: objId,
+          },
+          {
+            'edited.0.date': {
+              $gt: '2023-11-29T00:00:00.000Z',
+            },
+          },
+          {
+            'edited.0.date': {
+              $lt: '2023-11-30T00:00:00.000Z',
+            },
+          },
+        ],
       },
     ]);
   });
