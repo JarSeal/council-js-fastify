@@ -141,7 +141,10 @@ export const validateFormDataInput = (
       }
 
       // valueType check
-      if (!isValueAndTypeValid(elem.valueType, sentElem?.value)) {
+      if (
+        (elem.required || sentElem?.value !== undefined) &&
+        !isValueAndTypeValid(elem.valueType, sentElem?.value)
+      ) {
         // valueType invalid error
         const defaultError = `ElemId '${elem.elemId}' value is not of required valueType ('${elem.valueType}').`;
         const customError =
