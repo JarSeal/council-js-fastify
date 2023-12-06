@@ -59,6 +59,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     includeMeta,
     meAsCreator,
     meAsOwner,
+    meAsEditor,
   } = req.query;
   const url = getApiPathFromReqUrl(req.url);
 
@@ -146,7 +147,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     if (dataId[0] === 'all' || isMultipleDataIds) {
       // Get all possible paginated formData
 
-      const searchQuery = parseSearchQuery(
+      const searchQuery = await parseSearchQuery(
         s,
         sOper,
         form,
@@ -154,7 +155,8 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         csrfIsGood,
         sCase,
         meAsCreator,
-        meAsOwner
+        meAsOwner,
+        meAsEditor
       );
 
       const dataObjectIds = isMultipleDataIds ? dataId.map((id) => new Types.ObjectId(id)) : null;

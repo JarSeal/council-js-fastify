@@ -1,8 +1,9 @@
-import type { PaginateResult, Types } from 'mongoose';
+import { isObjectIdOrHexString, Types, type PaginateResult } from 'mongoose';
 
 import { apiVersion } from '../core/apis';
 import { apiRoot } from '../core/app';
 import type { DBForm } from '../dbModels/form';
+import DBUserModel from '../dbModels/user';
 import { getFormDataElemPrivilegesQuery, type UserData } from './userAndPrivilegeChecks';
 
 export const getApiPathFromReqUrl = (reqUrl: string) =>
@@ -96,7 +97,8 @@ type SearchQuery = (
               | { $regex: string; $options: string }
               | { $gt: string }
               | { $lt: string }
-              | number;
+              | number
+              | Types.ObjectId;
           }
         | { $or: { [key: string]: unknown }[] }
       )[];
@@ -104,11 +106,13 @@ type SearchQuery = (
   | { __notFound: boolean }
   | { 'created.date': { $gt: string } | { $lt: string } }
   | { 'edited.0.date': { $gt: string } | { $lt: string } }
-  | { 'created.user': Types.ObjectId }
-  | { owner: Types.ObjectId }
+  | { 'created.user': Types.ObjectId | null }
+  | { 'edited.0.user': Types.ObjectId | null }
+  | { edited: { $size: number } }
+  | { owner: Types.ObjectId | null }
 )[];
 
-export const parseSearchQuery = (
+export const parseSearchQuery = async (
   s: string | string[] | undefined,
   sOper: string | undefined,
   form: DBForm,
@@ -116,7 +120,8 @@ export const parseSearchQuery = (
   csrfIsGood: boolean,
   sCase?: boolean,
   meAsCreator?: boolean,
-  meAsOwner?: boolean
+  meAsOwner?: boolean,
+  meAsEditor?: boolean
 ) => {
   if (!s && !meAsCreator && !meAsOwner) return [];
   let searchQuery: SearchQuery = [];
@@ -128,23 +133,65 @@ export const parseSearchQuery = (
 
   if (s) {
     for (let i = 0; i < s.length; i++) {
-      let dateSearch = null;
+      let dateSearch: 'created' | 'edited' | null = null;
+      let userSearch: 'creator' | 'editor' | 'owner' | null = null;
       const elemIdOrIndex = s[i].split(':')[0];
       searchTerm = s[i].replace(elemIdOrIndex + ':', '');
       if (elemIdOrIndex === '$all') {
         fullSearch = true;
         searchQuery = [];
+        // @CONSIDER: this break might be problematic and might not work well together
+        // with other searches (dates, user searches)
         break;
-      }
-      if (elemIdOrIndex === 'created') {
+      } else if (elemIdOrIndex === 'created') {
+        // Created date search
         dateSearch = 'created';
         createdIndex++;
-      }
-      if (elemIdOrIndex === 'edited') {
+      } else if (elemIdOrIndex === 'edited') {
+        // Edited date search (latest edited date)
         dateSearch = 'edited';
         editedIndex++;
+      } else if (
+        // User search by user._id
+        elemIdOrIndex === 'creatorId' ||
+        elemIdOrIndex === 'editorId' ||
+        elemIdOrIndex === 'ownerId'
+      ) {
+        if (searchTerm === '$null') {
+          if (elemIdOrIndex === 'creatorId') userSearch = 'creator';
+          if (elemIdOrIndex === 'editorId') userSearch = 'editor';
+          if (elemIdOrIndex === 'ownerId') userSearch = 'owner';
+        } else {
+          const isObjectId = isObjectIdOrHexString(searchTerm);
+          if (isObjectId) {
+            if (elemIdOrIndex === 'creatorId') userSearch = 'creator';
+            if (elemIdOrIndex === 'editorId') userSearch = 'editor';
+            if (elemIdOrIndex === 'ownerId') userSearch = 'owner';
+          }
+        }
+      } else if (
+        // User search by username
+        elemIdOrIndex === 'creator' ||
+        elemIdOrIndex === 'editor' ||
+        elemIdOrIndex === 'owner'
+      ) {
+        if (searchTerm === '$null') {
+          if (elemIdOrIndex === 'creator') userSearch = 'creator';
+          if (elemIdOrIndex === 'editor') userSearch = 'editor';
+          if (elemIdOrIndex === 'owner') userSearch = 'owner';
+        } else {
+          // Find User._id from DB
+          const user = await DBUserModel.findOne({ simpleId: searchTerm }).select('_id');
+          if (user) {
+            if (elemIdOrIndex === 'creator') userSearch = 'creator';
+            if (elemIdOrIndex === 'editor') userSearch = 'editor';
+            if (elemIdOrIndex === 'owner') userSearch = 'owner';
+            searchTerm = user._id.toString();
+          }
+        }
+      } else if (!elemIdOrIndex) {
+        continue;
       }
-      if (!elemIdOrIndex) continue;
 
       let index = null;
       if (elemIdOrIndex.startsWith('(')) {
@@ -173,6 +220,8 @@ export const parseSearchQuery = (
           csrfIsGood,
           sCase
         );
+      } else if (userSearch) {
+        query = getSearchQueryByValueType(userSearch, 0, searchTerm, userData, csrfIsGood, sCase);
       } else {
         const valueType = index === -1 ? '' : elems[index].valueType;
         query = getSearchQueryByValueType(
@@ -214,6 +263,9 @@ export const parseSearchQuery = (
   if (meAsOwner && userData.userId) {
     meQuery.push({ owner: userData.userId });
   }
+  if (meAsEditor && userData.userId) {
+    meQuery.push({ 'editor.0.user': userData.userId });
+  }
 
   let orQuery = null;
   if (sOper === 'or' || (fullSearch && sOper !== 'and')) {
@@ -244,6 +296,14 @@ const getSearchQueryByValueType = (
       return { 'created.date': index % 2 === 0 ? { $gt: searchTerm } : { $lt: searchTerm } };
     case 'edited':
       return { 'edited.0.date': index % 2 === 0 ? { $gt: searchTerm } : { $lt: searchTerm } };
+    case 'creator':
+      return { 'created.user': searchTerm === '$null' ? null : new Types.ObjectId(searchTerm) };
+    case 'editor':
+      return searchTerm === '$null'
+        ? { edited: { $size: 0 } }
+        : { 'edited.0.user': new Types.ObjectId(searchTerm) };
+    case 'owner':
+      return { owner: searchTerm === '$null' ? null : new Types.ObjectId(searchTerm) };
     case 'string':
     default:
       return {

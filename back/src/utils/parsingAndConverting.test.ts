@@ -1,4 +1,5 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import type { FastifyInstance } from 'fastify';
 
 import type { DBForm } from '../dbModels/form';
 import {
@@ -7,6 +8,8 @@ import {
   parseSearchQuery,
 } from './parsingAndConverting';
 import type { UserData } from './userAndPrivilegeChecks';
+import initApp from '../core/app';
+import { createUser } from '../test/utils';
 
 describe('parsingAndConverting', () => {
   it('getApiPathFromReqUrl', () => {
@@ -84,8 +87,9 @@ describe('parsingAndConverting', () => {
     expect(sorterString).toBe('data.0.value -data.3.value created.date');
   });
 
-  // @TODO: parseSearchQuery
-  it('parseSearchQuery', () => {
+  it('parseSearchQuery', async () => {
+    const app: FastifyInstance = await initApp();
+
     const form = {
       form: {
         formElems: [
@@ -123,7 +127,7 @@ describe('parsingAndConverting', () => {
     let sCase = false;
 
     // search by elemId
-    let query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    let query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
         $and: [
@@ -167,18 +171,25 @@ describe('parsingAndConverting', () => {
     ]);
 
     // search by index
-    const query2 = parseSearchQuery(['0:search string'], sOper, form, userData, csrfIsGood, sCase);
+    const query2 = await parseSearchQuery(
+      ['0:search string'],
+      sOper,
+      form,
+      userData,
+      csrfIsGood,
+      sCase
+    );
     expect(query).toStrictEqual(query2);
 
     // search by non-existing elemId and sOper = 'or'
     s = ['(elemNotInForm):search string'];
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([{ __notFound: true }]);
 
     // sCase string search
     s = ['(myelem0):search string'];
     sCase = true;
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
         $and: [
@@ -224,7 +235,7 @@ describe('parsingAndConverting', () => {
     // search by two strings from index 0 (myelem0) and 1 (myelem1)
     s = ['0:search string', '1:another'];
     sCase = false;
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
         $and: [
@@ -308,7 +319,7 @@ describe('parsingAndConverting', () => {
 
     // search by two strings with sOper = 'or'
     sOper = 'or';
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
         $or: [
@@ -396,7 +407,7 @@ describe('parsingAndConverting', () => {
 
     // search with $all operator
     s = ['$all:search string'];
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
         $or: [
@@ -486,7 +497,7 @@ describe('parsingAndConverting', () => {
     // search a number
     s = ['(myelem2):2'];
     sOper = undefined;
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
         $and: [
@@ -529,7 +540,7 @@ describe('parsingAndConverting', () => {
     // created date search
     s = ['created:2023-11-29T00:00:00.000Z', 'created:2023-11-30T00:00:00.000Z'];
     sOper = undefined;
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
         'created.date': {
@@ -545,7 +556,7 @@ describe('parsingAndConverting', () => {
 
     // edited date search
     s = ['edited:2023-11-29T00:00:00.000Z', 'edited:2023-11-30T00:00:00.000Z'];
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([
       {
         'edited.0.date': {
@@ -568,7 +579,7 @@ describe('parsingAndConverting', () => {
       userGroups: [],
       isSysAdmin: false,
     };
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, true);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, true);
     expect(query).toStrictEqual([
       {
         $and: [
@@ -598,7 +609,7 @@ describe('parsingAndConverting', () => {
       userGroups: [],
       isSysAdmin: false,
     };
-    query = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, undefined, true);
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, undefined, true);
     expect(query).toStrictEqual([
       {
         $and: [
@@ -618,5 +629,141 @@ describe('parsingAndConverting', () => {
         ],
       },
     ]);
+
+    // me as editor search
+    s = ['edited:2023-11-29T00:00:00.000Z', 'edited:2023-11-30T00:00:00.000Z'];
+    objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = await parseSearchQuery(
+      s,
+      sOper,
+      form,
+      userData,
+      csrfIsGood,
+      sCase,
+      undefined,
+      undefined,
+      true
+    );
+    expect(query).toStrictEqual([
+      {
+        $and: [
+          {
+            'editor.0.user': objId,
+          },
+          {
+            'edited.0.date': {
+              $gt: '2023-11-29T00:00:00.000Z',
+            },
+          },
+          {
+            'edited.0.date': {
+              $lt: '2023-11-30T00:00:00.000Z',
+            },
+          },
+        ],
+      },
+    ]);
+
+    const userId = await createUser('myusername');
+
+    // creator search (by username)
+    s = ['creator:myusername'];
+    objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ 'created.user': userId }]);
+    s = ['creator:notexisting'];
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ __notFound: true }]);
+
+    // creator search (by id)
+    s = ['creatorId:' + userId.toString()];
+    objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ 'created.user': userId }]);
+    s = ['creatoriD:' + objId.toString()];
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ __notFound: true }]);
+
+    // owner search (by username)
+    s = ['owner:myusername'];
+    objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ owner: userId }]);
+    s = ['owner:notexisting'];
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ __notFound: true }]);
+
+    // owner search (by id)
+    s = ['ownerId:' + userId.toString()];
+    objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ owner: userId }]);
+    s = ['owneriD:' + objId.toString()];
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ __notFound: true }]);
+
+    // editor search (by username)
+    s = ['editor:myusername'];
+    objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ 'edited.0.user': userId }]);
+    s = ['editor:notexisting'];
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ __notFound: true }]);
+
+    // editor search (by id)
+    s = ['editorId:' + userId.toString()];
+    objId = new Types.ObjectId();
+    userData = {
+      isSignedIn: true,
+      userId: objId,
+      userGroups: [],
+      isSysAdmin: false,
+    };
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ 'edited.0.user': userId }]);
+    s = ['editoriD:' + objId.toString()];
+    query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    expect(query).toStrictEqual([{ __notFound: true }]);
+
+    await app.close();
+    await mongoose.connection.db.dropDatabase();
+    await mongoose.connection.close();
   });
 });

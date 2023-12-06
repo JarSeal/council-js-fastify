@@ -62,6 +62,7 @@ export const getQuerystringSchema = Type.Object({
   includeMeta: Type.Optional(Type.String()),
   meAsCreator: Type.Optional(Type.Boolean()),
   meAsOwner: Type.Optional(Type.Boolean()),
+  meAsEditor: Type.Optional(Type.Boolean()),
 });
 export type GetQuerystring = Static<typeof getQuerystringSchema>;
 
