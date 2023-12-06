@@ -27,11 +27,11 @@ export const postBodyReplySchema = Type.Object({
     })
   ),
 });
-export type PostBodyReply = Static<typeof postBodyReplySchema>;
+export type FormDataPostReply = Static<typeof postBodyReplySchema>;
 
 export interface FormDataPostRoute extends RouteGenericInterface {
   readonly Body: FormDataPostBody;
-  readonly Reply: PostBodyReply | FastifyError;
+  readonly Reply: FormDataPostReply | FastifyError;
 }
 
 export const getFormReplySchema = Type.Object({

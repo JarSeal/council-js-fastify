@@ -18,7 +18,7 @@ import type { PaginationData } from '../../utils/parsingAndConverting';
 import { emptyFormDataPrivileges } from '../../utils/userAndPrivilegeChecks';
 import type { Data } from './handlers.GET';
 
-describe('formData', () => {
+describe('GET formData', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {

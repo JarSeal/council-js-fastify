@@ -167,7 +167,6 @@ export const createForm = async (
     owner?: Types.ObjectId;
     name?: string;
     description?: string;
-    disablePartialSaving?: boolean;
     maxDataCreatorDocs?: number;
     formDataOwner?: Types.ObjectId;
     fillerIsFormDataOwner?: boolean;
@@ -194,7 +193,6 @@ export const createForm = async (
       date: new Date(),
     },
     owner: opts?.owner || adminId,
-    disablePartialSaving: opts?.disablePartialSaving || false,
     form: {
       formTitle: { langKey: opts?.formTitle || 'Form title' },
       formText: { langKey: opts?.formText || 'Form text' },
