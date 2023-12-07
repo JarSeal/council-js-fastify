@@ -23,7 +23,7 @@ describe('login', () => {
   const createUser = async (username?: string, email?: string, pass?: string) => {
     if (!username) username = 'myusername';
     if (!email) email = 'aa@aa.com';
-    if (!pass) pass = 'mypassword';
+    if (!pass) pass = 'myPa$$word1';
     await app.inject({
       method: 'POST',
       path: '/api/v1/publicsignup',
@@ -76,7 +76,7 @@ describe('login', () => {
     response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
-      body: { pass: 'mypassword' },
+      body: { pass: 'myPa$$word1' },
       ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
@@ -87,7 +87,7 @@ describe('login', () => {
     response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
-      body: { usernameOrEmail: 'myusername', pass: 'mypassword' },
+      body: { usernameOrEmail: 'myusername', pass: 'myPa$$word1' },
       ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
@@ -98,7 +98,7 @@ describe('login', () => {
     response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
-      body: { usernameOrEmail: 'myusername', pass: 'mypassword', loginMethod: 'username' },
+      body: { usernameOrEmail: 'myusername', pass: 'myPa$$word1', loginMethod: 'username' },
       ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
@@ -113,7 +113,7 @@ describe('login', () => {
       path: '/api/v1/login',
       body: {
         usernameOrEmail: 'myusername',
-        pass: 'mypassword',
+        pass: 'myPa$$word1',
         loginMethod: 'username',
         agentId: '',
       },
@@ -129,7 +129,7 @@ describe('login', () => {
       path: '/api/v1/login',
       body: {
         usernameOrEmail: 'myusername',
-        pass: 'mypassword',
+        pass: 'myPa$$word1',
         loginMethod: 'username',
         agentId: '726616f4bb878fab94f1f1dbc8c6ed79_45',
       },
@@ -145,7 +145,7 @@ describe('login', () => {
       path: '/api/v1/login',
       body: {
         usernameOrEmail: 'myusername',
-        pass: 'mypassword',
+        pass: 'myPa$$word1',
         loginMethod: 'unknown',
         agentId: validAgentId,
       },
@@ -163,7 +163,7 @@ describe('login', () => {
       path: '/api/v1/login',
       body: {
         usernameOrEmail: 'myusername',
-        pass: 'mypassword',
+        pass: 'myPa$$word1',
         loginMethod: 'username',
         agentId: validAgentId,
       },
@@ -179,7 +179,7 @@ describe('login', () => {
       path: '/api/v1/login',
       body: {
         usernameOrEmail: 'myusername',
-        pass: 'mypassword',
+        pass: 'myPa$$word1',
         loginMethod: 'email',
         agentId: validAgentId,
       },

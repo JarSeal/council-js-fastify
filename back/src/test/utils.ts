@@ -167,12 +167,12 @@ export const createForm = async (
     owner?: Types.ObjectId;
     name?: string;
     description?: string;
-    disablePartialSaving?: boolean;
-    maxDataOwnerDocs?: number;
+    maxDataCreatorDocs?: number;
     formDataOwner?: Types.ObjectId;
     fillerIsFormDataOwner?: boolean;
     formDataDefaultPrivileges?: {
       read?: Partial<AllPrivilegeProps>;
+      create?: Partial<AllPrivilegeProps>;
       edit?: Partial<AllPrivilegeProps>;
       delete?: Partial<AllPrivilegeProps>;
     };
@@ -193,7 +193,6 @@ export const createForm = async (
       date: new Date(),
     },
     owner: opts?.owner || adminId,
-    disablePartialSaving: opts?.disablePartialSaving || false,
     form: {
       formTitle: { langKey: opts?.formTitle || 'Form title' },
       formText: { langKey: opts?.formText || 'Form text' },
@@ -201,7 +200,7 @@ export const createForm = async (
       formElems: elems,
     },
   });
-  if (opts?.maxDataOwnerDocs) form.maxDataOwnerDocs = opts.maxDataOwnerDocs;
+  if (opts?.maxDataCreatorDocs) form.maxDataCreatorDocs = opts.maxDataCreatorDocs;
   if (opts?.formDataOwner) form.formDataOwner = opts.formDataOwner;
   if (opts?.fillerIsFormDataOwner) form.fillerIsFormDataOwner = opts.fillerIsFormDataOwner;
 
@@ -209,6 +208,10 @@ export const createForm = async (
     read: {
       ...emptyFormDataPrivileges.read,
       ...(opts?.formDataDefaultPrivileges?.read || {}),
+    },
+    create: {
+      ...emptyFormDataPrivileges.create,
+      ...(opts?.formDataDefaultPrivileges?.create || {}),
     },
     edit: {
       ...emptyFormDataPrivileges.edit,

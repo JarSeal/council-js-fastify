@@ -9,6 +9,8 @@ export enum ErrorCodes {
   USERNAME_TAKEN = 'USERNAME_TAKEN',
   EMAIL_TAKEN = 'EMAIL_TAKEN',
   COUNCL_ERR_VALIDATE = 'COUNCL_ERR_VALIDATE',
+  GENERAL_ERROR = 'GENERAL_ERROR',
+  DB_GENERAL_ERROR = 'DB_GENERAL_ERROR',
   DB_CREATE_NEW_USER = 'DB_CREATE_NEW_USER',
   DB_CREATE_MONITOR = 'DB_CREATE_MONITOR',
   DB_UPDATE_USER = 'DB_UPDATE_USER',
@@ -46,6 +48,8 @@ const errors = {
     'New user validation failed: %s',
     400
   ),
+  GENERAL_ERROR: createError(ErrorCodes.GENERAL_ERROR, 'General server error, %s', 500),
+  DB_GENERAL_ERROR: createError(ErrorCodes.DB_GENERAL_ERROR, 'General DB error, %s', 500),
   DB_CREATE_NEW_USER: createError(ErrorCodes.DB_CREATE_NEW_USER, 'Create new user error, %s', 500),
   DB_CREATE_MONITOR: createError(
     ErrorCodes.DB_CREATE_MONITOR,

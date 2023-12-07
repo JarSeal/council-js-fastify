@@ -1,11 +1,11 @@
 import type { RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
 
-import type { FormDataGetRoute, FormDataPostRoute, FormDataGetReply } from './routes';
+import type { FormDataGetRoute, FormDataGetReply } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
-import type { AllPrivilegeProps } from '../../dbModels/_modelTypePartials';
+import type { AllPrivilegeProps, FormElem } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
 import {
@@ -24,18 +24,6 @@ import {
 import { getConfig } from '../../core/config';
 import type { TransText } from '../../@types/form';
 
-export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
-  const body = req.body;
-
-  // @TODO: get current form
-  const form = await DBFormModel.findOne<unknown>({ simpleId: body.formId || null });
-  if (!form) {
-    return res.send(new errors.NOT_FOUND(`Could not find formData with formId: '${body.formId}'`));
-  }
-  form;
-  return res.send({ ok: true });
-};
-
 export type Data = {
   elemId: string;
   orderNr: number;
@@ -52,6 +40,7 @@ export type Data = {
   };
 };
 
+// Read (GET)
 export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   // Query string
   const {
@@ -68,6 +57,9 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     includeDataIds,
     includeLabels,
     includeMeta,
+    meAsCreator,
+    meAsOwner,
+    meAsEditor,
   } = req.query;
   const url = getApiPathFromReqUrl(req.url);
 
@@ -155,7 +147,17 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     if (dataId[0] === 'all' || isMultipleDataIds) {
       // Get all possible paginated formData
 
-      const searchQuery = parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+      const searchQuery = await parseSearchQuery(
+        s,
+        sOper,
+        form,
+        userData,
+        csrfIsGood,
+        sCase,
+        meAsCreator,
+        meAsOwner,
+        meAsEditor
+      );
 
       const dataObjectIds = isMultipleDataIds ? dataId.map((id) => new Types.ObjectId(id)) : null;
       const paginatedData = await DBFormDataModel.paginate<DBFormData>(
@@ -201,7 +203,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
           dataMetaData = {
             created: fd.created.date,
             edited: fd.edited.length ? fd.edited[0].date : null,
-            // @TODO: get actual usernames (maybe)
+            // @TODO: get actual usernames
             ...(userData.isSysAdmin
               ? {
                   owner: fd?.owner?.toString() || null,
@@ -213,6 +215,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
         }
         const dataSet = checkAndSetReadData(
           rawData,
+          form.form.formElems,
           mainPrivileges,
           userData,
           csrfIsGood,
@@ -264,6 +267,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       }
       const dataSet = checkAndSetReadData(
         rawData,
+        form.form.formElems,
         mainPrivileges,
         userData,
         csrfIsGood,
@@ -313,6 +317,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 
 const checkAndSetReadData = (
   rawData: DBFormData['data'],
+  formElems: FormElem[],
   mainPrivileges: AllPrivilegeProps,
   userData: UserData,
   csrfIsGood: boolean,
@@ -341,12 +346,13 @@ const checkAndSetReadData = (
     // Data can be accessed if there is not a mainPrivError or if there is,
     // the elem has overriding elem privileges that does not have an error
     if (!privError && (!elemId || elemId.includes(elem.elemId))) {
+      const formElem = formElems.find((formElem) => formElem.elemId === elem.elemId);
       // White list the data props to be returned
       returnData.push({
         elemId: elem.elemId,
         orderNr: returnData.length,
         value: elem.value,
-        valueType: elem.valueType,
+        valueType: formElem?.valueType || 'unknown',
         ...embedIds,
         ...(labels ? { label: labels[elem.elemId] } : {}),
         ...embedMeta,

@@ -125,7 +125,7 @@ describe('publicSignUp', () => {
 
   it('should successfully register a new user', async () => {
     const username = 'myusername';
-    const pass = 'somepass';
+    const pass = 'myPa$$word1';
     const email = 'myusername@somedomain.nl';
     const response = await app.inject({
       method: 'POST',

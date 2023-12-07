@@ -65,8 +65,6 @@ export const isPrivBlocked = (
     ...privilege,
   };
 
-  if (!privilege) return null;
-
   // Check CSRF
   if (priv.requireCsrfHeader && !csrfIsGood) {
     return new errors.UNAUTHORIZED('CSRF-header is invalid or missing');
@@ -80,10 +78,10 @@ export const isPrivBlocked = (
     return new errors.SESSION_CANNOT_BE_SIGNED_IN();
   }
 
-  // From here on out, unsigned users and sysAdmins are good to go,
-  // because if unsigned users made it this far they area good and
+  // From here on out, if public='true', unsigned and signed in users and sysAdmins
+  // are good to go, because if unsigned users made it this far they area good and
   // because sysAdmins can access everything
-  if (!userData.isSignedIn || userData.isSysAdmin) {
+  if (priv.public === 'true' || priv.public === 'onlyPublic' || userData.isSysAdmin) {
     return null;
   }
 
@@ -201,12 +199,12 @@ export const combinePrivileges = (
   const combined = emptyPrivilege;
   for (let i = 0; i < privileges.length; i++) {
     const priv = privileges[i];
-    if (priv.public !== undefined) combined.public = priv.public;
-    if (priv.requireCsrfHeader !== undefined) combined.requireCsrfHeader = priv.requireCsrfHeader;
-    if (priv.users !== undefined) combined.users = priv.users;
-    if (priv.groups !== undefined) combined.groups = priv.groups;
-    if (priv.excludeUsers !== undefined) combined.excludeUsers = priv.excludeUsers;
-    if (priv.excludeGroups !== undefined) combined.excludeGroups = priv.excludeGroups;
+    if (priv?.public !== undefined) combined.public = priv.public;
+    if (priv?.requireCsrfHeader !== undefined) combined.requireCsrfHeader = priv.requireCsrfHeader;
+    if (priv?.users !== undefined) combined.users = priv.users;
+    if (priv?.groups !== undefined) combined.groups = priv.groups;
+    if (priv?.excludeUsers !== undefined) combined.excludeUsers = priv.excludeUsers;
+    if (priv?.excludeGroups !== undefined) combined.excludeGroups = priv.excludeGroups;
   }
   return combined;
 };

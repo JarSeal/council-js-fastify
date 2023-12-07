@@ -16,9 +16,9 @@ import type { PublicPrivilegeProp, TransText } from '../../dbModels/_modelTypePa
 import { SESSION_COOKIE_NAME } from '../../core/config';
 import type { PaginationData } from '../../utils/parsingAndConverting';
 import { emptyFormDataPrivileges } from '../../utils/userAndPrivilegeChecks';
-import type { Data } from './handlers';
+import type { Data } from './handlers.GET';
 
-describe('formData', () => {
+describe('GET formData', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
@@ -46,7 +46,7 @@ describe('formData', () => {
     const url = '/myformdata';
     await createFormData('myFormData', url, emptyFormDataPrivileges, [
       {
-        elemId: 'myElem',
+        elemId: 'myElem1',
         orderNr: 0,
         value: 1,
         valueType: 'number',
@@ -77,7 +77,7 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
@@ -112,7 +112,7 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
@@ -145,7 +145,7 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
@@ -178,7 +178,7 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
@@ -211,7 +211,7 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
@@ -235,7 +235,7 @@ describe('formData', () => {
     expect(form.formTitle?.langKey).toBe('My Form');
     expect(form.formText?.langKey).toBe('This is my form');
     expect(formElems.length).toBe(1);
-    expect(formElems[0].elemId).toBe('myElem');
+    expect(formElems[0].elemId).toBe('myElem1');
     expect(formElems[0].orderNr).toBe(0);
     expect(formElems[0].elemType).toBe('inputNumber');
     expect(formElems[0].valueType).toBe('number');
@@ -262,7 +262,7 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
@@ -300,7 +300,7 @@ describe('formData', () => {
     expect(form.formTitle?.langKey).toBe('My Form');
     expect(form.formText?.langKey).toBe('This is my form');
     expect(formElems.length).toBe(1);
-    expect(formElems[0].elemId).toBe('myElem');
+    expect(formElems[0].elemId).toBe('myElem1');
     expect(formElems[0].orderNr).toBe(0);
     expect(formElems[0].elemType).toBe('inputNumber');
     expect(formElems[0].valueType).toBe('number');
@@ -327,7 +327,7 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
@@ -365,7 +365,7 @@ describe('formData', () => {
     expect(form.formTitle?.langKey).toBe('My Form');
     expect(form.formText?.langKey).toBe('This is my form');
     expect(formElems.length).toBe(1);
-    expect(formElems[0].elemId).toBe('myElem');
+    expect(formElems[0].elemId).toBe('myElem1');
     expect(formElems[0].orderNr).toBe(0);
     expect(formElems[0].elemType).toBe('inputNumber');
     expect(formElems[0].valueType).toBe('number');
@@ -498,11 +498,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -557,8 +564,8 @@ describe('formData', () => {
     const formElems = form.formElems;
     expect(form.formTitle?.langKey).toBe('My Form');
     expect(form.formText?.langKey).toBe('This is my form');
-    expect(formElems.length).toBe(1);
-    expect(formElems[0].elemId).toBe('myElem');
+    expect(formElems.length).toBe(2);
+    expect(formElems[0].elemId).toBe('myElem1');
     expect(formElems[0].orderNr).toBe(0);
     expect(formElems[0].elemType).toBe('inputNumber');
     expect(formElems[0].valueType).toBe('number');
@@ -566,7 +573,17 @@ describe('formData', () => {
     expect(formElems[0].label?.langKey).toBe('Number');
     expect(formElems[0].inputErrors?.length).toBe(0);
     expect(formElems[0].doNotSave).toBeFalsy();
-    const keys = Object.keys(formElems[0]);
+    let keys = Object.keys(formElems[0]);
+    expect(keys.includes('privileges')).toBeFalsy();
+    expect(formElems[1].elemId).toBe('myElem2');
+    expect(formElems[1].orderNr).toBe(1);
+    expect(formElems[1].elemType).toBe('inputText');
+    expect(formElems[1].valueType).toBe('string');
+    expect(formElems[1].classes?.length).toBe(0);
+    expect(formElems[1].label?.langKey).toBe('Text');
+    expect(formElems[1].inputErrors?.length).toBe(0);
+    expect(formElems[1].doNotSave).toBeFalsy();
+    keys = Object.keys(formElems[1]);
     expect(keys.includes('privileges')).toBeFalsy();
 
     const data = body.data as FormDataGetReply[][];
@@ -597,11 +614,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -656,8 +680,8 @@ describe('formData', () => {
     const formElems = form.formElems;
     expect(form.formTitle?.langKey).toBe('My Form');
     expect(form.formText?.langKey).toBe('This is my form');
-    expect(formElems.length).toBe(1);
-    expect(formElems[0].elemId).toBe('myElem');
+    expect(formElems.length).toBe(2);
+    expect(formElems[0].elemId).toBe('myElem1');
     expect(formElems[0].orderNr).toBe(0);
     expect(formElems[0].elemType).toBe('inputNumber');
     expect(formElems[0].valueType).toBe('number');
@@ -665,7 +689,17 @@ describe('formData', () => {
     expect(formElems[0].label?.langKey).toBe('Number');
     expect(formElems[0].inputErrors?.length).toBe(0);
     expect(formElems[0].doNotSave).toBeFalsy();
-    const keys = Object.keys(formElems[0]);
+    let keys = Object.keys(formElems[0]);
+    expect(keys.includes('privileges')).toBeFalsy();
+    expect(formElems[1].elemId).toBe('myElem2');
+    expect(formElems[1].orderNr).toBe(1);
+    expect(formElems[1].elemType).toBe('inputText');
+    expect(formElems[1].valueType).toBe('string');
+    expect(formElems[1].classes?.length).toBe(0);
+    expect(formElems[1].label?.langKey).toBe('Text');
+    expect(formElems[1].inputErrors?.length).toBe(0);
+    expect(formElems[1].doNotSave).toBeFalsy();
+    keys = Object.keys(formElems[1]);
     expect(keys.includes('privileges')).toBeFalsy();
 
     const data = body.data as FormDataGetReply[][];
@@ -696,11 +730,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -755,8 +796,8 @@ describe('formData', () => {
     const formElems = form.formElems;
     expect(form.formTitle?.langKey).toBe('My Form');
     expect(form.formText?.langKey).toBe('This is my form');
-    expect(formElems.length).toBe(1);
-    expect(formElems[0].elemId).toBe('myElem');
+    expect(formElems.length).toBe(2);
+    expect(formElems[0].elemId).toBe('myElem1');
     expect(formElems[0].orderNr).toBe(0);
     expect(formElems[0].elemType).toBe('inputNumber');
     expect(formElems[0].valueType).toBe('number');
@@ -764,7 +805,17 @@ describe('formData', () => {
     expect(formElems[0].label?.langKey).toBe('Number');
     expect(formElems[0].inputErrors?.length).toBe(0);
     expect(formElems[0].doNotSave).toBeFalsy();
-    const keys = Object.keys(formElems[0]);
+    let keys = Object.keys(formElems[0]);
+    expect(keys.includes('privileges')).toBeFalsy();
+    expect(formElems[1].elemId).toBe('myElem2');
+    expect(formElems[1].orderNr).toBe(1);
+    expect(formElems[1].elemType).toBe('inputText');
+    expect(formElems[1].valueType).toBe('string');
+    expect(formElems[1].classes?.length).toBe(0);
+    expect(formElems[1].label?.langKey).toBe('Text');
+    expect(formElems[1].inputErrors?.length).toBe(0);
+    expect(formElems[1].doNotSave).toBeFalsy();
+    keys = Object.keys(formElems[1]);
     expect(keys.includes('privileges')).toBeFalsy();
 
     const data = body.data as FormDataGetReply[][];
@@ -802,11 +853,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -870,11 +928,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -937,11 +1002,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1010,11 +1082,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1089,11 +1168,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1163,11 +1249,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1247,11 +1340,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1316,11 +1416,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1372,11 +1479,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1420,11 +1534,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1491,11 +1612,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1554,11 +1682,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1603,7 +1738,6 @@ describe('formData', () => {
     expect(data[0].elemId).toBe('myElem1');
     expect(data[0].orderNr).toBe(0);
     expect(data[0].value).toBe(12);
-    expect(data[0].valueType).toBe('number');
     expect(data[1].elemId).toBe('myElem2');
     expect(data[1].orderNr).toBe(1);
     expect(data[1].value).toBe('Some string');
@@ -1626,11 +1760,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1688,11 +1829,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1759,11 +1907,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1821,11 +1976,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1882,11 +2044,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -1949,11 +2118,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -2015,11 +2191,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -2075,11 +2258,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
@@ -2121,11 +2311,18 @@ describe('formData', () => {
       url,
       [
         {
-          elemId: 'myElem',
+          elemId: 'myElem1',
           orderNr: 0,
           elemType: 'inputNumber',
           valueType: 'number',
           label: { langKey: 'Number' },
+        },
+        {
+          elemId: 'myElem2',
+          orderNr: 1,
+          elemType: 'inputText',
+          valueType: 'string',
+          label: { langKey: 'Text' },
         },
       ],
       [privilege],
