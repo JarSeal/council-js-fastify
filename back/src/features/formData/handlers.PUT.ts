@@ -1,6 +1,6 @@
 import type { RouteHandler } from 'fastify';
 
-import type { FormDataPutRoute } from './routes';
+import type { FormDataPutReply, FormDataPutRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
@@ -9,6 +9,7 @@ import { isCsrfGood } from '../../hooks/csrf';
 import { getUserData, isPrivBlocked, combinePrivileges } from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
+import { getFormData } from './handlers.GET';
 
 // Edit (PUT)
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
@@ -37,7 +38,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   if (editFormDataPrivError) {
     return res.send(
       new errors.UNAUTHORIZED(
-        `User not privileged to create formData in PUT/edit formData handler, formDataDefaultPrivileges, url: ${url}`
+        `User not privileged to edit formData in PUT/edit formData handler, formDataDefaultPrivileges, url: ${url}`
       )
     );
   }
@@ -59,7 +60,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       if (elemFormDataPrivError) {
         return res.send(
           new errors.UNAUTHORIZED(
-            `User not privileged to create formData in POST/create formData handler, elem privileges (elemId: ${elem.elemId}), url: ${url}`
+            `User not privileged to edit formData in PUT/edit formData handler, elem privileges (elemId: ${elem.elemId}), url: ${url}`
           )
         );
       }
@@ -115,10 +116,19 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   if (!savedFormData) {
     return res.send(
       new errors.DB_GENERAL_ERROR(
-        `could not create/POST new formData for formId: '${form.simpleId}', url: ${url}`
+        `could not PUT/edit new formData for formId: '${form.simpleId}', url: ${url}`
       )
     );
   }
 
-  return res.send({ ok: true, dataId: savedFormData._id.toString() });
+  const newDataId = savedFormData._id.toString();
+  const returnResponse: FormDataPutReply = { ok: true, dataId: newDataId };
+
+  if (body.getData) {
+    const params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    returnResponse.getData = getDataResult;
+  }
+
+  return res.send(returnResponse);
 };

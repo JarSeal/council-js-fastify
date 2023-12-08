@@ -6,62 +6,6 @@ import { formDataPost } from './handlers.POST';
 import { formElemPublicSchema, transTextSchema } from '../../@types/form';
 import { formDataPut } from './handlers.PUT';
 
-// POST
-export const postBodySchema = Type.Object({
-  formData: Type.Array(
-    Type.Object({
-      elemId: Type.String(),
-      value: Type.Unknown(),
-    })
-  ),
-});
-export type FormDataPostBody = Static<typeof postBodySchema>;
-export const postBodyReplySchema = Type.Object({
-  ok: Type.Boolean(),
-  dataId: Type.Optional(Type.String()),
-  error: Type.Optional(
-    Type.Object({
-      errorId: Type.String(),
-      message: Type.String(),
-      elemId: Type.Optional(Type.String()),
-      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
-    })
-  ),
-});
-export type FormDataPostReply = Static<typeof postBodyReplySchema>;
-export interface FormDataPostRoute extends RouteGenericInterface {
-  readonly Body: FormDataPostBody;
-  readonly Reply: FormDataPostReply | FastifyError;
-}
-
-// PUT
-export const putBodySchema = Type.Object({
-  formData: Type.Array(
-    Type.Object({
-      elemId: Type.String(),
-      value: Type.Unknown(),
-    })
-  ),
-});
-export type FormDataPutBody = Static<typeof putBodySchema>;
-export const putBodyReplySchema = Type.Object({
-  ok: Type.Boolean(),
-  dataId: Type.Optional(Type.String()),
-  error: Type.Optional(
-    Type.Object({
-      errorId: Type.String(),
-      message: Type.String(),
-      elemId: Type.Optional(Type.String()),
-      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
-    })
-  ),
-});
-export type FormDataPutReply = Static<typeof putBodyReplySchema>;
-export interface FormDataPutRoute extends RouteGenericInterface {
-  readonly Body: FormDataPutBody;
-  readonly Reply: FormDataPutReply | FastifyError;
-}
-
 // GET
 export const getFormReplySchema = Type.Object({
   formTitle: transTextSchema,
@@ -74,7 +18,6 @@ export type GetFormReply = Static<typeof getFormReplySchema>;
 // @CONSIDER: is this getReplySchema enough? Should there be more specific typing?
 export const getReplySchema = Type.Record(Type.String(), Type.Unknown());
 export type FormDataGetReply = Static<typeof getReplySchema>;
-
 export const getQuerystringSchema = Type.Object({
   getForm: Type.Optional(Type.Boolean()),
   dataId: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
@@ -94,10 +37,70 @@ export const getQuerystringSchema = Type.Object({
   meAsEditor: Type.Optional(Type.Boolean()),
 });
 export type GetQuerystring = Static<typeof getQuerystringSchema>;
-
 export interface FormDataGetRoute extends RouteGenericInterface {
   readonly Reply: FormDataGetReply | FastifyError;
   readonly Querystring: GetQuerystring;
+}
+
+// POST
+export const postBodySchema = Type.Object({
+  formData: Type.Array(
+    Type.Object({
+      elemId: Type.String(),
+      value: Type.Unknown(),
+    })
+  ),
+  getData: Type.Optional(getQuerystringSchema),
+});
+export type FormDataPostBody = Static<typeof postBodySchema>;
+export const postBodyReplySchema = Type.Object({
+  ok: Type.Boolean(),
+  dataId: Type.Optional(Type.String()),
+  getData: Type.Optional(getReplySchema),
+  error: Type.Optional(
+    Type.Object({
+      errorId: Type.String(),
+      message: Type.String(),
+      elemId: Type.Optional(Type.String()),
+      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
+    })
+  ),
+});
+export type FormDataPostReply = Static<typeof postBodyReplySchema>;
+export interface FormDataPostRoute extends RouteGenericInterface {
+  readonly Body: FormDataPostBody;
+  readonly Reply: FormDataPostReply | FastifyError;
+}
+
+// PUT
+export const putBodySchema = Type.Object({
+  dataId: Type.Union([Type.String(), Type.Array(Type.String())]),
+  formData: Type.Array(
+    Type.Object({
+      elemId: Type.String(),
+      value: Type.Unknown(),
+    })
+  ),
+  getData: Type.Optional(getQuerystringSchema),
+});
+export type FormDataPutBody = Static<typeof putBodySchema>;
+export const putBodyReplySchema = Type.Object({
+  ok: Type.Boolean(),
+  dataId: Type.Optional(Type.Union([Type.String(), Type.Array(Type.String())])),
+  getData: Type.Optional(getReplySchema),
+  error: Type.Optional(
+    Type.Object({
+      errorId: Type.String(),
+      message: Type.String(),
+      elemId: Type.Optional(Type.String()),
+      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
+    })
+  ),
+});
+export type FormDataPutReply = Static<typeof putBodyReplySchema>;
+export interface FormDataPutRoute extends RouteGenericInterface {
+  readonly Body: FormDataPutBody;
+  readonly Reply: FormDataPutReply | FastifyError;
 }
 
 const formDataRoute: FastifyPluginAsync = (instance) => {

@@ -1,6 +1,6 @@
 import type { RouteHandler } from 'fastify';
 
-import type { FormDataPostRoute } from './routes';
+import type { FormDataPostReply, FormDataPostRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
@@ -9,6 +9,7 @@ import { isCsrfGood } from '../../hooks/csrf';
 import { getUserData, isPrivBlocked, combinePrivileges } from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
+import { getFormData } from './handlers.GET';
 
 // Create (POST)
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -137,5 +138,14 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     );
   }
 
-  return res.send({ ok: true, dataId: savedFormData._id.toString() });
+  const newDataId = savedFormData._id.toString();
+  const returnResponse: FormDataPostReply = { ok: true, dataId: newDataId };
+
+  if (body.getData) {
+    const params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    returnResponse.getData = getDataResult;
+  }
+
+  return res.send(returnResponse);
 };

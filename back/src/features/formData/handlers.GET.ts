@@ -1,7 +1,7 @@
 import type { RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
 
-import type { FormDataGetRoute, FormDataGetReply } from './routes';
+import type { FormDataGetRoute, FormDataGetReply, GetQuerystring } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
@@ -43,6 +43,88 @@ export type Data = {
 // Read (GET)
 export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   // Query string
+  const { getForm, dataId } = req.query;
+  const url = getApiPathFromReqUrl(req.url);
+
+  // Get form and check that form exists
+  const form = await DBFormModel.findOne<DBForm>({ url });
+  if (!form) {
+    return res.send(new errors.NOT_FOUND(`Could not find form with url "${req.url}"`));
+  }
+
+  if (!getForm && !dataId) {
+    return res.send(
+      new errors.FORM_DATA_BAD_REQUEST(
+        `Both, "getForm" and "dataId" query string values were missing with url "${req.url}"`
+      )
+    );
+  }
+
+  // Get CSRF result
+  const csrfIsGood = isCsrfGood(req);
+
+  // Get user data
+  const userData = await getUserData(req);
+
+  // Get data and metadata
+  const returnObject = await getFormData(req.query, form, userData, csrfIsGood);
+
+  return res.send(returnObject);
+};
+
+const checkAndSetReadData = (
+  rawData: DBFormData['data'],
+  formElems: FormElem[],
+  mainPrivileges: AllPrivilegeProps,
+  userData: UserData,
+  csrfIsGood: boolean,
+  dataId: string | null,
+  labels: { [key: string]: TransText } | null,
+  meta: {
+    owner?: string | null;
+    created: Date | undefined;
+    edited: Date | null;
+    createdBy?: string | null;
+    editedBy?: string | null;
+  } | null,
+  elemId: string | string[] | undefined,
+  hasElemPrivileges?: boolean
+): Data[] => {
+  const returnData: Data[] = [];
+  const embedIds = dataId ? { dataId } : {};
+  const embedMeta = meta ? { dataMetaData: meta } : {};
+  for (let i = 0; i < rawData.length; i++) {
+    const elem = rawData[i];
+    let privError = null;
+    if (hasElemPrivileges && elem.privileges?.read) {
+      const elemPrivileges = combinePrivileges(mainPrivileges, elem.privileges.read);
+      privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
+    }
+    // Data can be accessed if there is not a mainPrivError or if there is,
+    // the elem has overriding elem privileges that does not have an error
+    if (!privError && (!elemId || elemId.includes(elem.elemId))) {
+      const formElem = formElems.find((formElem) => formElem.elemId === elem.elemId);
+      // White list the data props to be returned
+      returnData.push({
+        elemId: elem.elemId,
+        orderNr: returnData.length,
+        value: elem.value,
+        valueType: formElem?.valueType || 'unknown',
+        ...embedIds,
+        ...(labels ? { label: labels[elem.elemId] } : {}),
+        ...embedMeta,
+      });
+    }
+  }
+  return returnData;
+};
+
+export const getFormData = async (
+  params: GetQuerystring,
+  form: DBForm,
+  userData: UserData,
+  csrfIsGood: boolean
+) => {
   const {
     getForm,
     dataId,
@@ -60,22 +142,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     meAsCreator,
     meAsOwner,
     meAsEditor,
-  } = req.query;
-  const url = getApiPathFromReqUrl(req.url);
-
-  // Get form and check that form exists
-  const form = await DBFormModel.findOne<DBForm>({ url });
-  if (!form) {
-    return res.send(new errors.NOT_FOUND(`Could not find form with url "${req.url}"`));
-  }
-
-  if (!getForm && !dataId) {
-    return res.send(
-      new errors.FORM_DATA_BAD_REQUEST(
-        `Both, "getForm" and "dataId" query string values were missing with url "${req.url}"`
-      )
-    );
-  }
+  } = params;
 
   // Create possible labels (for embedding them into data)
   const labels: { [key: string]: TransText } = {};
@@ -85,12 +152,6 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       labels[elem.elemId] = (elem.label as TransText) || {};
     }
   }
-
-  // Get CSRF result
-  const csrfIsGood = isCsrfGood(req);
-
-  // Get user data
-  const userData = await getUserData(req);
 
   const returnObject: FormDataGetReply = {};
   if (getForm) {
@@ -174,7 +235,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
       );
       formData = paginatedData.docs || [];
       paginationData = paginatedData;
-    } else if (dataId) {
+    } else {
       oneItem = true;
       // Get one formData item with dataId (search is ignored)
       formData = await DBFormDataModel.findOne<DBFormData>({
@@ -312,52 +373,5 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
     }
   }
 
-  return res.send(returnObject);
-};
-
-const checkAndSetReadData = (
-  rawData: DBFormData['data'],
-  formElems: FormElem[],
-  mainPrivileges: AllPrivilegeProps,
-  userData: UserData,
-  csrfIsGood: boolean,
-  dataId: string | null,
-  labels: { [key: string]: TransText } | null,
-  meta: {
-    owner?: string | null;
-    created: Date | undefined;
-    edited: Date | null;
-    createdBy?: string | null;
-    editedBy?: string | null;
-  } | null,
-  elemId: string | string[] | undefined,
-  hasElemPrivileges?: boolean
-): Data[] => {
-  const returnData: Data[] = [];
-  const embedIds = dataId ? { dataId } : {};
-  const embedMeta = meta ? { dataMetaData: meta } : {};
-  for (let i = 0; i < rawData.length; i++) {
-    const elem = rawData[i];
-    let privError = null;
-    if (hasElemPrivileges && elem.privileges?.read) {
-      const elemPrivileges = combinePrivileges(mainPrivileges, elem.privileges.read);
-      privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
-    }
-    // Data can be accessed if there is not a mainPrivError or if there is,
-    // the elem has overriding elem privileges that does not have an error
-    if (!privError && (!elemId || elemId.includes(elem.elemId))) {
-      const formElem = formElems.find((formElem) => formElem.elemId === elem.elemId);
-      // White list the data props to be returned
-      returnData.push({
-        elemId: elem.elemId,
-        orderNr: returnData.length,
-        value: elem.value,
-        valueType: formElem?.valueType || 'unknown',
-        ...embedIds,
-        ...(labels ? { label: labels[elem.elemId] } : {}),
-        ...embedMeta,
-      });
-    }
-  }
-  return returnData;
+  return returnObject;
 };
