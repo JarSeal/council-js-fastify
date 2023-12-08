@@ -4,7 +4,9 @@ import { type Static, Type } from '@sinclair/typebox';
 import { formDataGet } from './handlers.GET';
 import { formDataPost } from './handlers.POST';
 import { formElemPublicSchema, transTextSchema } from '../../@types/form';
+import { formDataPut } from './handlers.PUT';
 
+// POST
 export const postBodySchema = Type.Object({
   formData: Type.Array(
     Type.Object({
@@ -14,7 +16,6 @@ export const postBodySchema = Type.Object({
   ),
 });
 export type FormDataPostBody = Static<typeof postBodySchema>;
-
 export const postBodyReplySchema = Type.Object({
   ok: Type.Boolean(),
   dataId: Type.Optional(Type.String()),
@@ -28,12 +29,40 @@ export const postBodyReplySchema = Type.Object({
   ),
 });
 export type FormDataPostReply = Static<typeof postBodyReplySchema>;
-
 export interface FormDataPostRoute extends RouteGenericInterface {
   readonly Body: FormDataPostBody;
   readonly Reply: FormDataPostReply | FastifyError;
 }
 
+// PUT
+export const putBodySchema = Type.Object({
+  formData: Type.Array(
+    Type.Object({
+      elemId: Type.String(),
+      value: Type.Unknown(),
+    })
+  ),
+});
+export type FormDataPutBody = Static<typeof putBodySchema>;
+export const putBodyReplySchema = Type.Object({
+  ok: Type.Boolean(),
+  dataId: Type.Optional(Type.String()),
+  error: Type.Optional(
+    Type.Object({
+      errorId: Type.String(),
+      message: Type.String(),
+      elemId: Type.Optional(Type.String()),
+      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
+    })
+  ),
+});
+export type FormDataPutReply = Static<typeof putBodyReplySchema>;
+export interface FormDataPutRoute extends RouteGenericInterface {
+  readonly Body: FormDataPutBody;
+  readonly Reply: FormDataPutReply | FastifyError;
+}
+
+// GET
 export const getFormReplySchema = Type.Object({
   formTitle: transTextSchema,
   formText: transTextSchema,
@@ -89,6 +118,16 @@ const formDataRoute: FastifyPluginAsync = (instance) => {
     schema: {
       body: postBodySchema,
       response: { 200: postBodyReplySchema, 400: postBodyReplySchema },
+    },
+  });
+
+  instance.route<FormDataPutRoute>({
+    method: 'PUT',
+    url: '/*',
+    handler: formDataPut,
+    schema: {
+      body: putBodySchema,
+      response: { 200: putBodyReplySchema, 400: putBodyReplySchema },
     },
   });
 
