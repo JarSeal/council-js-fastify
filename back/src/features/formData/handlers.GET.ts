@@ -12,8 +12,9 @@ import {
   type UserData,
   getUserData,
   isPrivBlocked,
-  readDataPrivilegesQuery,
+  dataPrivilegesQuery,
   combinePrivileges,
+  emptyPrivilege,
 } from '../../utils/userAndPrivilegeChecks';
 import {
   createPaginationPayload,
@@ -75,7 +76,12 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 const checkAndSetReadData = (
   rawData: DBFormData['data'],
   formElems: FormElem[],
-  mainPrivileges: AllPrivilegeProps,
+  mainPrivileges: {
+    read: AllPrivilegeProps;
+    edit: AllPrivilegeProps;
+    create: AllPrivilegeProps;
+    delete: AllPrivilegeProps;
+  },
   userData: UserData,
   csrfIsGood: boolean,
   dataId: string | null,
@@ -88,31 +94,44 @@ const checkAndSetReadData = (
     editedBy?: string | null;
   } | null,
   elemId: string | string[] | undefined,
-  hasElemPrivileges?: boolean
+  hasElemPrivileges?: boolean,
+  includePrivs?: boolean
 ): Data[] => {
   const returnData: Data[] = [];
   const embedIds = dataId ? { dataId } : {};
   const embedMeta = meta ? { dataMetaData: meta } : {};
   for (let i = 0; i < rawData.length; i++) {
-    const elem = rawData[i];
+    const elem = JSON.parse(JSON.stringify(rawData[i])) as {
+      elemId: string;
+      value: unknown;
+      privileges?: { read?: AllPrivilegeProps; edit?: AllPrivilegeProps };
+    };
     let privError = null;
     if (hasElemPrivileges && elem.privileges?.read) {
-      const elemPrivileges = combinePrivileges(mainPrivileges, elem.privileges.read);
+      const elemPrivileges = combinePrivileges(mainPrivileges.read, elem.privileges.read);
       privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
     }
     // Data can be accessed if there is not a mainPrivError or if there is,
     // the elem has overriding elem privileges that does not have an error
     if (!privError && (!elemId || elemId.includes(elem.elemId))) {
       const formElem = formElems.find((formElem) => formElem.elemId === elem.elemId);
+      const privs =
+        includePrivs && elem.privileges
+          ? {
+              ...(elem.privileges.read ? { read: elem.privileges.read } : {}),
+              ...(elem.privileges.edit ? { edit: elem.privileges.edit } : {}),
+            }
+          : null;
       // White list the data props to be returned
       returnData.push({
         elemId: elem.elemId,
-        orderNr: returnData.length,
         value: elem.value,
+        orderNr: returnData.length,
         valueType: formElem?.valueType || 'unknown',
         ...embedIds,
         ...(labels ? { label: labels[elem.elemId] } : {}),
         ...embedMeta,
+        ...(includePrivs && privs ? { privileges: privs } : {}),
       });
     }
   }
@@ -139,6 +158,7 @@ export const getFormData = async (
     includeDataIds,
     includeLabels,
     includeMeta,
+    includePrivileges,
     meAsCreator,
     meAsOwner,
     meAsEditor,
@@ -190,6 +210,12 @@ export const getFormData = async (
       oneItem = false;
     const data: Data[][] = [];
     const meta: { owner?: string | null; created: Date; edited: Date | null }[] = [];
+    const privs: {
+      read?: Partial<AllPrivilegeProps>;
+      edit?: Partial<AllPrivilegeProps>;
+      create?: Partial<AllPrivilegeProps>;
+      delete?: Partial<AllPrivilegeProps>;
+    }[] = [];
 
     const MAX_LIMIT = getConfig<number>('dataItemsMaxLimit', 500);
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
@@ -226,7 +252,7 @@ export const getFormData = async (
           $and: [
             { formId: form.simpleId },
             ...(isMultipleDataIds ? [{ _id: { $in: dataObjectIds } }] : []),
-            ...readDataPrivilegesQuery(userData, csrfIsGood),
+            ...dataPrivilegesQuery('read', userData, csrfIsGood),
             ...searchQuery,
             ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
           ],
@@ -237,12 +263,12 @@ export const getFormData = async (
       paginationData = paginatedData;
     } else {
       oneItem = true;
-      // Get one formData item with dataId (search is ignored)
+      // Get one formData item with dataId (search params are ignored)
       formData = await DBFormDataModel.findOne<DBFormData>({
         $and: [
           { formId: form.simpleId },
           { _id: dataId[0] },
-          ...readDataPrivilegesQuery(userData, csrfIsGood),
+          ...dataPrivilegesQuery('read', userData, csrfIsGood),
           ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
         ],
       });
@@ -253,13 +279,17 @@ export const getFormData = async (
       const dataIds: string[] = [];
       for (let i = 0; i < formData.length; i++) {
         const fd = formData[i];
-        const mainPrivileges = combinePrivileges(
-          form.formDataDefaultPrivileges.read,
-          fd.privileges?.read || {}
-        );
+        const mainPrivileges = {
+          read: combinePrivileges(form.formDataDefaultPrivileges.read, fd.privileges?.read || {}),
+          edit: combinePrivileges(form.formDataDefaultPrivileges.read, fd.privileges?.read || {}),
+          create: combinePrivileges(form.formDataDefaultPrivileges.read, fd.privileges?.read || {}),
+          delete: combinePrivileges(form.formDataDefaultPrivileges.read, fd.privileges?.read || {}),
+        };
         const rawData = fd.data || [];
         const dataId = fd._id.toString();
         let dataMetaData = null;
+        let dataSetPrivileges = null;
+        let includePrivs = false;
         if (includeMeta === 'embed' || includeMeta === 'true') {
           dataMetaData = {
             created: fd.created.date,
@@ -274,6 +304,31 @@ export const getFormData = async (
               : {}),
           };
         }
+        // Check if privs can be shown
+        if (includePrivileges) {
+          includePrivs = !isPrivBlocked(
+            combinePrivileges(
+              {
+                ...(form.canEditPrivileges || emptyPrivilege),
+                public: 'false',
+                requireCsrfHeader: false,
+              },
+              {
+                ...(fd.canEditPrivileges || emptyPrivilege),
+                public: 'false',
+                requireCsrfHeader: false,
+              }
+            ),
+            userData,
+            csrfIsGood
+          );
+        }
+        if (includePrivs) {
+          dataSetPrivileges = {
+            ...form.formDataDefaultPrivileges,
+            ...(fd.privileges || {}),
+          };
+        }
         const dataSet = checkAndSetReadData(
           rawData,
           form.form.formElems,
@@ -284,13 +339,17 @@ export const getFormData = async (
           includeLabels === 'embed' ? labels : null,
           includeMeta === 'embed' ? dataMetaData : null,
           elemId,
-          fd.hasElemPrivileges
+          fd.hasElemPrivileges,
+          includePrivs
         );
         if (dataSet.length) {
           dataIds.push(dataId);
           data.push(dataSet);
           if (includeMeta === 'true' && dataMetaData) {
             meta.push(dataMetaData);
+          }
+          if (includePrivs && dataSetPrivileges) {
+            privs.push(dataSetPrivileges);
           }
         }
       }
@@ -303,15 +362,33 @@ export const getFormData = async (
       if (includeMeta === 'true') {
         returnObject['$dataMetaData'] = meta;
       }
+      if (includePrivileges && privs) {
+        returnObject['$dataPrivileges'] = privs;
+      }
     } else {
-      const mainPrivileges = combinePrivileges(
-        form.formDataDefaultPrivileges.read,
-        formData?.privileges?.read || {}
-      );
-      const mainPrivError = isPrivBlocked(mainPrivileges, userData, csrfIsGood);
+      const mainPrivileges = {
+        read: combinePrivileges(
+          form.formDataDefaultPrivileges.read,
+          formData?.privileges?.read || {}
+        ),
+        edit: combinePrivileges(
+          form.formDataDefaultPrivileges.read,
+          formData?.privileges?.read || {}
+        ),
+        create: combinePrivileges(
+          form.formDataDefaultPrivileges.read,
+          formData?.privileges?.read || {}
+        ),
+        delete: combinePrivileges(
+          form.formDataDefaultPrivileges.read,
+          formData?.privileges?.read || {}
+        ),
+      };
+      const mainPrivError = isPrivBlocked(mainPrivileges.read, userData, csrfIsGood);
       const rawData = formData?.data || [];
       const formDataId = formData ? formData._id?.toString() : null;
       let dataMetaData = null;
+      let includePrivs = false;
       if ((includeMeta === 'embed' || includeMeta === 'true') && formData) {
         dataMetaData = {
           created: formData?.created.date,
@@ -326,6 +403,25 @@ export const getFormData = async (
             : {}),
         };
       }
+      // Check if privs can be shown
+      if (includePrivileges) {
+        includePrivs = !isPrivBlocked(
+          combinePrivileges(
+            {
+              ...(form.canEditPrivileges || emptyPrivilege),
+              public: 'false',
+              requireCsrfHeader: false,
+            },
+            {
+              ...(formData?.canEditPrivileges || emptyPrivilege),
+              public: 'false',
+              requireCsrfHeader: false,
+            }
+          ),
+          userData,
+          csrfIsGood
+        );
+      }
       const dataSet = checkAndSetReadData(
         rawData,
         form.form.formElems,
@@ -336,7 +432,8 @@ export const getFormData = async (
         includeLabels === 'embed' ? labels : null,
         includeMeta === 'embed' ? dataMetaData : null,
         elemId,
-        formData?.hasElemPrivileges
+        formData?.hasElemPrivileges,
+        includePrivs
       );
       if (!mainPrivError && dataSet.length) {
         data.push(dataSet);
@@ -346,6 +443,12 @@ export const getFormData = async (
       }
       if (includeMeta === 'true' && dataSet.length) {
         returnObject['$dataMetaData'] = dataMetaData ? [dataMetaData] : [];
+      }
+      if (includePrivs && dataSet.length) {
+        returnObject['$dataPrivileges'] = {
+          ...form.formDataDefaultPrivileges,
+          ...(formData?.privileges || {}),
+        };
       }
     }
 

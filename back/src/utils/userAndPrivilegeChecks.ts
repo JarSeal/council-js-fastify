@@ -86,7 +86,7 @@ export const isPrivBlocked = (
   }
 
   // Check included users (n + k + m^2)
-  if (userData.userId) {
+  if (userData.userId && priv.users) {
     for (let i = 0; i < priv.users.length; i++) {
       if (priv.users[i].equals(userData.userId)) {
         // Good to go, if not in excluded users nor groups
@@ -99,7 +99,7 @@ export const isPrivBlocked = (
   }
 
   // Check included groups (n^2 + k + m^2)
-  if (userData.userGroups.length && priv.groups.length) {
+  if (userData.userGroups.length && priv.groups) {
     for (let i = 0; i < priv.groups.length; i++) {
       for (let j = 0; j < userData.userGroups.length; j++) {
         if (userData.userGroups[j].equals(priv.groups[i])) {
@@ -143,12 +143,18 @@ const checkExcludedGroups = (userData: UserData, excludedGroups: Types.ObjectId[
   return null;
 };
 
-export const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood: boolean) => [
-  { 'privileges.read.public': { $ne: 'onlyPublic' } },
+type PrivilegeScope = 'read' | 'edit' | 'create' | 'delete';
+
+const dataAsSignedInPrivilegesQuery = (
+  scope: PrivilegeScope,
+  userData: UserData,
+  csrfIsGood: boolean
+) => [
+  { [`privileges.${scope}.public`]: { $ne: 'onlyPublic' } },
   {
     $or: [
-      { 'privileges.read.requireCsrfHeader': { $ne: true } },
-      { 'privileges.read.requireCsrfHeader': csrfIsGood },
+      { [`privileges.${scope}.requireCsrfHeader`]: { $ne: true } },
+      { [`privileges.${scope}.requireCsrfHeader`]: csrfIsGood },
     ],
   },
   ...(userData.isSysAdmin
@@ -156,17 +162,17 @@ export const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood
     : [
         {
           $or: [
-            { 'privileges.read.public': 'true' },
+            { [`privileges.${scope}.public`]: 'true' },
             {
               $and: [
                 {
                   $or: [
-                    { 'privileges.read.users': userData.userId },
-                    { 'privileges.read.groups': { $in: userData.userGroups } },
+                    { [`privileges.${scope}.users`]: userData.userId },
+                    { [`privileges.${scope}.groups`]: { $in: userData.userGroups } },
                   ],
                 },
-                { 'privileges.read.excludeUsers': { $ne: userData.userId } },
-                { 'privileges.read.excludeGroups': { $nin: userData.userGroups } },
+                { [`privileges.${scope}.excludeUsers`]: { $ne: userData.userId } },
+                { [`privileges.${scope}.excludeGroups`]: { $nin: userData.userGroups } },
               ],
             },
           ],
@@ -174,23 +180,30 @@ export const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood
       ]),
 ];
 
-export const readDataAsSignedOutPrivilegesQuery = (csrfIsGood: boolean) => [
+const dataAsSignedOutPrivilegesQuery = (scope: PrivilegeScope, csrfIsGood: boolean) => [
   {
-    $or: [{ 'privileges.read.public': 'true' }, { 'privileges.read.public': 'onlyPublic' }],
+    $or: [
+      { [`privileges.${scope}.public`]: 'true' },
+      { [`privileges.${scope}.public`]: 'onlyPublic' },
+    ],
   },
   {
     $or: [
-      { 'privileges.read.requireCsrfHeader': { $ne: true } },
-      { 'privileges.read.requireCsrfHeader': csrfIsGood },
+      { [`privileges.${scope}.requireCsrfHeader`]: { $ne: true } },
+      { [`privileges.${scope}.requireCsrfHeader`]: csrfIsGood },
     ],
   },
 ];
 
-export const readDataPrivilegesQuery = (userData: UserData, csrfIsGood: boolean) => {
+export const dataPrivilegesQuery = (
+  scope: PrivilegeScope,
+  userData: UserData,
+  csrfIsGood: boolean
+) => {
   if (userData.isSignedIn) {
-    return readDataAsSignedInPrivilegesQuery(userData, csrfIsGood);
+    return dataAsSignedInPrivilegesQuery(scope, userData, csrfIsGood);
   }
-  return readDataAsSignedOutPrivilegesQuery(csrfIsGood);
+  return dataAsSignedOutPrivilegesQuery(scope, csrfIsGood);
 };
 
 export const combinePrivileges = (

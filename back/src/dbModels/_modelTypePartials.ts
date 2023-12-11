@@ -42,13 +42,16 @@ export type FormDataValueType =
 
 export type PublicPrivilegeProp = 'true' | 'false' | 'onlyPublic';
 
-export type AllPrivilegeProps = {
-  public: PublicPrivilegeProp;
-  requireCsrfHeader: boolean;
+export type BasicPrivilegeProps = {
   users: Types.ObjectId[];
   groups: Types.ObjectId[];
   excludeUsers: Types.ObjectId[];
   excludeGroups: Types.ObjectId[];
+};
+
+export type AllPrivilegeProps = BasicPrivilegeProps & {
+  public: PublicPrivilegeProp;
+  requireCsrfHeader: boolean;
 };
 
 export type FormDataPrivileges = {

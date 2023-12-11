@@ -25,7 +25,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     return res.send(new errors.NOT_FOUND(`Could not find form with url: ${url}`));
   }
 
-  // Get canUseForm privilege (this is also checked when getting the form)
+  // Get canUseForm privilege
   const privilegeId = `form__${form.simpleId}__canUseForm`;
   const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
 
@@ -71,7 +71,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     if (elem.privileges?.create) {
       const elemDataCreatePrivileges = combinePrivileges(
         formDataDefaultCreatePrivileges,
-        elem.privileges.create || {}
+        elem.privileges?.create || {}
       );
       const elemFormDataPrivError = isPrivBlocked(elemDataCreatePrivileges, userData, csrfIsGood);
       if (elemFormDataPrivError) {
@@ -108,7 +108,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     return res.status(400).send({
       ok: false,
       error: {
-        errorId: 'saveDataEmpty',
+        errorId: 'createFormDataEmpty',
         message:
           'Form data had no data to save, either because of lacking privileges or no saveable data was sent.',
       },
@@ -142,7 +142,12 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   const returnResponse: FormDataPostReply = { ok: true, dataId: newDataId };
 
   if (body.getData) {
-    const params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
+    let params;
+    if (body.getData === true) {
+      params = { dataId: [newDataId] };
+    } else {
+      params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
+    }
     const getDataResult = await getFormData(params, form, userData, csrfIsGood);
     returnResponse.getData = getDataResult;
   }

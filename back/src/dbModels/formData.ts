@@ -1,8 +1,12 @@
 import { type Types, type PaginateModel, Schema, model } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-import { dateDBSchema, formDataPrivilegesSchema } from './_schemaPartials';
-import type { Edited, FormDataPrivileges } from './_modelTypePartials';
+import {
+  basicPrivilegePropsSchema,
+  dateDBSchema,
+  formDataPrivilegesSchema,
+} from './_schemaPartials';
+import type { BasicPrivilegeProps, Edited, FormDataPrivileges } from './_modelTypePartials';
 
 export interface DBFormData {
   // Mongo ID
@@ -28,6 +32,9 @@ export interface DBFormData {
 
   // Privileges for all elements, but these are overridden if element has specific privileges
   privileges: FormDataPrivileges;
+
+  // Who or what group(s) can and cannot edit privileges
+  canEditPrivileges?: BasicPrivilegeProps;
 
   // Form element data
   data: {
@@ -62,6 +69,7 @@ const formDataSchema = new Schema<DBFormData>({
   owner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   hasElemPrivileges: { type: Boolean },
   privileges: formDataPrivilegesSchema,
+  canEditPrivileges: basicPrivilegePropsSchema,
   data: [
     {
       _id: false,
