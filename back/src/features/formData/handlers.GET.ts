@@ -285,16 +285,16 @@ export const getFormData = async (
             fd.privileges?.read || {}
           ),
           edit: combinePrivileges(
-            form.formDataDefaultPrivileges?.read || {},
-            fd.privileges?.read || {}
+            form.formDataDefaultPrivileges?.edit || {},
+            fd.privileges?.edit || {}
           ),
           create: combinePrivileges(
-            form.formDataDefaultPrivileges?.read || {},
-            fd.privileges?.read || {}
+            form.formDataDefaultPrivileges?.create || {},
+            fd.privileges?.create || {}
           ),
           delete: combinePrivileges(
-            form.formDataDefaultPrivileges?.read || {},
-            fd.privileges?.read || {}
+            form.formDataDefaultPrivileges?.delete || {},
+            fd.privileges?.delete || {}
           ),
         };
         const rawData = fd.data || [];
