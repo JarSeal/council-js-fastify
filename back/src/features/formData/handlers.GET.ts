@@ -280,10 +280,22 @@ export const getFormData = async (
       for (let i = 0; i < formData.length; i++) {
         const fd = formData[i];
         const mainPrivileges = {
-          read: combinePrivileges(form.formDataDefaultPrivileges.read, fd.privileges?.read || {}),
-          edit: combinePrivileges(form.formDataDefaultPrivileges.read, fd.privileges?.read || {}),
-          create: combinePrivileges(form.formDataDefaultPrivileges.read, fd.privileges?.read || {}),
-          delete: combinePrivileges(form.formDataDefaultPrivileges.read, fd.privileges?.read || {}),
+          read: combinePrivileges(
+            form.formDataDefaultPrivileges?.read || {},
+            fd.privileges?.read || {}
+          ),
+          edit: combinePrivileges(
+            form.formDataDefaultPrivileges?.read || {},
+            fd.privileges?.read || {}
+          ),
+          create: combinePrivileges(
+            form.formDataDefaultPrivileges?.read || {},
+            fd.privileges?.read || {}
+          ),
+          delete: combinePrivileges(
+            form.formDataDefaultPrivileges?.read || {},
+            fd.privileges?.read || {}
+          ),
         };
         const rawData = fd.data || [];
         const dataId = fd._id.toString();
@@ -368,20 +380,20 @@ export const getFormData = async (
     } else {
       const mainPrivileges = {
         read: combinePrivileges(
-          form.formDataDefaultPrivileges.read,
+          form.formDataDefaultPrivileges?.read || {},
           formData?.privileges?.read || {}
         ),
         edit: combinePrivileges(
-          form.formDataDefaultPrivileges.read,
-          formData?.privileges?.read || {}
+          form.formDataDefaultPrivileges?.edit || {},
+          formData?.privileges?.edit || {}
         ),
         create: combinePrivileges(
-          form.formDataDefaultPrivileges.read,
-          formData?.privileges?.read || {}
+          form.formDataDefaultPrivileges?.create || {},
+          formData?.privileges?.create || {}
         ),
         delete: combinePrivileges(
-          form.formDataDefaultPrivileges.read,
-          formData?.privileges?.read || {}
+          form.formDataDefaultPrivileges?.delete || {},
+          formData?.privileges?.delete || {}
         ),
       };
       const mainPrivError = isPrivBlocked(mainPrivileges.read, userData, csrfIsGood);
