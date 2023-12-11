@@ -11,6 +11,7 @@ import {
   isPrivBlocked,
   combinePrivileges,
   dataPrivilegesQuery,
+  emptyFormDataPrivileges,
 } from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
@@ -151,7 +152,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     edited: [],
     owner: form.fillerIsFormDataOwner ? userData.userId || null : form.formDataOwner || null,
     hasElemPrivileges,
-    privileges: form.formDataDefaultPrivileges,
+    privileges: form.formDataDefaultPrivileges || emptyFormDataPrivileges,
     data: saveData,
   });
   const savedFormData = await newFormData.save();

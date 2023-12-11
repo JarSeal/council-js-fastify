@@ -6,7 +6,12 @@ import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
-import { getUserData, isPrivBlocked, combinePrivileges } from '../../utils/userAndPrivilegeChecks';
+import {
+  getUserData,
+  isPrivBlocked,
+  combinePrivileges,
+  emptyFormDataPrivileges,
+} from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
@@ -126,7 +131,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     edited: [],
     owner: form.fillerIsFormDataOwner ? userData.userId || null : form.formDataOwner || null,
     hasElemPrivileges,
-    privileges: form.formDataDefaultPrivileges,
+    privileges: form.formDataDefaultPrivileges || emptyFormDataPrivileges,
     data: saveData,
   });
   const savedFormData = await newFormData.save();
