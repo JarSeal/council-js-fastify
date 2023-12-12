@@ -1,8 +1,8 @@
 import type { FastifyError, FastifyRequest } from 'fastify';
-import type { Types } from 'mongoose';
+import { Types as MongooseTypes, type Types } from 'mongoose';
 
 import DBGroupModel from '../dbModels/group';
-import type { AllPrivilegeProps } from '../dbModels/_modelTypePartials';
+import type { AllPrivilegeProps, BasicPrivilegeProps } from '../dbModels/_modelTypePartials';
 import { errors } from '../core/errors';
 
 export const emptyPrivilege: AllPrivilegeProps = {
@@ -88,7 +88,7 @@ export const isPrivBlocked = (
   // Check included users (n + k + m^2)
   if (userData.userId && priv.users) {
     for (let i = 0; i < priv.users.length; i++) {
-      if (priv.users[i].equals(userData.userId)) {
+      if (userData.userId.equals(priv.users[i] as Types.ObjectId)) {
         // Good to go, if not in excluded users nor groups
         return (
           checkExcludedUsers(userData, priv.excludeUsers) ||
@@ -102,7 +102,7 @@ export const isPrivBlocked = (
   if (userData.userGroups.length && priv.groups) {
     for (let i = 0; i < priv.groups.length; i++) {
       for (let j = 0; j < userData.userGroups.length; j++) {
-        if (userData.userGroups[j].equals(priv.groups[i])) {
+        if (userData.userGroups[j].equals(priv.groups[i] as Types.ObjectId)) {
           // Good to go, if not in excluded users nor groups
           return (
             checkExcludedUsers(userData, priv.excludeUsers) ||
@@ -117,11 +117,11 @@ export const isPrivBlocked = (
   return new errors.FORBIDDEN('No privileges');
 };
 
-const checkExcludedUsers = (userData: UserData, excludedUsers: Types.ObjectId[]) => {
+const checkExcludedUsers = (userData: UserData, excludedUsers: BasicPrivilegeProps['users']) => {
   // Check excluded users
   if (userData.userId) {
     for (let i = 0; i < excludedUsers.length; i++) {
-      if (excludedUsers[i].equals(userData.userId)) {
+      if (userData.userId.equals(excludedUsers[i] as Types.ObjectId)) {
         return new errors.FORBIDDEN('User in excluded users');
       }
     }
@@ -129,12 +129,15 @@ const checkExcludedUsers = (userData: UserData, excludedUsers: Types.ObjectId[])
   return null;
 };
 
-const checkExcludedGroups = (userData: UserData, excludedGroups: Types.ObjectId[]) => {
+const checkExcludedGroups = (
+  userData: UserData,
+  excludedGroups: BasicPrivilegeProps['excludeGroups']
+) => {
   // Check excluded groups (compare two arrays and see if none match)
   if (userData.userGroups.length && excludedGroups.length) {
     for (let i = 0; i < excludedGroups.length; i++) {
       for (let j = 0; j < userData.userGroups.length; j++) {
-        if (userData.userGroups[j].equals(excludedGroups[i])) {
+        if (userData.userGroups[j].equals(excludedGroups[i] as Types.ObjectId)) {
           return new errors.FORBIDDEN('User in excluded group');
         }
       }
@@ -214,10 +217,38 @@ export const combinePrivileges = (
     const priv = privileges[i];
     if (priv?.public !== undefined) combined.public = priv.public;
     if (priv?.requireCsrfHeader !== undefined) combined.requireCsrfHeader = priv.requireCsrfHeader;
-    if (priv?.users !== undefined) combined.users = priv.users;
-    if (priv?.groups !== undefined) combined.groups = priv.groups;
-    if (priv?.excludeUsers !== undefined) combined.excludeUsers = priv.excludeUsers;
-    if (priv?.excludeGroups !== undefined) combined.excludeGroups = priv.excludeGroups;
+    if (priv?.users !== undefined) {
+      if (priv.users.length && 'simpleId' in priv.users[0]) {
+        combined.users = priv.users.map((user) => new MongooseTypes.ObjectId(user.id));
+      } else {
+        combined.users = priv.users;
+      }
+    }
+    if (priv?.groups !== undefined) {
+      if (priv.groups.length && 'simpleId' in priv.groups[0]) {
+        combined.groups = priv.groups.map((group) => new MongooseTypes.ObjectId(group.id));
+      } else {
+        combined.groups = priv.groups;
+      }
+    }
+    if (priv?.excludeUsers !== undefined) {
+      if (priv.excludeUsers.length && 'simpleId' in priv.excludeUsers[0]) {
+        combined.excludeUsers = priv.excludeUsers.map(
+          (user) => new MongooseTypes.ObjectId(user.id)
+        );
+      } else {
+        combined.excludeUsers = priv.excludeUsers;
+      }
+    }
+    if (priv?.excludeGroups !== undefined) {
+      if (priv.excludeGroups.length && 'simpleId' in priv.excludeGroups[0]) {
+        combined.excludeGroups = priv.excludeGroups.map(
+          (group) => new MongooseTypes.ObjectId(group.id)
+        );
+      } else {
+        combined.excludeGroups = priv.excludeGroups;
+      }
+    }
   }
   return combined;
 };

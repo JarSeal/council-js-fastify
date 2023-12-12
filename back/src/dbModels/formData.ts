@@ -27,7 +27,7 @@ export interface DBFormData {
   edited: Edited;
   owner: Types.ObjectId | { simpleId: string } | null;
 
-  // Whether elements' have specific privileges that need to be checked (optimisation)
+  // Whether elements' have specific privileges that need to be checked (this is for optimisation)
   hasElemPrivileges?: boolean;
 
   // Privileges for all elements, but these are overridden if element has specific privileges
@@ -45,7 +45,7 @@ export interface DBFormData {
     value: unknown;
 
     // Element specific privileges
-    privileges?: Omit<FormDataPrivileges, 'create'>;
+    privileges?: Omit<FormDataPrivileges, 'create' | 'delete'>;
   }[];
 }
 

@@ -1,7 +1,7 @@
 import type { Types } from 'mongoose';
 
 export type Edited = {
-  user: Types.ObjectId;
+  user: Types.ObjectId | { simpleId: string };
   date: Date;
 }[];
 
@@ -43,10 +43,10 @@ export type FormDataValueType =
 export type PublicPrivilegeProp = 'true' | 'false' | 'onlyPublic';
 
 export type BasicPrivilegeProps = {
-  users: Types.ObjectId[];
-  groups: Types.ObjectId[];
-  excludeUsers: Types.ObjectId[];
-  excludeGroups: Types.ObjectId[];
+  users: (Types.ObjectId | { id: string; simpleId: string })[];
+  groups: (Types.ObjectId | { id: string; simpleId: string; name: string })[];
+  excludeUsers: (Types.ObjectId | { id: string; simpleId: string })[];
+  excludeGroups: (Types.ObjectId | { id: string; simpleId: string; name: string })[];
 };
 
 export type AllPrivilegeProps = BasicPrivilegeProps & {

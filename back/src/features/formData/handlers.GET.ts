@@ -220,6 +220,31 @@ export const getFormData = async (
     const MAX_LIMIT = getConfig<number>('dataItemsMaxLimit', 500);
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
     const sorter = parseFormDataSortStringFromQueryString(sort, form);
+    const populate = [
+      { path: 'created.user', select: 'simpleId' },
+      { path: 'owner', select: 'simpleId' },
+      { path: 'edited.0.user', select: 'simpleId' },
+      { path: 'privileges.read.users', select: 'simpleId' },
+      { path: 'privileges.read.groups', select: 'simpleId name' },
+      { path: 'privileges.read.excludeUsers', select: 'simpleId' },
+      { path: 'privileges.read.excludeGroups', select: 'simpleId name' },
+      { path: 'privileges.edit.users', select: 'simpleId' },
+      { path: 'privileges.edit.groups', select: 'simpleId name' },
+      { path: 'privileges.edit.excludeUsers', select: 'simpleId' },
+      { path: 'privileges.edit.excludeGroups', select: 'simpleId name' },
+      { path: 'privileges.delete.users', select: 'simpleId' },
+      { path: 'privileges.delete.groups', select: 'simpleId name' },
+      { path: 'privileges.delete.excludeUsers', select: 'simpleId' },
+      { path: 'privileges.delete.excludeGroups', select: 'simpleId name' },
+      { path: 'data.privileges.read.users', select: 'simpleId' },
+      { path: 'data.privileges.read.groups', select: 'simpleId name' },
+      { path: 'data.privileges.read.excludeUsers', select: 'simpleId' },
+      { path: 'data.privileges.read.excludeGroups', select: 'simpleId name' },
+      { path: 'data.privileges.edit.users', select: 'simpleId' },
+      { path: 'data.privileges.edit.groups', select: 'simpleId name' },
+      { path: 'data.privileges.edit.excludeUsers', select: 'simpleId' },
+      { path: 'data.privileges.edit.excludeGroups', select: 'simpleId name' },
+    ];
     const paginationOptions = {
       offset: offset || 0,
       limit: limiter,
@@ -228,10 +253,7 @@ export const getFormData = async (
         // https://www.mongodb.com/docs/manual/reference/collation-locales-defaults/#std-label-collation-languages-locales
         locale: getConfig<string>('dataCollationLocale', 'en'), // @TODO: add locale support (as a systemSetting and possibly to form as well)
       },
-      populate: [
-        { path: 'created.user', select: 'simpleId' },
-        { path: 'owner', select: 'simpleId' },
-      ],
+      populate,
     };
 
     const isMultipleDataIds = Array.isArray(dataId) && dataId?.length > 1;
@@ -275,7 +297,7 @@ export const getFormData = async (
           ...dataPrivilegesQuery('read', userData, csrfIsGood),
           ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
         ],
-      });
+      }).populate(populate);
     }
 
     if (Array.isArray(formData)) {
@@ -301,15 +323,17 @@ export const getFormData = async (
           dataMetaData = {
             created: fd.created.date,
             edited: fd.edited.length ? fd.edited[0].date : null,
-            // @TODO: get actual usernames
             ...(userData.isSysAdmin
               ? {
-                  owner: fd?.owner && 'simpleId' in fd.owner ? fd?.owner?.simpleId : null,
+                  owner: fd?.owner && 'simpleId' in fd.owner ? fd.owner.simpleId : null,
                   createdBy:
                     fd?.created.user && 'simpleId' in fd.created.user
-                      ? fd?.created.user?.simpleId
+                      ? fd.created.user?.simpleId
                       : null,
-                  editedBy: fd?.edited[0]?.user?.toString() || null,
+                  editedBy:
+                    fd?.edited.length && 'simpleId' in fd.edited[0].user
+                      ? fd.edited[0].user.simpleId
+                      : null,
                 }
               : {}),
           };
@@ -394,12 +418,18 @@ export const getFormData = async (
         dataMetaData = {
           created: formData?.created.date,
           edited: formData?.edited.length ? formData.edited[0].date : null,
-          // @TODO: get actual usernames (maybe)
           ...(userData.isSysAdmin
             ? {
-                owner: formData?.owner?.toString() || null,
-                createdBy: formData?.created.user?.toString() || null,
-                editedBy: formData?.edited[0]?.user?.toString() || null,
+                owner:
+                  formData?.owner && 'simpleId' in formData.owner ? formData.owner.simpleId : null,
+                createdBy:
+                  formData?.created.user && 'simpleId' in formData.created.user
+                    ? formData.created.user?.simpleId
+                    : null,
+                editedBy:
+                  formData?.edited.length && 'simpleId' in formData.edited[0].user
+                    ? formData.edited[0].user.simpleId
+                    : null,
               }
             : {}),
         };
