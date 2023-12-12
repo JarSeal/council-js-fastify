@@ -284,18 +284,9 @@ export const getFormData = async (
             form.formDataDefaultPrivileges?.read || {},
             fd.privileges?.read || {}
           ),
-          edit: combinePrivileges(
-            form.formDataDefaultPrivileges?.edit || {},
-            fd.privileges?.edit || {}
-          ),
-          create: combinePrivileges(
-            form.formDataDefaultPrivileges?.create || {},
-            fd.privileges?.create || {}
-          ),
-          delete: combinePrivileges(
-            form.formDataDefaultPrivileges?.delete || {},
-            fd.privileges?.delete || {}
-          ),
+          edit: { ...emptyPrivilege },
+          create: { ...emptyPrivilege },
+          delete: { ...emptyPrivilege },
         };
         const rawData = fd.data || [];
         const dataId = fd._id.toString();
@@ -374,7 +365,7 @@ export const getFormData = async (
       if (includeMeta === 'true') {
         returnObject['$dataMetaData'] = meta;
       }
-      if (includePrivileges && privs) {
+      if (includePrivileges && privs?.length) {
         returnObject['$dataPrivileges'] = privs;
       }
     } else {
@@ -383,18 +374,9 @@ export const getFormData = async (
           form.formDataDefaultPrivileges?.read || {},
           formData?.privileges?.read || {}
         ),
-        edit: combinePrivileges(
-          form.formDataDefaultPrivileges?.edit || {},
-          formData?.privileges?.edit || {}
-        ),
-        create: combinePrivileges(
-          form.formDataDefaultPrivileges?.create || {},
-          formData?.privileges?.create || {}
-        ),
-        delete: combinePrivileges(
-          form.formDataDefaultPrivileges?.delete || {},
-          formData?.privileges?.delete || {}
-        ),
+        edit: { ...emptyPrivilege },
+        create: { ...emptyPrivilege },
+        delete: { ...emptyPrivilege },
       };
       const mainPrivError = isPrivBlocked(mainPrivileges.read, userData, csrfIsGood);
       const rawData = formData?.data || [];

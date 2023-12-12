@@ -209,7 +209,7 @@ export const dataPrivilegesQuery = (
 export const combinePrivileges = (
   ...privileges: Partial<AllPrivilegeProps>[]
 ): AllPrivilegeProps => {
-  const combined = emptyPrivilege;
+  const combined = { ...emptyPrivilege };
   for (let i = 0; i < privileges.length; i++) {
     const priv = privileges[i];
     if (priv?.public !== undefined) combined.public = priv.public;

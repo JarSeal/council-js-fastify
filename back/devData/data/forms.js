@@ -84,6 +84,12 @@ const getFormConfigs = async () => {
               delete: { groups: [basicUsersId] },
             },
             hasElemPrivileges: true,
+            canEditPrivileges: {
+              users: [basicUserId],
+              groups: [],
+              excludeUsers: [],
+              excludeGroups: [],
+            },
             data: [
               {
                 elemId: 'testElem0',
@@ -157,6 +163,12 @@ const getFormConfigs = async () => {
           create: { public: 'true' },
           edit: { groups: [basicUsersId] },
           delete: { groups: [basicUsersId] },
+        },
+        canEditPrivileges: {
+          users: [],
+          groups: [basicUsersId],
+          excludeUsers: [],
+          excludeGroups: [],
         },
         formData: [
           {
@@ -592,6 +604,9 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
     },
   };
   form.formDataDefaultPrivileges = privileges;
+  if (opts?.canEditPrivileges) {
+    form.canEditPrivileges = opts.canEditPrivileges;
+  }
 
   // Set possible formData
   if (opts?.formData?.length) {

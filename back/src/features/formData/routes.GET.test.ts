@@ -1412,7 +1412,7 @@ describe('GET formData', () => {
       privilegeAccess: { public: 'true' as PublicPrivilegeProp },
     };
     await createForm(
-      'myForm',
+      formId,
       url,
       [
         {
