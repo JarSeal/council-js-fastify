@@ -228,6 +228,10 @@ export const getFormData = async (
         // https://www.mongodb.com/docs/manual/reference/collation-locales-defaults/#std-label-collation-languages-locales
         locale: getConfig<string>('dataCollationLocale', 'en'), // @TODO: add locale support (as a systemSetting and possibly to form as well)
       },
+      populate: [
+        { path: 'created.user', select: 'simpleId' },
+        { path: 'owner', select: 'simpleId' },
+      ],
     };
 
     const isMultipleDataIds = Array.isArray(dataId) && dataId?.length > 1;
@@ -300,8 +304,11 @@ export const getFormData = async (
             // @TODO: get actual usernames
             ...(userData.isSysAdmin
               ? {
-                  owner: fd?.owner?.toString() || null,
-                  createdBy: fd?.created.user?.toString() || null,
+                  owner: fd?.owner && 'simpleId' in fd.owner ? fd?.owner?.simpleId : null,
+                  createdBy:
+                    fd?.created.user && 'simpleId' in fd.created.user
+                      ? fd?.created.user?.simpleId
+                      : null,
                   editedBy: fd?.edited[0]?.user?.toString() || null,
                 }
               : {}),

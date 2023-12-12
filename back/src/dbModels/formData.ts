@@ -21,11 +21,11 @@ export interface DBFormData {
 
   // Logs and owner
   created: {
-    user: Types.ObjectId | null;
+    user: Types.ObjectId | { simpleId: string } | null;
     date: Date;
   };
   edited: Edited;
-  owner: Types.ObjectId | null;
+  owner: Types.ObjectId | { simpleId: string } | null;
 
   // Whether elements' have specific privileges that need to be checked (optimisation)
   hasElemPrivileges?: boolean;

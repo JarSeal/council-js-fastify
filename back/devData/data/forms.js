@@ -86,7 +86,7 @@ const getFormConfigs = async () => {
             hasElemPrivileges: true,
             canEditPrivileges: {
               users: [basicUserId],
-              groups: [],
+              groups: [basicUsersId],
               excludeUsers: [],
               excludeGroups: [],
             },
