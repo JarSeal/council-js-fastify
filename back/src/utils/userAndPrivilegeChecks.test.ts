@@ -71,7 +71,7 @@ describe('userAndPrivilegeChecks', () => {
     });
   });
 
-  it('should check privilegde: CSRF and public', async () => {
+  it('should check privilege: CSRF and public', async () => {
     // CSRF and public check
     // ***********************************
     let req = {} as FastifyRequest;
@@ -140,7 +140,7 @@ describe('userAndPrivilegeChecks', () => {
     expect(privBlocked?.message).toBe('Cannot be signed in to access route');
   });
 
-  it('should check privilegde: sysAdmin', async () => {
+  it('should check privilege: sysAdmin', async () => {
     // sysAdmin check
     // ***********************************
     const adminId = await createSysAdmin();
@@ -159,6 +159,8 @@ describe('userAndPrivilegeChecks', () => {
     const privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
     expect(privBlocked).toBe(null);
   });
+
+  // @TODO: should check privilege: owner
 
   it('should check included users', async () => {
     const username = 'myusername';
@@ -255,7 +257,7 @@ describe('userAndPrivilegeChecks', () => {
     expect(privBlocked).toBe(null);
   });
 
-  it('should reject when user belongs to excluded group', async () => {
+  it('should reject when user belongs to an excluded group', async () => {
     const username = 'myusername';
     const userId = await createUser(username, { verified: true });
     const adminId = await createSysAdmin();

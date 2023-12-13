@@ -145,7 +145,7 @@ const checkExcludedGroups = (
   userData: UserData,
   excludedGroups: BasicPrivilegeProps['excludeGroups']
 ) => {
-  // Check excluded groups (compare two arrays and see if none match)
+  // Check excluded groups (compare two arrays and see if they match or not)
   if (userData.userGroups.length && excludedGroups) {
     for (let i = 0; i < excludedGroups.length; i++) {
       for (let j = 0; j < userData.userGroups.length; j++) {
