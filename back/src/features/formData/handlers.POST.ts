@@ -6,15 +6,11 @@ import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
-import {
-  getUserData,
-  isPrivBlocked,
-  combinePrivileges,
-  emptyFormDataPrivileges,
-} from '../../utils/userAndPrivilegeChecks';
+import { getUserData, isPrivBlocked, combinePrivileges } from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
+import type { FormDataPrivileges } from '../../dbModels/_modelTypePartials';
 
 // Create (POST)
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -50,6 +46,22 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
         `User not privileged to create formData in POST/create formData handler, formDataDefaultPrivileges, url: ${url}`
       )
     );
+  }
+
+  // Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
+  if (body.privileges || body.canEditPrivileges || body.formData.find((fd) => fd.privileges)) {
+    const formCanEditPrivilegesError = isPrivBlocked(
+      { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
+      userData,
+      true
+    );
+    if (formCanEditPrivilegesError) {
+      return res.send(
+        new errors.UNAUTHORIZED(
+          `User not privileged to set privileges in POST/create formData handler, canEditPrivileges, url: ${url}`
+        )
+      );
+    }
   }
 
   const formElems = form.form.formElems;
@@ -104,6 +116,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     saveData.push({
       elemId: elem.elemId,
       value: formData[i].value,
+      // This is wrong, it should be set from body
       ...(elem.privileges ? { privileges: elem.privileges } : {}),
     });
     if (elem.privileges) hasElemPrivileges = true;
@@ -131,8 +144,9 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     edited: [],
     owner: form.fillerIsFormDataOwner ? userData.userId || null : form.formDataOwner || null,
     hasElemPrivileges,
-    privileges: form.formDataDefaultPrivileges || emptyFormDataPrivileges,
     data: saveData,
+    ...(body.privileges ? { privileges: body.privileges as Partial<FormDataPrivileges> } : {}),
+    ...(body.canEditPrivileges ? { canEditPrivileges: form.canEditPrivileges } : {}),
   });
   const savedFormData = await newFormData.save();
   if (!savedFormData) {

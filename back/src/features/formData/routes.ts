@@ -4,6 +4,7 @@ import { type Static, Type } from '@sinclair/typebox';
 import { formDataGet } from './handlers.GET';
 import { formDataPost } from './handlers.POST';
 import {
+  allPrivilegePropsSchema,
   basicPrivilegePropsSchema,
   formElemPublicSchema,
   transTextSchema,
@@ -48,19 +49,31 @@ export interface FormDataGetRoute extends RouteGenericInterface {
 }
 
 // POST
-export const postBodySchema = Type.Object({
+export const formDataPostBodySchema = Type.Object({
   formData: Type.Array(
     Type.Object({
       elemId: Type.String(),
       value: Type.Unknown(),
-      privileges: Type.Optional(basicPrivilegePropsSchema),
+      privileges: Type.Optional(
+        Type.Object({
+          read: Type.Optional(allPrivilegePropsSchema),
+          edit: Type.Optional(allPrivilegePropsSchema),
+        })
+      ),
     })
   ),
   getData: Type.Optional(Type.Union([Type.Boolean(), getQuerystringSchema])),
-  privileges: Type.Optional(basicPrivilegePropsSchema),
+  privileges: Type.Optional(
+    Type.Object({
+      read: Type.Optional(allPrivilegePropsSchema),
+      edit: Type.Optional(allPrivilegePropsSchema),
+      delete: Type.Optional(allPrivilegePropsSchema),
+    })
+  ),
+  canEditPrivileges: Type.Optional(basicPrivilegePropsSchema),
 });
-export type FormDataPostBody = Static<typeof postBodySchema>;
-export const postBodyReplySchema = Type.Object({
+export type FormDataPostBody = Static<typeof formDataPostBodySchema>;
+export const formDataPostBodyReplySchema = Type.Object({
   ok: Type.Boolean(),
   dataId: Type.Optional(Type.String()),
   getData: Type.Optional(getReplySchema),
@@ -73,27 +86,39 @@ export const postBodyReplySchema = Type.Object({
     })
   ),
 });
-export type FormDataPostReply = Static<typeof postBodyReplySchema>;
+export type FormDataPostReply = Static<typeof formDataPostBodyReplySchema>;
 export interface FormDataPostRoute extends RouteGenericInterface {
   readonly Body: FormDataPostBody;
   readonly Reply: FormDataPostReply | FastifyError;
 }
 
 // PUT
-export const putBodySchema = Type.Object({
+export const formDataPutBodySchema = Type.Object({
   dataId: Type.Union([Type.String(), Type.Array(Type.String())]),
   formData: Type.Array(
     Type.Object({
       elemId: Type.String(),
       value: Type.Unknown(),
-      privileges: Type.Optional(basicPrivilegePropsSchema),
+      privileges: Type.Optional(
+        Type.Object({
+          read: Type.Optional(allPrivilegePropsSchema),
+          edit: Type.Optional(allPrivilegePropsSchema),
+        })
+      ),
     })
   ),
   getData: Type.Optional(Type.Union([Type.Boolean(), getQuerystringSchema])),
-  privileges: Type.Optional(basicPrivilegePropsSchema),
+  privileges: Type.Optional(
+    Type.Object({
+      read: Type.Optional(allPrivilegePropsSchema),
+      edit: Type.Optional(allPrivilegePropsSchema),
+      delete: Type.Optional(allPrivilegePropsSchema),
+    })
+  ),
+  canEditPrivileges: Type.Optional(basicPrivilegePropsSchema),
 });
-export type FormDataPutBody = Static<typeof putBodySchema>;
-export const putBodyReplySchema = Type.Object({
+export type FormDataPutBody = Static<typeof formDataPutBodySchema>;
+export const formDataPutBodyReplySchema = Type.Object({
   ok: Type.Boolean(),
   dataId: Type.Optional(Type.Union([Type.String(), Type.Array(Type.String())])),
   getData: Type.Optional(getReplySchema),
@@ -106,7 +131,7 @@ export const putBodyReplySchema = Type.Object({
     })
   ),
 });
-export type FormDataPutReply = Static<typeof putBodyReplySchema>;
+export type FormDataPutReply = Static<typeof formDataPutBodyReplySchema>;
 export interface FormDataPutRoute extends RouteGenericInterface {
   readonly Body: FormDataPutBody;
   readonly Reply: FormDataPutReply | FastifyError;
@@ -128,8 +153,8 @@ const formDataRoute: FastifyPluginAsync = (instance) => {
     url: '/*',
     handler: formDataPost,
     schema: {
-      body: postBodySchema,
-      response: { 200: postBodyReplySchema, 400: postBodyReplySchema },
+      body: formDataPostBodySchema,
+      response: { 200: formDataPostBodyReplySchema, 400: formDataPostBodyReplySchema },
     },
   });
 
@@ -138,8 +163,8 @@ const formDataRoute: FastifyPluginAsync = (instance) => {
     url: '/*',
     handler: formDataPut,
     schema: {
-      body: putBodySchema,
-      response: { 200: putBodyReplySchema, 400: putBodyReplySchema },
+      body: formDataPutBodySchema,
+      response: { 200: formDataPutBodyReplySchema, 400: formDataPutBodyReplySchema },
     },
   });
 

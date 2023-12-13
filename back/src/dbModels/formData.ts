@@ -31,7 +31,7 @@ export interface DBFormData {
   hasElemPrivileges?: boolean;
 
   // Privileges for all elements, but these are overridden if element has specific privileges
-  privileges: FormDataPrivileges;
+  privileges?: Partial<FormDataPrivileges>;
 
   // Who or what group(s) can and cannot edit privileges
   canEditPrivileges?: BasicPrivilegeProps;

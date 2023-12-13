@@ -16,7 +16,7 @@ export const valueTypeSchema = Type.Union([
   Type.Literal('unknown'),
 ]);
 
-export const mongoIdArraySchema = Type.Array(Type.Unknown());
+export const mongoIdArraySchema = Type.Array(Type.String());
 
 export const transTextSchema = Type.Optional(
   Type.Object({
