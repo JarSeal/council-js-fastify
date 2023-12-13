@@ -40,9 +40,10 @@ const getBasicUserId = async () => {
   if (!basicUsersGroup || !basicUsersGroup.members[0]) {
     return null;
   }
-  _basicUserId = basicUsersGroup.members[0];
+  _basicUserId = basicUsersGroup.members[1];
   return _basicUserId;
 };
+const setBasicUserId = (id) => (_basicUserId = id);
 
 module.exports = {
   groupCount,
@@ -56,4 +57,5 @@ module.exports = {
   getSuperAdminId,
   getBasicUsersGroupId,
   getBasicUserId,
+  setBasicUserId,
 };

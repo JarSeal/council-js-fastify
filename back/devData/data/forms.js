@@ -69,7 +69,7 @@ const getFormConfigs = async () => {
           },
         ],
         formDataPrivileges: {
-          read: { groups: [basicUsersId] },
+          read: { groups: [] },
           edit: { groups: [basicUsersId] },
           delete: { groups: [basicUsersId] },
         },
@@ -95,7 +95,7 @@ const getFormConfigs = async () => {
                 elemId: 'testElem0',
                 value: 'Some text input data',
                 privileges: {
-                  read: { public: 'true' },
+                  read: { users: [basicUserId] },
                 },
               },
               {

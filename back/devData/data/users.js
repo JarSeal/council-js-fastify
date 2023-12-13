@@ -1,7 +1,14 @@
 const { config } = require('dotenv');
 const { hash } = require('bcrypt');
 const { createUrlTokenAndId } = require('../../dist/back/src/utils/token');
-const { userCount, password, createUsername, createEmail, createGroupId } = require('./_config');
+const {
+  userCount,
+  password,
+  createUsername,
+  createEmail,
+  createGroupId,
+  setBasicUserId,
+} = require('./_config');
 const { default: DBUserModel } = require('../../dist/back/src/dbModels/user');
 const { default: DBGroupModel } = require('../../dist/back/src/dbModels/group');
 
@@ -90,6 +97,7 @@ const createUsers = async () => {
     })
   );
   const basicUser = await basicUserObj.save();
+  setBasicUserId(basicUser._id);
   await DBGroupModel.findOneAndUpdate(
     { simpleId: 'basicUsers' },
     { $addToSet: { members: basicUser._id } }
