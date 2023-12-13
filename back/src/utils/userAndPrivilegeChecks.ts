@@ -53,7 +53,8 @@ export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
 export const isPrivBlocked = (
   privilege: AllPrivilegeProps | Partial<AllPrivilegeProps> | undefined,
   userData: UserData,
-  csrfIsGood: boolean
+  csrfIsGood: boolean,
+  owner?: Types.ObjectId
 ): null | FastifyError => {
   if (!privilege) {
     return new errors.UNAUTHORIZED('Privilege not found');
@@ -78,12 +79,20 @@ export const isPrivBlocked = (
     return new errors.SESSION_CANNOT_BE_SIGNED_IN();
   }
 
-  // From here on out, if public='true', unsigned and signed in users and sysAdmins
+  // From here on out if public='true', unsigned and signed in users and sysAdmins
   // are good to go, because if unsigned users made it this far they area good and
-  // because sysAdmins can access everything
-  if (priv.public === 'true' || priv.public === 'onlyPublic' || userData.isSysAdmin) {
+  // because sysAdmins and owners can access everything
+  if (
+    priv.public === 'true' ||
+    priv.public === 'onlyPublic' ||
+    userData.isSysAdmin ||
+    (owner && userData.userId?.equals(owner))
+  ) {
     return null;
   }
+
+  // Now check if current signed in user is in included users or groups
+  // and not in excluded users and groups
 
   // Check included users (n + k + m^2)
   if (userData.userId && priv.users) {
