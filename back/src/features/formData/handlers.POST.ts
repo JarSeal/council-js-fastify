@@ -7,10 +7,13 @@ import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
 import { getUserData, isPrivBlocked, combinePrivileges } from '../../utils/userAndPrivilegeChecks';
-import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
+import {
+  convertFormDataPrivilegesForSave,
+  convertPrivilegeIdStringsToObjectIds,
+  getApiPathFromReqUrl,
+} from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
-import type { FormDataPrivileges } from '../../dbModels/_modelTypePartials';
 
 // Create (POST)
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -113,13 +116,13 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   for (let i = 0; i < formData.length; i++) {
     const elem = formElems.find((elem) => elem.elemId === formData[i].elemId);
     if (!elem || elem.doNotSave) continue;
+    const elemPrivs = convertFormDataPrivilegesForSave(formData[i].privileges);
     saveData.push({
       elemId: elem.elemId,
       value: formData[i].value,
-      // This is wrong, it should be set from body
-      ...(elem.privileges ? { privileges: elem.privileges } : {}),
+      ...(elemPrivs ? { privileges: elemPrivs } : {}),
     });
-    if (elem.privileges) hasElemPrivileges = true;
+    if (formData[i].privileges || elem.privileges) hasElemPrivileges = true;
   }
 
   if (!saveData.length) {
@@ -133,6 +136,10 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     });
   }
 
+  // Convert privileges and canEditPrivileges to ObjectIds
+  const mainPrivs = convertFormDataPrivilegesForSave(body.privileges);
+  const canEditPrivs = convertPrivilegeIdStringsToObjectIds(body.canEditPrivileges);
+
   // Create formData object and save
   const newFormData = new DBFormDataModel<DBFormData>({
     formId: form.simpleId,
@@ -145,8 +152,8 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     owner: form.fillerIsFormDataOwner ? userData.userId || null : form.formDataOwner || null,
     hasElemPrivileges,
     data: saveData,
-    ...(body.privileges ? { privileges: body.privileges as Partial<FormDataPrivileges> } : {}),
-    ...(body.canEditPrivileges ? { canEditPrivileges: form.canEditPrivileges } : {}),
+    ...(mainPrivs ? { privileges: mainPrivs } : {}),
+    ...(canEditPrivs ? { canEditPrivileges: canEditPrivs } : {}),
   });
   const savedFormData = await newFormData.save();
   if (!savedFormData) {

@@ -117,9 +117,12 @@ export const isPrivBlocked = (
   return new errors.FORBIDDEN('No privileges');
 };
 
-const checkExcludedUsers = (userData: UserData, excludedUsers: BasicPrivilegeProps['users']) => {
+const checkExcludedUsers = (
+  userData: UserData,
+  excludedUsers: BasicPrivilegeProps['excludeUsers']
+) => {
   // Check excluded users
-  if (userData.userId) {
+  if (userData.userId && excludedUsers) {
     for (let i = 0; i < excludedUsers.length; i++) {
       if (userData.userId.equals(excludedUsers[i] as Types.ObjectId)) {
         return new errors.FORBIDDEN('User in excluded users');
@@ -134,7 +137,7 @@ const checkExcludedGroups = (
   excludedGroups: BasicPrivilegeProps['excludeGroups']
 ) => {
   // Check excluded groups (compare two arrays and see if none match)
-  if (userData.userGroups.length && excludedGroups.length) {
+  if (userData.userGroups.length && excludedGroups) {
     for (let i = 0; i < excludedGroups.length; i++) {
       for (let j = 0; j < userData.userGroups.length; j++) {
         if (userData.userGroups[j].equals(excludedGroups[i] as Types.ObjectId)) {

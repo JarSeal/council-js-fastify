@@ -43,10 +43,10 @@ export type FormDataValueType =
 export type PublicPrivilegeProp = 'true' | 'false' | 'onlyPublic';
 
 export type BasicPrivilegeProps = {
-  users: (Types.ObjectId | { id: string; simpleId: string })[];
-  groups: (Types.ObjectId | { id: string; simpleId: string; name: string })[];
-  excludeUsers: (Types.ObjectId | { id: string; simpleId: string })[];
-  excludeGroups: (Types.ObjectId | { id: string; simpleId: string; name: string })[];
+  users?: (Types.ObjectId | { id: string; simpleId: string })[];
+  groups?: (Types.ObjectId | { id: string; simpleId: string; name: string })[];
+  excludeUsers?: (Types.ObjectId | { id: string; simpleId: string })[];
+  excludeGroups?: (Types.ObjectId | { id: string; simpleId: string; name: string })[];
 };
 
 export type AllPrivilegeProps = BasicPrivilegeProps & {
@@ -54,11 +54,27 @@ export type AllPrivilegeProps = BasicPrivilegeProps & {
   requireCsrfHeader: boolean;
 };
 
+export type AllPrivilegePropsAsStringIds = {
+  public?: PublicPrivilegeProp;
+  requireCsrfHeader?: boolean;
+  users?: string[];
+  groups?: string[];
+  excludeUsers?: string[];
+  excludeGroups?: string[];
+};
+
 export type FormDataPrivileges = {
-  read: AllPrivilegeProps;
-  create: AllPrivilegeProps;
-  edit: AllPrivilegeProps;
-  delete: AllPrivilegeProps;
+  read?: Partial<AllPrivilegeProps>;
+  create?: Partial<AllPrivilegeProps>;
+  edit?: Partial<AllPrivilegeProps>;
+  delete?: Partial<AllPrivilegeProps>;
+};
+
+export type FormDataPrivilegesAsStringIds = {
+  read?: Partial<AllPrivilegePropsAsStringIds>;
+  create?: Partial<AllPrivilegePropsAsStringIds>;
+  edit?: Partial<AllPrivilegePropsAsStringIds>;
+  delete?: Partial<AllPrivilegePropsAsStringIds>;
 };
 
 export type FormElem = {
