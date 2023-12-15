@@ -160,7 +160,26 @@ describe('userAndPrivilegeChecks', () => {
     expect(privBlocked).toBe(null);
   });
 
-  // @TODO: should check privilege: owner
+  it('should check privilege: owner', async () => {
+    // owner check
+    // ***********************************
+    const userId = await createUser('myuser');
+    const owner = userId;
+    const req = {
+      headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
+      session: {
+        isSignedIn: true,
+        username: 'myuser',
+        userId,
+        agentId: '',
+        cookie: {},
+      },
+    } as unknown as FastifyRequest;
+    const userData = await getUserData(req);
+    const privilege = { public: 'false', excludeUsers: [userId] } as Partial<AllPrivilegeProps>;
+    const privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req), owner);
+    expect(privBlocked).toBe(null);
+  });
 
   it('should check included users', async () => {
     const username = 'myusername';

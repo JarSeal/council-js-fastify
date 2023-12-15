@@ -41,7 +41,8 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   const createFormDataPrivError = isPrivBlocked(
     formDataDefaultCreatePrivileges,
     userData,
-    csrfIsGood
+    csrfIsGood,
+    form.owner
   );
   if (createFormDataPrivError) {
     return res.send(
@@ -56,7 +57,8 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     const formCanEditPrivilegesError = isPrivBlocked(
       { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
       userData,
-      true
+      true,
+      form.owner
     );
     if (formCanEditPrivilegesError) {
       return res.send(
@@ -93,7 +95,12 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
         formDataDefaultCreatePrivileges,
         elem.privileges?.create || {}
       );
-      const elemFormDataPrivError = isPrivBlocked(elemDataCreatePrivileges, userData, csrfIsGood);
+      const elemFormDataPrivError = isPrivBlocked(
+        elemDataCreatePrivileges,
+        userData,
+        csrfIsGood,
+        form.owner
+      );
       if (elemFormDataPrivError) {
         return res.send(
           new errors.UNAUTHORIZED(

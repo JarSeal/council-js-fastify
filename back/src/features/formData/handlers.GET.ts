@@ -94,6 +94,7 @@ const checkAndSetReadData = (
     editedBy?: string | null;
   } | null,
   elemId: string | string[] | undefined,
+  formOwner: Types.ObjectId | null,
   hasElemPrivileges?: boolean,
   includePrivs?: boolean
 ): Data[] => {
@@ -109,7 +110,7 @@ const checkAndSetReadData = (
     let privError = null;
     if (hasElemPrivileges && elem.privileges?.read) {
       const elemPrivileges = combinePrivileges(mainPrivileges.read, elem.privileges.read);
-      privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood);
+      privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood, formOwner);
     }
     // Data can be accessed if there is not a mainPrivError or if there is,
     // the elem has overriding elem privileges that does not have an error
@@ -183,7 +184,8 @@ export const getFormData = async (
       formElems: form.form.formElems
         .filter(
           (elem) =>
-            !elem.privileges?.read || !isPrivBlocked(elem.privileges?.read, userData, csrfIsGood)
+            !elem.privileges?.read ||
+            !isPrivBlocked(elem.privileges?.read, userData, csrfIsGood, form.owner)
         )
         // White list the formElem props to be returned with the form and normalize orderNr
         .map((elem, index) => ({
@@ -354,7 +356,8 @@ export const getFormData = async (
               }
             ),
             userData,
-            csrfIsGood
+            csrfIsGood,
+            form.owner
           );
         }
         if (includePrivs) {
@@ -373,6 +376,7 @@ export const getFormData = async (
           includeLabels === 'embed' ? labels : null,
           includeMeta === 'embed' ? dataMetaData : null,
           elemId,
+          form.owner,
           fd.hasElemPrivileges,
           includePrivs
         );
@@ -409,7 +413,7 @@ export const getFormData = async (
         create: { ...emptyPrivilege },
         delete: { ...emptyPrivilege },
       };
-      const mainPrivError = isPrivBlocked(mainPrivileges.read, userData, csrfIsGood);
+      const mainPrivError = isPrivBlocked(mainPrivileges.read, userData, csrfIsGood, form.owner);
       const rawData = formData?.data || [];
       const formDataId = formData ? formData._id?.toString() : null;
       let dataMetaData = null;
@@ -450,7 +454,8 @@ export const getFormData = async (
             }
           ),
           userData,
-          csrfIsGood
+          csrfIsGood,
+          form.owner
         );
       }
       const dataSet = checkAndSetReadData(
@@ -463,6 +468,7 @@ export const getFormData = async (
         includeLabels === 'embed' ? labels : null,
         includeMeta === 'embed' ? dataMetaData : null,
         elemId,
+        form.owner,
         formData?.hasElemPrivileges,
         includePrivs
       );

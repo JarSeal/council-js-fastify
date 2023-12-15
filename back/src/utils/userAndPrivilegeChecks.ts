@@ -54,7 +54,7 @@ export const isPrivBlocked = (
   privilege: AllPrivilegeProps | Partial<AllPrivilegeProps> | undefined,
   userData: UserData,
   csrfIsGood: boolean,
-  owner?: Types.ObjectId
+  owner?: Types.ObjectId | null
 ): null | FastifyError => {
   if (!privilege) {
     return new errors.UNAUTHORIZED('Privilege not found');

@@ -40,7 +40,12 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     privilege?.privilegeAccess || {},
     form.formDataDefaultPrivileges?.edit || {}
   );
-  const editFormDataPrivError = isPrivBlocked(formDataDefaultEditPrivileges, userData, csrfIsGood);
+  const editFormDataPrivError = isPrivBlocked(
+    formDataDefaultEditPrivileges,
+    userData,
+    csrfIsGood,
+    form.owner
+  );
   if (editFormDataPrivError) {
     return res.send(
       new errors.UNAUTHORIZED(
