@@ -1,8 +1,12 @@
 import type { FastifyError, FastifyRequest } from 'fastify';
-import { Types as MongooseTypes, type Types } from 'mongoose';
+import { type Types } from 'mongoose';
 
 import DBGroupModel from '../dbModels/group';
-import type { AllPrivilegeProps, BasicPrivilegeProps } from '../dbModels/_modelTypePartials';
+import type {
+  AllPrivilegeProps,
+  BasicPrivilegeProps,
+  UserId,
+} from '../dbModels/_modelTypePartials';
 import { errors } from '../core/errors';
 
 export const emptyPrivilege: AllPrivilegeProps = {
@@ -54,7 +58,7 @@ export const isPrivBlocked = (
   privilege: AllPrivilegeProps | Partial<AllPrivilegeProps> | undefined,
   userData: UserData,
   csrfIsGood: boolean,
-  owner?: Types.ObjectId | null
+  owner?: UserId
 ): null | FastifyError => {
   if (!privilege) {
     return new errors.UNAUTHORIZED('Privilege not found');
@@ -82,11 +86,12 @@ export const isPrivBlocked = (
   // From here on out if public='true', unsigned and signed in users and sysAdmins
   // are good to go, because if unsigned users made it this far they area good and
   // because sysAdmins and owners can access everything
+  const ownerId = owner && '_id' in owner ? owner._id : owner;
   if (
     priv.public === 'true' ||
     priv.public === 'onlyPublic' ||
     userData.isSysAdmin ||
-    (owner && userData.userId?.equals(owner))
+    (ownerId && userData.userId?.equals(ownerId))
   ) {
     return null;
   }
@@ -231,32 +236,28 @@ export const combinePrivileges = (
     if (priv?.requireCsrfHeader !== undefined) combined.requireCsrfHeader = priv.requireCsrfHeader;
     if (priv?.users !== undefined) {
       if (priv.users.length && 'simpleId' in priv.users[0]) {
-        combined.users = priv.users.map((user) => new MongooseTypes.ObjectId(user.id));
+        combined.users = priv.users.map((user) => user._id);
       } else {
         combined.users = priv.users;
       }
     }
     if (priv?.groups !== undefined) {
       if (priv.groups.length && 'simpleId' in priv.groups[0]) {
-        combined.groups = priv.groups.map((group) => new MongooseTypes.ObjectId(group.id));
+        combined.groups = priv.groups.map((group) => group._id);
       } else {
         combined.groups = priv.groups;
       }
     }
     if (priv?.excludeUsers !== undefined) {
       if (priv.excludeUsers.length && 'simpleId' in priv.excludeUsers[0]) {
-        combined.excludeUsers = priv.excludeUsers.map(
-          (user) => new MongooseTypes.ObjectId(user.id)
-        );
+        combined.excludeUsers = priv.excludeUsers.map((user) => user._id);
       } else {
         combined.excludeUsers = priv.excludeUsers;
       }
     }
     if (priv?.excludeGroups !== undefined) {
       if (priv.excludeGroups.length && 'simpleId' in priv.excludeGroups[0]) {
-        combined.excludeGroups = priv.excludeGroups.map(
-          (group) => new MongooseTypes.ObjectId(group.id)
-        );
+        combined.excludeGroups = priv.excludeGroups.map((group) => group._id);
       } else {
         combined.excludeGroups = priv.excludeGroups;
       }

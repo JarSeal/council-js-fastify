@@ -14,6 +14,7 @@ import type {
   FormDataPrivileges,
   FormElem,
   TransText,
+  UserId,
 } from './_modelTypePartials';
 
 export interface DBForm {
@@ -28,12 +29,12 @@ export interface DBForm {
   name: string;
   description: string;
   created: {
-    user: Types.ObjectId | null;
+    user: UserId;
     date: Date;
   };
   edited: Edited;
   systemDocument: boolean;
-  owner: Types.ObjectId | null;
+  owner: UserId;
 
   // API url
   url: string;
@@ -59,7 +60,7 @@ export interface DBForm {
 
   // Form data owner
   // This will only affect formData forms
-  formDataOwner?: Types.ObjectId | null;
+  formDataOwner?: UserId;
 
   // Whether the formData owner is the one who fills the form (formDataOwner must be undefind or null)
   // This will only affect formData forms

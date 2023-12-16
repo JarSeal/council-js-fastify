@@ -6,7 +6,7 @@ import {
   dateDBSchema,
   formDataPrivilegesSchema,
 } from './_schemaPartials';
-import type { BasicPrivilegeProps, Edited, FormDataPrivileges } from './_modelTypePartials';
+import type { BasicPrivilegeProps, Edited, FormDataPrivileges, UserId } from './_modelTypePartials';
 
 export interface DBFormData {
   // Mongo ID
@@ -21,11 +21,11 @@ export interface DBFormData {
 
   // Logs and owner
   created: {
-    user: Types.ObjectId | { simpleId: string } | null;
+    user: UserId;
     date: Date;
   };
   edited: Edited;
-  owner: Types.ObjectId | { simpleId: string } | null;
+  owner: UserId;
 
   // Whether elements' have specific privileges that need to be checked (this is for optimisation)
   hasElemPrivileges?: boolean;

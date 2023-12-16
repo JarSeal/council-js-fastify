@@ -5,7 +5,7 @@ import type { FormDataGetRoute, FormDataGetReply, GetQuerystring } from './route
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
-import type { AllPrivilegeProps, FormElem } from '../../dbModels/_modelTypePartials';
+import type { AllPrivilegeProps, FormElem, UserId } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
 import {
@@ -94,7 +94,7 @@ const checkAndSetReadData = (
     editedBy?: string | null;
   } | null,
   elemId: string | string[] | undefined,
-  formOwner: Types.ObjectId | null,
+  formDataOwner: UserId,
   hasElemPrivileges?: boolean,
   includePrivs?: boolean
 ): Data[] => {
@@ -110,7 +110,7 @@ const checkAndSetReadData = (
     let privError = null;
     if (hasElemPrivileges && elem.privileges?.read) {
       const elemPrivileges = combinePrivileges(mainPrivileges.read, elem.privileges.read);
-      privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood, formOwner);
+      privError = isPrivBlocked(elemPrivileges, userData, csrfIsGood, formDataOwner);
     }
     // Data can be accessed if there is not a mainPrivError or if there is,
     // the elem has overriding elem privileges that does not have an error
@@ -312,9 +312,9 @@ export const getFormData = async (
             form.formDataDefaultPrivileges?.read || {},
             fd.privileges?.read || {}
           ),
-          edit: { ...emptyPrivilege },
-          create: { ...emptyPrivilege },
-          delete: { ...emptyPrivilege },
+          edit: emptyPrivilege,
+          create: emptyPrivilege,
+          delete: emptyPrivilege,
         };
         const rawData = fd.data || [];
         const dataId = fd._id.toString();
@@ -357,7 +357,9 @@ export const getFormData = async (
             ),
             userData,
             csrfIsGood,
-            form.owner
+            fd.owner && userData.userId && userData.userId.equals(fd.owner._id)
+              ? fd.owner
+              : form.owner
           );
         }
         if (includePrivs) {
@@ -376,7 +378,9 @@ export const getFormData = async (
           includeLabels === 'embed' ? labels : null,
           includeMeta === 'embed' ? dataMetaData : null,
           elemId,
-          form.owner,
+          fd.owner && userData.userId && userData.userId.equals(fd.owner._id)
+            ? fd.owner
+            : form.owner,
           fd.hasElemPrivileges,
           includePrivs
         );
@@ -404,16 +408,24 @@ export const getFormData = async (
         returnObject['$dataPrivileges'] = privs;
       }
     } else {
+      // Check single dataSet's privileges
       const mainPrivileges = {
         read: combinePrivileges(
           form.formDataDefaultPrivileges?.read || {},
           formData?.privileges?.read || {}
         ),
-        edit: { ...emptyPrivilege },
-        create: { ...emptyPrivilege },
-        delete: { ...emptyPrivilege },
+        edit: emptyPrivilege,
+        create: emptyPrivilege,
+        delete: emptyPrivilege,
       };
-      const mainPrivError = isPrivBlocked(mainPrivileges.read, userData, csrfIsGood, form.owner);
+      const mainPrivError = isPrivBlocked(
+        mainPrivileges.read,
+        userData,
+        csrfIsGood,
+        formData?.owner && userData.userId && userData.userId.equals(formData.owner._id)
+          ? formData.owner
+          : form.owner
+      );
       const rawData = formData?.data || [];
       const formDataId = formData ? formData._id?.toString() : null;
       let dataMetaData = null;
@@ -455,7 +467,7 @@ export const getFormData = async (
           ),
           userData,
           csrfIsGood,
-          form.owner
+          form.owner || null
         );
       }
       const dataSet = checkAndSetReadData(
@@ -468,7 +480,9 @@ export const getFormData = async (
         includeLabels === 'embed' ? labels : null,
         includeMeta === 'embed' ? dataMetaData : null,
         elemId,
-        form.owner,
+        formData?.owner && userData.userId && userData.userId.equals(formData.owner._id)
+          ? formData.owner
+          : form.owner,
         formData?.hasElemPrivileges,
         includePrivs
       );
