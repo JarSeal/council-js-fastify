@@ -67,7 +67,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   // Get user data
   const userData = await getUserData(req);
 
-  // Get data and metadata
+  // Get form and/or formData and possible metadata
   const returnObject = await getFormData(req.query, form, userData, csrfIsGood);
 
   return res.send(returnObject);

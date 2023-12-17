@@ -1,4 +1,5 @@
 import type { RouteHandler } from 'fastify';
+import { type Types, isObjectIdOrHexString } from 'mongoose';
 
 import type { FormDataPutReply, FormDataPutRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
@@ -59,7 +60,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   const dataId = body.dataId;
 
   if ((Array.isArray(dataId) && dataId.length > 1) || dataId == 'all') {
-    // Multiple dataSet edit
+    // Multiple (M) dataSet edit
     // TODO: get data with multiple dataIds (could be "all")
     return res.send({
       ok: false,
@@ -71,7 +72,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     if (Array.isArray(dataId)) id = dataId[0];
 
     // (S) Get old saved formData
-    const dataSet = await DBFormDataModel.findOneAndUpdate({
+    const dataSet = await DBFormDataModel.findOne({
       $and: [
         { formId: form.simpleId },
         { _id: id },
@@ -97,7 +98,18 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
           elem.privileges?.edit || {},
           savedDBElem.privileges?.edit || {}
         );
-        const elemFormDataPrivError = isPrivBlocked(elemDataEditPrivileges, userData, csrfIsGood);
+        const formDataOwner =
+          isObjectIdOrHexString(dataSet.owner) &&
+          userData.userId &&
+          userData.userId.equals(dataSet.owner as Types.ObjectId)
+            ? dataSet.owner
+            : form.owner;
+        const elemFormDataPrivError = isPrivBlocked(
+          elemDataEditPrivileges,
+          userData,
+          csrfIsGood,
+          formDataOwner
+        );
         if (elemFormDataPrivError) {
           return res.send(
             new errors.UNAUTHORIZED(
@@ -117,8 +129,24 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     // (S) Check for possible privileges changes and save them
     // let hasChangedElemPrivileges = false;
     // if () {
-
     // }
+    // Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
+    if (body.privileges || body.canEditPrivileges || body.formData.find((fd) => fd.privileges)) {
+      const formCanEditPrivilegesError = isPrivBlocked(
+        // @TODO: combine these privileges with the dataSet's canEditPrivileges
+        { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
+        userData,
+        true,
+        form.owner
+      );
+      if (formCanEditPrivilegesError) {
+        return res.send(
+          new errors.UNAUTHORIZED(
+            `User not privileged to set privileges in POST/create formData handler, canEditPrivileges, url: ${url}`
+          )
+        );
+      }
+    }
   }
 
   // Create formData.data
