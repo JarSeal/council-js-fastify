@@ -116,6 +116,7 @@ export const formDataPutBodySchema = Type.Object({
     })
   ),
   canEditPrivileges: Type.Optional(basicPrivilegePropsSchema),
+  // @TODO: add owner changing (owner: new owner)
 });
 export type FormDataPutBody = Static<typeof formDataPutBodySchema>;
 export const formDataPutBodyReplySchema = Type.Object({

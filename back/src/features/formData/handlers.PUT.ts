@@ -3,7 +3,7 @@ import { type Types, isObjectIdOrHexString } from 'mongoose';
 
 import type { FormDataPutReply, FormDataPutRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
-import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
+import DBFormDataModel from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
@@ -12,11 +12,9 @@ import {
   isPrivBlocked,
   combinePrivileges,
   dataPrivilegesQuery,
-  emptyFormDataPrivileges,
 } from '../../utils/userAndPrivilegeChecks';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
-import { getFormData } from './handlers.GET';
 
 // Edit (PUT)
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
@@ -87,6 +85,13 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       );
     }
 
+    const formDataOwner =
+      isObjectIdOrHexString(dataSet.owner) &&
+      userData.userId &&
+      userData.userId.equals(dataSet.owner as Types.ObjectId)
+        ? dataSet.owner
+        : form.owner;
+
     // (S) Check elem privileges
     for (let i = 0; i < formData.length; i++) {
       const elem = formElems.find((formElem) => formElem.elemId === formData[i].elemId);
@@ -98,12 +103,6 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
           elem.privileges?.edit || {},
           savedDBElem.privileges?.edit || {}
         );
-        const formDataOwner =
-          isObjectIdOrHexString(dataSet.owner) &&
-          userData.userId &&
-          userData.userId.equals(dataSet.owner as Types.ObjectId)
-            ? dataSet.owner
-            : form.owner;
         const elemFormDataPrivError = isPrivBlocked(
           elemDataEditPrivileges,
           userData,
@@ -126,90 +125,72 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       return res.status(400).send({ ok: false, error: validatorError });
     }
 
-    // (S) Check for possible privileges changes and save them
-    // let hasChangedElemPrivileges = false;
-    // if () {
-    // }
-    // Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
+    // (S) Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
     if (body.privileges || body.canEditPrivileges || body.formData.find((fd) => fd.privileges)) {
       const formCanEditPrivilegesError = isPrivBlocked(
-        // @TODO: combine these privileges with the dataSet's canEditPrivileges
-        { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
+        combinePrivileges(
+          { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
+          {
+            ...(dataSet.canEditPrivileges
+              ? { ...dataSet.canEditPrivileges, public: 'false', requireCsrfHeader: false }
+              : {}),
+          }
+        ),
         userData,
         true,
-        form.owner
+        formDataOwner
       );
       if (formCanEditPrivilegesError) {
         return res.send(
           new errors.UNAUTHORIZED(
-            `User not privileged to set privileges in POST/create formData handler, canEditPrivileges, url: ${url}`
+            `User not privileged to set privileges in PUT/edit formData handler, canEditPrivileges, url: ${url}`
           )
         );
       }
     }
-  }
 
-  // Create formData.data
-  const saveData = [];
-  let hasElemPrivileges = false;
-  for (let i = 0; i < formData.length; i++) {
-    const elem = formElems.find((elem) => elem.elemId === formData[i].elemId);
-    if (!elem || elem.doNotSave) continue;
-    saveData.push({
-      elemId: elem.elemId,
-      value: formData[i].value,
-      ...(elem.privileges ? { privileges: elem.privileges } : {}),
-    });
-    if (elem.privileges) hasElemPrivileges = true;
-  }
-
-  if (!saveData.length) {
-    return res.status(400).send({
-      ok: false,
-      error: {
-        errorId: 'editFormDataEmpty',
-        message:
-          'Form data had no data to save, either because of lacking privileges or no saveable data was sent.',
-      },
-    });
-  }
-
-  // REFACTOR (to update): Create formData object and save
-  const newFormData = new DBFormDataModel<DBFormData>({
-    formId: form.simpleId,
-    url,
-    created: {
-      user: userData.userId || null,
-      date: new Date(),
-    },
-    edited: [],
-    owner: form.fillerIsFormDataOwner ? userData.userId || null : form.formDataOwner || null,
-    hasElemPrivileges,
-    privileges: form.formDataDefaultPrivileges || emptyFormDataPrivileges,
-    data: saveData,
-  });
-  const savedFormData = await newFormData.save();
-  if (!savedFormData) {
-    return res.send(
-      new errors.DB_GENERAL_ERROR(
-        `could not PUT/edit new formData for formId: '${form.simpleId}', url: ${url}`
-      )
-    );
-  }
-
-  const newDataId = savedFormData._id.toString();
-  const returnResponse: FormDataPutReply = { ok: true, dataId: newDataId };
-
-  if (body.getData) {
-    let params;
-    if (body.getData === true) {
-      params = { dataId: [newDataId] };
-    } else {
-      params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
+    // (S) Create formData.data
+    const updatedData = [];
+    let hasElemPrivileges = false;
+    for (let i = 0; i < formElems.length; i++) {
+      const newElem = formData.find((elem) => elem.elemId === formElems[i].elemId);
+      if (newElem) {
+        updatedData.push(newElem);
+        if (newElem.privileges) hasElemPrivileges = true;
+        continue;
+      }
+      const oldElem = dataSet.data.find((elem) => elem.elemId === formElems[i].elemId);
+      if (oldElem) {
+        updatedData.push(oldElem);
+        if (oldElem.privileges) hasElemPrivileges = true;
+      }
     }
-    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
-    returnResponse.getData = getDataResult;
+
+    // (S) Create updated formData dataSet
+    const updatedDataSet = {
+      edited: [], // @TODO: add edited updater
+      // @TODO: add owner changing possibility
+      hasElemPrivileges,
+      ...(body.privileges ? { privileges: body.privileges } : {}),
+      data: updatedData,
+    };
+
+    updatedDataSet;
+    // const updatedDoc =
+    const returnResponse: FormDataPutReply = { ok: true };
+    return res.send(returnResponse);
   }
 
-  return res.send(returnResponse);
+  // if (body.getData) {
+  //   let params;
+  //   if (body.getData === true) {
+  //     params = { dataId: [newDataId] };
+  //   } else {
+  //     params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
+  //   }
+  //   const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+  //   returnResponse.getData = getDataResult;
+  // }
+
+  return res.send({ ok: false });
 };
