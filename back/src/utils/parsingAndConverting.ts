@@ -407,7 +407,7 @@ export const createNewEditedArray = (
   return newArray;
 };
 
-export const getUserId = (userId: UserId) => {
+export const getUserId = (userId?: UserId) => {
   if (!userId) return null;
   if ('_id' in userId) return userId._id;
   if (isObjectIdOrHexString(userId)) return userId;
@@ -416,8 +416,8 @@ export const getUserId = (userId: UserId) => {
 
 export const getOwnerChangingObject = (curOwner: UserId, userData: UserData, newOwner?: string) => {
   const curOwnerId = getUserId(curOwner);
-  if (!newOwner || !curOwnerId || !userData.userId) return {};
-  if (curOwnerId.equals(userData.userId) || userData.isSysAdmin) {
+  if (!newOwner || !userData.userId || (!curOwnerId && !userData.isSysAdmin)) return {};
+  if ((curOwnerId && curOwnerId.equals(userData.userId)) || userData.isSysAdmin) {
     return { owner: new Types.ObjectId(newOwner) };
   }
   return {};

@@ -7,6 +7,8 @@ import {
   convertPrivilegeIdStringsToObjectIds,
   createNewEditedArray,
   getApiPathFromReqUrl,
+  getOwnerChangingObject,
+  getUserId,
   parseFormDataSortStringFromQueryString,
   parseSearchQuery,
 } from './parsingAndConverting';
@@ -912,6 +914,38 @@ describe('parsingAndConverting', () => {
     expect(newArray2[2]).toStrictEqual({ user: userId1, date: date1 });
   });
 
-  // @TODO: getUserId
-  // @TODO: getOwnerChangingObject
+  it('getUserId', () => {
+    const user1 = null;
+    const user2 = new Types.ObjectId();
+    const user3 = { simpleId: 'myusername', _id: new Types.ObjectId() };
+    const userId1 = getUserId(user1);
+    const userId2 = getUserId(user2);
+    const userId3 = getUserId(user3);
+    expect(userId1).toBe(null);
+    expect(userId2).toBe(user2);
+    expect(userId3).toBe(user3._id);
+    expect(getUserId()).toBe(null);
+  });
+
+  it('getOwnerChangingObject', () => {
+    const curOwner1 = null;
+    const curOwner2 = new Types.ObjectId();
+    const userData1 = {} as UserData;
+    const userData2 = { userId: curOwner2 } as UserData;
+    const userData3 = { userId: new Types.ObjectId(), isSysAdmin: true } as UserData;
+    const newOwner = new Types.ObjectId().toString();
+
+    const obj1 = getOwnerChangingObject(curOwner1, userData2, newOwner);
+    expect(obj1).toStrictEqual({});
+    const obj2 = getOwnerChangingObject(curOwner2, userData1, newOwner);
+    expect(obj2).toStrictEqual({});
+    const obj3 = getOwnerChangingObject(curOwner2, userData2);
+    expect(obj3).toStrictEqual({});
+    const obj4 = getOwnerChangingObject(curOwner2, userData2, newOwner);
+    expect(obj4).toStrictEqual({ owner: new Types.ObjectId(newOwner) });
+    const obj5 = getOwnerChangingObject(curOwner1, userData3, newOwner);
+    expect(obj5).toStrictEqual({ owner: new Types.ObjectId(newOwner) });
+    const obj6 = getOwnerChangingObject(curOwner2, userData3, newOwner);
+    expect(obj6).toStrictEqual({ owner: new Types.ObjectId(newOwner) });
+  });
 });
