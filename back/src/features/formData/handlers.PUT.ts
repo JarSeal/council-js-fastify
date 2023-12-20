@@ -13,7 +13,11 @@ import {
   combinePrivileges,
   dataPrivilegesQuery,
 } from '../../utils/userAndPrivilegeChecks';
-import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
+import {
+  createNewEditedArray,
+  getApiPathFromReqUrl,
+  getOwnerChangingObject,
+} from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
 
 // Edit (PUT)
@@ -167,9 +171,16 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     }
 
     // (S) Create updated formData dataSet
+    let ownerChangingObject = {};
+    if (body.owner) {
+      ownerChangingObject = getOwnerChangingObject(dataSet.owner, userData, body.owner);
+      if (!Object.keys(ownerChangingObject).length) {
+        ownerChangingObject = getOwnerChangingObject(form.owner, userData, body.owner);
+      }
+    }
     const updatedDataSet = {
-      edited: [], // @TODO: add edited updater
-      // @TODO: add owner changing possibility
+      edited: createNewEditedArray(dataSet.edited, userData?.userId, dataSet.editedHistoryCount),
+      ...ownerChangingObject,
       hasElemPrivileges,
       ...(body.privileges ? { privileges: body.privileges } : {}),
       data: updatedData,

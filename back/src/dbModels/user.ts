@@ -29,7 +29,8 @@ export interface DBUser {
     publicForm: boolean;
     date: Date;
   };
-  edited: Edited;
+  edited: Edited[];
+  editedHistoryCount?: number;
 
   // Only the super admin has a system document
   systemDocument?: boolean;
@@ -93,6 +94,7 @@ const userSchema = new Schema<DBUser>({
       date: dateDBSchema,
     },
   ],
+  editedHistoryCount: { type: Number },
   systemDocument: { type: Boolean, default: false },
   security: {
     forcePassChange: { type: Boolean, required: true, default: false },

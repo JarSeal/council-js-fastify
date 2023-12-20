@@ -4,9 +4,9 @@ export type UserId = Types.ObjectId | { simpleId: string; _id: Types.ObjectId } 
 export type GroupId = Types.ObjectId | { simpleId: string; name: string; _id: Types.ObjectId };
 
 export type Edited = {
-  user: NonNullable<UserId>;
+  user: UserId;
   date: Date;
-}[];
+};
 
 export type Token = {
   token?: string | null;

@@ -71,6 +71,7 @@ export const formDataPostBodySchema = Type.Object({
     })
   ),
   canEditPrivileges: Type.Optional(basicPrivilegePropsSchema),
+  owner: Type.Optional(Type.String()),
 });
 export type FormDataPostBody = Static<typeof formDataPostBodySchema>;
 export const formDataPostBodyReplySchema = Type.Object({
@@ -116,7 +117,7 @@ export const formDataPutBodySchema = Type.Object({
     })
   ),
   canEditPrivileges: Type.Optional(basicPrivilegePropsSchema),
-  // @TODO: add owner changing (owner: new owner)
+  owner: Type.Optional(Type.String()),
 });
 export type FormDataPutBody = Static<typeof formDataPutBodySchema>;
 export const formDataPutBodyReplySchema = Type.Object({

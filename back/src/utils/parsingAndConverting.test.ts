@@ -3,6 +3,9 @@ import type { FastifyInstance } from 'fastify';
 
 import type { DBForm } from '../dbModels/form';
 import {
+  convertFormDataPrivilegesForSave,
+  convertPrivilegeIdStringsToObjectIds,
+  createNewEditedArray,
   getApiPathFromReqUrl,
   parseFormDataSortStringFromQueryString,
   parseSearchQuery,
@@ -10,6 +13,7 @@ import {
 import type { UserData } from './userAndPrivilegeChecks';
 import initApp from '../core/app';
 import { createUser } from '../test/utils';
+import type { PublicPrivilegeProp } from '../dbModels/_modelTypePartials';
 
 describe('parsingAndConverting', () => {
   it('getApiPathFromReqUrl', () => {
@@ -767,6 +771,147 @@ describe('parsingAndConverting', () => {
     await mongoose.connection.close();
   });
 
-  // @TODO: convertFormDataPrivilegesForSave
-  // @TODO: convertPrivilegeIdStringsToObjectIds
+  it('convertFormDataPrivilegesForSave', () => {
+    let converted = convertFormDataPrivilegesForSave();
+    expect(converted).toBe(null);
+
+    const userId1 = new Types.ObjectId();
+    const userId2 = new Types.ObjectId();
+    const userId3 = new Types.ObjectId();
+
+    const privs1 = {
+      read: {
+        public: 'onlyPublic' as PublicPrivilegeProp,
+        requireCsrfHeader: true,
+        users: [userId1.toString(), userId2.toString()],
+        excludeUsers: [userId3.toString()],
+      },
+    };
+    converted = convertFormDataPrivilegesForSave(privs1);
+    expect(converted).toStrictEqual({
+      read: {
+        public: 'onlyPublic',
+        requireCsrfHeader: true,
+        users: [userId1, userId2],
+        excludeUsers: [userId3],
+      },
+    });
+
+    const privs2 = {
+      edit: {
+        public: 'false' as PublicPrivilegeProp,
+        requireCsrfHeader: true,
+        users: [userId1.toString(), userId2.toString()],
+        excludeUsers: [userId3.toString()],
+      },
+      create: {
+        public: 'false' as PublicPrivilegeProp,
+        requireCsrfHeader: true,
+        users: [userId1.toString()],
+      },
+      delete: {
+        public: 'false' as PublicPrivilegeProp,
+        requireCsrfHeader: true,
+        groups: [userId1.toString(), userId2.toString()],
+        excludeGroups: [userId3.toString()],
+      },
+    };
+    converted = convertFormDataPrivilegesForSave(privs2);
+    expect(converted).toStrictEqual({
+      edit: {
+        public: 'false',
+        requireCsrfHeader: true,
+        users: [userId1, userId2],
+        excludeUsers: [userId3],
+      },
+      create: {
+        public: 'false' as PublicPrivilegeProp,
+        requireCsrfHeader: true,
+        users: [userId1],
+      },
+      delete: {
+        public: 'false' as PublicPrivilegeProp,
+        requireCsrfHeader: true,
+        groups: [userId1, userId2],
+        excludeGroups: [userId3],
+      },
+    });
+  });
+
+  it('convertPrivilegeIdStringsToObjectIds', () => {
+    const converted1 = convertFormDataPrivilegesForSave();
+    expect(converted1).toBe(null);
+
+    const userId1 = new Types.ObjectId();
+    const userId2 = new Types.ObjectId();
+    const userId3 = new Types.ObjectId();
+
+    const privs1 = {
+      public: 'onlyPublic' as PublicPrivilegeProp,
+      requireCsrfHeader: true,
+      users: [userId1.toString(), userId2.toString()],
+      excludeUsers: [userId3.toString()],
+    };
+    const converted2 = convertPrivilegeIdStringsToObjectIds(privs1);
+    expect(converted2).toStrictEqual({
+      public: 'onlyPublic',
+      requireCsrfHeader: true,
+      users: [userId1, userId2],
+      excludeUsers: [userId3],
+    });
+
+    const privs2 = {
+      public: 'false' as PublicPrivilegeProp,
+      requireCsrfHeader: true,
+      groups: [userId1.toString(), userId2.toString()],
+      excludeGroups: [userId3.toString()],
+    };
+    const converted3 = convertPrivilegeIdStringsToObjectIds(privs2);
+    expect(converted3).toStrictEqual({
+      public: 'false',
+      requireCsrfHeader: true,
+      groups: [userId1, userId2],
+      excludeGroups: [userId3],
+    });
+  });
+
+  it('createNewEditedArray', () => {
+    const userId1 = new Types.ObjectId();
+    const userId2 = new Types.ObjectId();
+    const userId3 = new Types.ObjectId();
+    const now = new Date();
+    const date1 = new Date('2023-12-20');
+    const date2 = new Date('2023-12-19');
+    const date3 = new Date('2023-12-18');
+    const oldArray = [
+      {
+        user: userId1,
+        date: date1,
+      },
+      {
+        user: userId1,
+        date: date2,
+      },
+      {
+        user: userId1,
+        date: date3,
+      },
+    ];
+
+    const newArray1 = createNewEditedArray(oldArray, userId2, 10, now);
+    expect(newArray1).toHaveLength(4);
+    expect(newArray1[0]).toStrictEqual({ user: userId2, date: now });
+    expect(newArray1[1]).toStrictEqual({ user: userId1, date: date1 });
+    expect(newArray1[2]).toStrictEqual({ user: userId1, date: date2 });
+    expect(newArray1[3]).toStrictEqual({ user: userId1, date: date3 });
+
+    const newArray2 = createNewEditedArray(newArray1, userId3, 3, now);
+    expect(newArray2).toHaveLength(3);
+    expect(newArray2[0]).toStrictEqual({ user: userId3, date: now });
+    expect(newArray2[1]).toStrictEqual({ user: userId2, date: now });
+    expect(newArray2[2]).toStrictEqual({ user: userId1, date: date1 });
+  });
+
+  // @TODO: getUserId
+  // @TODO: getOwnerChangingObject
 });

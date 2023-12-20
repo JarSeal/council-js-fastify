@@ -1,4 +1,9 @@
-import { isObjectIdOrHexString, Types, type PaginateResult } from 'mongoose';
+import {
+  isObjectIdOrHexString,
+  Types,
+  type PaginateResult,
+  type Types as MongooseTypes,
+} from 'mongoose';
 
 import { apiVersion } from '../core/apis';
 import { apiRoot } from '../core/app';
@@ -8,8 +13,10 @@ import { getFormDataElemPrivilegesQuery, type UserData } from './userAndPrivileg
 import type {
   AllPrivilegeProps,
   AllPrivilegePropsAsStringIds,
+  Edited,
   FormDataPrivileges,
   FormDataPrivilegesAsStringIds,
+  UserId,
 } from '../dbModels/_modelTypePartials';
 
 export const getApiPathFromReqUrl = (reqUrl: string) =>
@@ -384,4 +391,34 @@ export const convertPrivilegeIdStringsToObjectIds = (privilege?: AllPrivilegePro
   }
 
   return Object.keys(convertedPrivilege).length ? convertedPrivilege : null;
+};
+
+export const createNewEditedArray = (
+  oldArray: Edited[],
+  userId: MongooseTypes.ObjectId | null,
+  count?: number,
+  forcedDate?: Date
+) => {
+  const COUNT = count || 10; // @TODO: get this default edit array count (here 10) from settings
+  const date = forcedDate || new Date();
+  const oldArrayCopy = [...oldArray];
+  oldArrayCopy.unshift({ user: userId, date });
+  const newArray = oldArrayCopy.filter((_, index) => index < COUNT);
+  return newArray;
+};
+
+export const getUserId = (userId: UserId) => {
+  if (!userId) return null;
+  if ('_id' in userId) return userId._id;
+  if (isObjectIdOrHexString(userId)) return userId;
+  return null;
+};
+
+export const getOwnerChangingObject = (curOwner: UserId, userData: UserData, newOwner?: string) => {
+  const curOwnerId = getUserId(curOwner);
+  if (!newOwner || !curOwnerId || !userData.userId) return {};
+  if (curOwnerId.equals(userData.userId) || userData.isSysAdmin) {
+    return { owner: new Types.ObjectId(newOwner) };
+  }
+  return {};
 };

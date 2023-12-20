@@ -32,7 +32,8 @@ export interface DBForm {
     user: UserId;
     date: Date;
   };
-  edited: Edited;
+  edited: Edited[];
+  editedHistoryCount?: number;
   systemDocument: boolean;
   owner: UserId;
 
@@ -90,6 +91,7 @@ const formSchema = new Schema<DBForm>({
       date: dateDBSchema,
     },
   ],
+  editedHistoryCount: { type: Number },
   systemDocument: { type: Boolean, default: false },
   owner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   url: { type: String, unique: true, required: true },

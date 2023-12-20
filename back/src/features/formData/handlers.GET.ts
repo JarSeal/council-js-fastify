@@ -333,7 +333,7 @@ export const getFormData = async (
                       ? fd.created.user?.simpleId
                       : null,
                   editedBy:
-                    fd?.edited.length && 'simpleId' in fd.edited[0].user
+                    fd?.edited.length && fd.edited[0].user && 'simpleId' in fd.edited[0].user
                       ? fd.edited[0].user.simpleId
                       : null,
                 }
@@ -443,7 +443,9 @@ export const getFormData = async (
                     ? formData.created.user?.simpleId
                     : null,
                 editedBy:
-                  formData?.edited.length && 'simpleId' in formData.edited[0].user
+                  formData?.edited.length &&
+                  formData.edited[0].user &&
+                  'simpleId' in formData.edited[0].user
                     ? formData.edited[0].user.simpleId
                     : null,
               }

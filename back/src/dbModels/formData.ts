@@ -24,7 +24,8 @@ export interface DBFormData {
     user: UserId;
     date: Date;
   };
-  edited: Edited;
+  edited: Edited[];
+  editedHistoryCount?: number;
   owner: UserId;
 
   // Whether elements' have specific privileges that need to be checked (this is for optimisation)
@@ -66,6 +67,7 @@ const formDataSchema = new Schema<DBFormData>({
       date: dateDBSchema,
     },
   ],
+  editedHistoryCount: { type: Number },
   owner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   hasElemPrivileges: { type: Boolean },
   privileges: formDataPrivilegesSchema,
