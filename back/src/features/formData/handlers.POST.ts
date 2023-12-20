@@ -11,6 +11,7 @@ import {
   convertFormDataPrivilegesForSave,
   convertPrivilegeIdStringsToObjectIds,
   getApiPathFromReqUrl,
+  getOwnerChangingObject,
 } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
@@ -148,6 +149,18 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   const canEditPrivs = convertPrivilegeIdStringsToObjectIds(body.canEditPrivileges);
 
   // Create formData object and save
+  let formDataOwner = null;
+  if (body.owner) {
+    const ownerObj = getOwnerChangingObject(form.owner, userData, body.owner);
+    if (Object.keys(ownerObj).length) {
+      formDataOwner = ownerObj.owner;
+    }
+  }
+  if (!formDataOwner) {
+    formDataOwner = form.fillerIsFormDataOwner
+      ? userData.userId || form.formDataOwner || null
+      : form.formDataOwner || null;
+  }
   const newFormData = new DBFormDataModel<DBFormData>({
     formId: form.simpleId,
     url,
@@ -156,7 +169,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
       date: new Date(),
     },
     edited: [],
-    owner: form.fillerIsFormDataOwner ? userData.userId || null : form.formDataOwner || null,
+    owner: formDataOwner,
     hasElemPrivileges,
     data: saveData,
     ...(mainPrivs ? { privileges: mainPrivs } : {}),
