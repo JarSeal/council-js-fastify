@@ -14,6 +14,7 @@ import {
   getOwnerChangingObject,
 } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
+import { getFormData } from './handlers.GET';
 
 // Edit (PUT)
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
@@ -49,6 +50,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   const formElems = form.form.formElems;
   const formData = body.formData;
   const dataId = body.dataId;
+  const returnResponse: FormDataPutReply = { ok: false };
 
   if ((Array.isArray(dataId) && dataId.length > 1) || dataId == 'all') {
     // Multiple (M) dataSet edit
@@ -183,6 +185,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       }
     }
 
+    // (S) Save formData dataSet
     const updateResult = await DBFormDataModel.updateOne(
       { _id: dataSet._id },
       {
@@ -204,20 +207,23 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
         new errors.DB_GENERAL_ERROR(`Could not update formData dataSet, url: ${url}`)
       );
     }
-    const returnResponse: FormDataPutReply = { ok: true };
-    return res.send(returnResponse);
+
+    // (S) Success
+    returnResponse.ok = true;
+    returnResponse.dataId = dataSet._id.toString();
   }
 
-  // if (body.getData) {
-  //   let params;
-  //   if (body.getData === true) {
-  //     params = { dataId: [newDataId] };
-  //   } else {
-  //     params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
-  //   }
-  //   const getDataResult = await getFormData(params, form, userData, csrfIsGood);
-  //   returnResponse.getData = getDataResult;
-  // }
+  if (body.getData) {
+    let params;
+    const dataIds = Array.isArray(dataId) ? dataId : [dataId];
+    if (body.getData === true) {
+      params = { dataId: dataIds };
+    } else {
+      params = { ...body.getData, ...(!body.getData.dataId ? { dataId: dataIds } : {}) };
+    }
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    returnResponse.getData = getDataResult;
+  }
 
-  return res.send({ ok: false });
+  return returnResponse;
 };
