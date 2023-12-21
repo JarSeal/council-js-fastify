@@ -52,15 +52,33 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   const dataId = body.dataId;
   const returnResponse: FormDataPutReply = { ok: false };
 
-  if ((Array.isArray(dataId) && dataId.length > 1) || dataId == 'all') {
+  if ((Array.isArray(dataId) && dataId.length > 1) || dataId === 'all') {
     // Multiple (M) dataSet edit
-    // TODO: get data with multiple dataIds (could be "all")
+    // *************************
+
+    // (M) Get old saved formData
+    // (M) Generate dataIdsA array
+
+    // (START LOOP)
+    // (M) Check formData edit privileges
+    // (M) Check elem privileges
+    // (M) Validate formData values against form elems
+    // (M) Check owner change possibility
+    // (END LOOP)
+
+    // (M) Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
+    // (M) Create formData.data
+    // (M) Check and prepare owner change
+    // (M) Save formData dataSet and compare dataIdsA length to modified count
+    // (M) Success
     return res.send({
       ok: false,
       error: { errorId: 'notImplemented', message: 'Not implemented.' },
     });
   } else {
     // Single (S) dataSet edit
+    // ***********************
+
     let id = dataId;
     if (Array.isArray(dataId)) id = dataId[0];
 
@@ -78,6 +96,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       );
     }
 
+    // (S) Check formData edit privileges
     const formDataOwner =
       isObjectIdOrHexString(dataSet.owner) &&
       userData.userId &&
@@ -176,7 +195,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       }
     }
 
-    // (S) Create updated formData dataSet
+    // (S) Check and prepare owner change
     let ownerChangingObject = {};
     if (body.owner) {
       ownerChangingObject = getOwnerChangingObject(dataSet.owner, userData, body.owner);
