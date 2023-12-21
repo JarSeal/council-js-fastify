@@ -36,8 +36,10 @@ const basicPrivilegeProps = {
 export const basicPrivilegePropsSchema = Type.Object(basicPrivilegeProps);
 
 export const allPrivilegePropsSchema = Type.Object({
-  public: Type.Union([Type.Literal('true'), Type.Literal('false'), Type.Literal('onlyPublic')]),
-  requireCsrfHeader: Type.Boolean(),
+  public: Type.Optional(
+    Type.Union([Type.Literal('true'), Type.Literal('false'), Type.Literal('onlyPublic')])
+  ),
+  requireCsrfHeader: Type.Optional(Type.Boolean()),
   ...basicPrivilegeProps,
 });
 
