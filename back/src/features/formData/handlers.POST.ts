@@ -30,17 +30,11 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     return res.send(new errors.NOT_FOUND(`Could not find form with url: ${url}`));
   }
 
-  // Get canUseForm privilege
+  // Check canUseForm privilege and formDataDefaultPrivileges (create)
   const privilegeId = `form__${form.simpleId}__canUseForm`;
   const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-
-  // Check form's formDataDefaultPrivileges (create)
-  const formDataDefaultCreatePrivileges = combinePrivileges(
-    privilege?.privilegeAccess || {},
-    form.formDataDefaultPrivileges?.create || {}
-  );
-  const createFormDataPrivError = isPrivBlocked(
-    formDataDefaultCreatePrivileges,
+  let createFormDataPrivError = isPrivBlocked(
+    privilege?.privilegeAccess,
     userData,
     csrfIsGood,
     form.owner
@@ -48,7 +42,21 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   if (createFormDataPrivError) {
     return res.send(
       new errors.UNAUTHORIZED(
-        `User not privileged to create formData in POST/create formData handler, formDataDefaultPrivileges, url: ${url}`
+        `User not privileged to create formData in POST/create formData handler, privilegeId: '${privilegeId}', url: ${url}`
+      )
+    );
+  }
+  const formDataDefaultCreatePrivs = form.formDataDefaultPrivileges?.create;
+  createFormDataPrivError = isPrivBlocked(
+    formDataDefaultCreatePrivs,
+    userData,
+    csrfIsGood,
+    form.owner
+  );
+  if (createFormDataPrivError) {
+    return res.send(
+      new errors.UNAUTHORIZED(
+        `User not privileged to create formData in POST/create formData handler, formDataDefaultPrivileges.create, url: ${url}`
       )
     );
   }
@@ -93,7 +101,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     if (!elem || elem.doNotSave) continue;
     if (elem.privileges?.create) {
       const elemDataCreatePrivileges = combinePrivileges(
-        formDataDefaultCreatePrivileges,
+        formDataDefaultCreatePrivs || {},
         elem.privileges?.create || {}
       );
       const elemFormDataPrivError = isPrivBlocked(
