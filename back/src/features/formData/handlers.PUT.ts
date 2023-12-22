@@ -7,7 +7,12 @@ import DBFormDataModel from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
-import { getUserData, isPrivBlocked, combinePrivileges } from '../../utils/userAndPrivilegeChecks';
+import {
+  getUserData,
+  isPrivBlocked,
+  combinePrivileges,
+  dataPrivilegesQuery,
+} from '../../utils/userAndPrivilegeChecks';
 import {
   createNewEditedArray,
   getApiPathFromReqUrl,
@@ -50,14 +55,43 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   const formElems = form.form.formElems;
   const formData = body.formData;
   const dataId = body.dataId;
+  const dataIdAll = dataId === 'all';
   const returnResponse: FormDataPutReply = { ok: false };
 
-  if ((Array.isArray(dataId) && dataId.length > 1) || dataId === 'all') {
+  if ((Array.isArray(dataId) && dataId.length > 1) || dataIdAll) {
     // Multiple (M) dataSet edit
     // *************************
 
     // (M) Get old saved formData
+    const dataSets = await DBFormDataModel.find({
+      $and: [
+        { formId: form.simpleId },
+        ...(dataIdAll ? [] : [{ _id: { $in: dataId } }]),
+        ...dataPrivilegesQuery('edit', userData, csrfIsGood),
+      ],
+    });
+    if (!dataSets) {
+      return res.send(
+        new errors.NOT_FOUND(
+          `Could not find any formData with dataIds: '${dataId.toString()}' (formId: ${
+            form.simpleId
+          }), url: ${url}`
+        )
+      );
+    }
+    if (!dataIdAll && dataSets.length !== dataId.length) {
+      return res.send(
+        new errors.NOT_FOUND(
+          `Could not find some formData with dataIds: '${dataId.toString()}' (formId: ${
+            form.simpleId
+          }), url: ${url}`
+        )
+      );
+    }
+
     // (M) Generate dataIdsA array
+    const savedDataIds = dataSets.map((doc) => doc._id);
+    savedDataIds;
 
     // (START LOOP)
     // (M) Check formData edit privileges
