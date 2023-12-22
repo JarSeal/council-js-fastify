@@ -98,4 +98,8 @@ const DBFormDataModel = model<DBFormData, PaginateModel<DBFormData>>(
   'formData'
 );
 
+// @TODO: add model for special UserData formData model and collection (userData)
+// and do a named export or export formDataSchema and use it to create new special
+// models outside of this (default is the one below)
+
 export default DBFormDataModel;
