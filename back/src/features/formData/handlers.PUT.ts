@@ -89,21 +89,140 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       );
     }
 
-    // (M) Generate dataIdsA array
+    // (M) Validate formData values against form elems
+    const validatorError = validateFormDataInput(formElems, formData);
+    if (validatorError) {
+      return res.status(400).send({ ok: false, error: validatorError });
+    }
+
+    // (M) Generate dataIdsA array (not sure if we need these)
     const savedDataIds = dataSets.map((doc) => doc._id);
     savedDataIds;
 
     // (START LOOP)
-    // (M) Check formData edit privileges
-    // (M) Check elem privileges
-    // (M) Validate formData values against form elems
-    // (M) Check owner change possibility
+    let newOwnerObject = {};
+    const bulkWrite = [];
+    for (let i = 0; i < dataSets.length; i++) {
+      // (M) Get formData owner
+      const formDataOwner =
+        isObjectIdOrHexString(dataSets[i].owner) &&
+        userData.userId &&
+        userData.userId.equals(dataSets[i].owner as Types.ObjectId)
+          ? dataSets[i].owner
+          : form.owner;
+
+      // (M) Check elem privileges
+      for (let j = 0; j < formData.length; j++) {
+        const elem = formElems.find((formElem) => formElem.elemId === formData[j].elemId);
+        if (!elem || elem.doNotSave) continue;
+        const savedDBElem = dataSets[i].data.find((dbElem) => dbElem.elemId === formData[j].elemId);
+        if (savedDBElem && elem.privileges?.edit) {
+          const elemDataEditPrivileges = combinePrivileges(
+            elem.privileges?.edit || {},
+            savedDBElem.privileges?.edit || {}
+          );
+          const elemFormDataPrivError = isPrivBlocked(
+            elemDataEditPrivileges,
+            userData,
+            csrfIsGood,
+            formDataOwner
+          );
+          if (elemFormDataPrivError) {
+            return res.send(
+              new errors.UNAUTHORIZED(
+                `User not privileged to edit formData in PUT/edit (mass edit) formData handler, elem privileges (dataSet Id: ${dataSets[
+                  i
+                ]._id.toString()}, elemId: ${elem.elemId}), url: ${url}`
+              )
+            );
+          }
+        }
+      }
+
+      // (M) Check owner change possibility
+      if (body.owner) {
+        newOwnerObject = getOwnerChangingObject(dataSets[i].owner, userData, body.owner);
+        if (!Object.keys(newOwnerObject).length) {
+          newOwnerObject = getOwnerChangingObject(form.owner, userData, body.owner);
+        }
+        if (!Object.keys(newOwnerObject).length) {
+          return res.send(
+            new errors.UNAUTHORIZED(
+              `User cannot change owners for some or all of the datasets in PUT/edit formData handler (mass edit), url: ${url}`
+            )
+          );
+        }
+      }
+
+      // (M) Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
+      if (body.privileges || body.canEditPrivileges || formData.find((fd) => fd.privileges)) {
+        const formCanEditPrivilegesError = isPrivBlocked(
+          combinePrivileges(
+            { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
+            {
+              ...(dataSets[i].canEditPrivileges
+                ? { ...dataSets[i].canEditPrivileges, public: 'false', requireCsrfHeader: false }
+                : {}),
+            }
+          ),
+          userData,
+          true,
+          formDataOwner
+        );
+        if (formCanEditPrivilegesError) {
+          return res.send(
+            new errors.UNAUTHORIZED(
+              `User not privileged to set privileges in PUT/edit formData handler (mass edit), canEditPrivileges, url: ${url}`
+            )
+          );
+        }
+      }
+
+      // (M) Create bulkWrite array
+      let hasElemPrivileges = false;
+      for (let i = 0; i < formElems.length; i++) {
+        const newElem = formData.find((elem) => elem.elemId === formElems[i].elemId);
+        if (newElem) {
+          // @TODO: refactor to include updateOne and filter and update: https://stackoverflow.com/questions/59724331/mongodb-update-multiple-documents-with-different-values
+          bulkWrite.push(newElem);
+          if (newElem.privileges) hasElemPrivileges = true;
+          hasElemPrivileges;
+        }
+      }
+    }
     // (END LOOP)
 
-    // (M) Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
     // (M) Create formData.data
-    // (M) Check and prepare owner change
+    // let hasElemPrivileges = false;
+    // for (let i = 0; i < formElems.length; i++) {
+    //   const newElem = formData.find((elem) => elem.elemId === formElems[i].elemId);
+    //   if (newElem) {
+    //     updatedData.push(newElem);
+    //     if (newElem.privileges) hasElemPrivileges = true;
+    //   }
+    // }
+
     // (M) Save formData dataSet and compare dataIdsA length to modified count
+    // const updateResult = await DBFormDataModel.updateMany(
+    //   { _id: { $in: savedDataIds } },
+    //   {
+    //     $set: {
+    //       edited: createNewEditedArray(dataSet.edited, userData?.userId),
+    //       ...ownerChangingObject,
+    //       hasElemPrivileges,
+    //       data: updatedData,
+    //       ...(body.privileges ? { privileges: body.privileges } : {}),
+    //     },
+    //   }
+    // );
+    // if (updateResult.modifiedCount !== 1) {
+    //   return res.send(
+    //     new errors.DB_GENERAL_ERROR(`Could not update formData dataSet, url: ${url}`)
+    //   );
+    // }
+
+    // (M) BulkWrite the data
+
     // (M) Success
     return res.send({
       ok: false,
