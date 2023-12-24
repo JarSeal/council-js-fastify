@@ -178,56 +178,58 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
         }
       }
 
-      // (M) Create bulkWrite array
+      // (M) Create formData.data
+      const updatedData = [];
       let hasElemPrivileges = false;
-      for (let i = 0; i < formElems.length; i++) {
-        const newElem = formData.find((elem) => elem.elemId === formElems[i].elemId);
+      for (let j = 0; j < formElems.length; j++) {
+        const newElem = formData.find((elem) => elem.elemId === formElems[j].elemId);
         if (newElem) {
-          // @TODO: refactor to include updateOne and filter and update: https://stackoverflow.com/questions/59724331/mongodb-update-multiple-documents-with-different-values
-          bulkWrite.push(newElem);
+          updatedData.push(newElem);
           if (newElem.privileges) hasElemPrivileges = true;
-          hasElemPrivileges;
+          continue;
+        }
+        const oldElem = dataSets[i].data.find((elem) => elem.elemId === formElems[j].elemId);
+        if (oldElem) {
+          updatedData.push(oldElem);
+          if (oldElem.privileges) hasElemPrivileges = true;
         }
       }
+
+      // (M) Push to bulkWrite array
+      bulkWrite.push({
+        updateOne: {
+          filter: { _id: dataSets[i]._id },
+          update: {
+            $set: {
+              edited: createNewEditedArray(
+                dataSets[i].edited,
+                userData?.userId,
+                dataSets[i].editedHistoryCount
+              ),
+              ...newOwnerObject,
+              hasElemPrivileges,
+              data: updatedData,
+              ...(body.privileges ? { privileges: body.privileges } : {}),
+              ...(body.canEditPrivileges ? { canEditPrivileges: body.canEditPrivileges } : {}),
+            },
+          },
+        },
+      });
     }
     // (END LOOP)
 
-    // (M) Create formData.data
-    // let hasElemPrivileges = false;
-    // for (let i = 0; i < formElems.length; i++) {
-    //   const newElem = formData.find((elem) => elem.elemId === formElems[i].elemId);
-    //   if (newElem) {
-    //     updatedData.push(newElem);
-    //     if (newElem.privileges) hasElemPrivileges = true;
-    //   }
-    // }
-
-    // (M) Save formData dataSet and compare dataIdsA length to modified count
-    // const updateResult = await DBFormDataModel.updateMany(
-    //   { _id: { $in: savedDataIds } },
-    //   {
-    //     $set: {
-    //       edited: createNewEditedArray(dataSet.edited, userData?.userId),
-    //       ...ownerChangingObject,
-    //       hasElemPrivileges,
-    //       data: updatedData,
-    //       ...(body.privileges ? { privileges: body.privileges } : {}),
-    //     },
-    //   }
-    // );
-    // if (updateResult.modifiedCount !== 1) {
-    //   return res.send(
-    //     new errors.DB_GENERAL_ERROR(`Could not update formData dataSet, url: ${url}`)
-    //   );
-    // }
-
     // (M) BulkWrite the data
+    const updateResult = await DBFormDataModel.collection.bulkWrite(bulkWrite);
+    if (updateResult.modifiedCount !== savedDataIds.length) {
+      returnResponse.error = {
+        errorId: 'massEditUpdateCount',
+        message: `Mass edit tried to modify ${savedDataIds.length} dataSets but was able to update ${updateResult.modifiedCount} dataSets.`,
+      };
+    }
 
     // (M) Success
-    return res.send({
-      ok: false,
-      error: { errorId: 'notImplemented', message: 'Not implemented.' },
-    });
+    returnResponse.ok = true;
+    returnResponse.dataId = savedDataIds.map((id) => id.toString());
   } else {
     // Single (S) dataSet edit
     // ***********************
@@ -371,6 +373,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
           hasElemPrivileges,
           data: updatedData,
           ...(body.privileges ? { privileges: body.privileges } : {}),
+          ...(body.canEditPrivileges ? { canEditPrivileges: body.canEditPrivileges } : {}),
         },
       }
     );
