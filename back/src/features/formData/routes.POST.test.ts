@@ -502,4 +502,11 @@ describe('POST formData', () => {
     expect(response.statusCode).toBe(200);
     expect(body.ok).toBeTruthy();
   });
+
+  // Add privileges fail
+  // Add privielges success
+  // Add canChangePrivileges fail
+  // Add canChangePrivileges success
+  // Add owner "fail" (silent)
+  // Add owner success
 });

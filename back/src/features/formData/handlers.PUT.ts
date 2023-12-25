@@ -70,7 +70,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
         ...dataPrivilegesQuery('edit', userData, csrfIsGood),
       ],
     });
-    if (!dataSets) {
+    if (!dataSets?.length) {
       return res.send(
         new errors.NOT_FOUND(
           `Could not find any formData with dataIds: '${dataId.toString()}' (formId: ${
@@ -110,6 +110,27 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
         userData.userId.equals(dataSets[i].owner as Types.ObjectId)
           ? dataSets[i].owner
           : form.owner;
+
+      // (M) Check default and dataSet privileges
+      const dataSetEditPrivileges = combinePrivileges(
+        form.formDataDefaultPrivileges?.edit || {},
+        dataSets[i].privileges?.edit || {}
+      );
+      const dataSetPrivError = isPrivBlocked(
+        dataSetEditPrivileges,
+        userData,
+        csrfIsGood,
+        formDataOwner
+      );
+      if (dataSetPrivError) {
+        return res.send(
+          new errors.UNAUTHORIZED(
+            `User not privileged to edit formData in PUT/edit (mass edit) formData handler, default and/or dataSet privileges (dataSet Id: ${dataSets[
+              i
+            ]._id.toString()}, url: ${url}`
+          )
+        );
+      }
 
       // (M) Check elem privileges
       for (let j = 0; j < formData.length; j++) {
@@ -251,13 +272,15 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       );
     }
 
-    // (S) Check formData edit privileges
+    // (S) Get formData owner
     const formDataOwner =
       isObjectIdOrHexString(dataSet.owner) &&
       userData.userId &&
       userData.userId.equals(dataSet.owner as Types.ObjectId)
         ? dataSet.owner
         : form.owner;
+
+    // (S) Check formData edit privileges
     const formDataEditPrivileges = combinePrivileges(
       form.formDataDefaultPrivileges?.edit || {},
       dataSet.privileges?.edit || {}

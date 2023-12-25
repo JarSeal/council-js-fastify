@@ -153,7 +153,10 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   }
 
   // Convert privileges and canEditPrivileges to ObjectIds
-  const mainPrivs = convertFormDataPrivilegesForSave(body.privileges);
+  const mainPrivs = {
+    ...(form.formDataDefaultPrivileges || {}),
+    ...convertFormDataPrivilegesForSave(body.privileges),
+  };
   const canEditPrivs = convertPrivilegeIdStringsToObjectIds(body.canEditPrivileges);
 
   // Create formData object and save
