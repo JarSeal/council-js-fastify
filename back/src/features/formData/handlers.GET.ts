@@ -15,6 +15,7 @@ import {
   dataPrivilegesQuery,
   combinePrivileges,
   emptyPrivilege,
+  combineBasicPrivileges,
 } from '../../utils/userAndPrivilegeChecks';
 import {
   createPaginationPayload,
@@ -321,11 +322,42 @@ export const getFormData = async (
         let dataMetaData = null;
         let dataSetPrivileges = null;
         let includePrivs = false;
+        // Get owner
+        let owner = null;
+        if (fd.owner && userData.userId && userData.userId.equals(fd.owner._id)) {
+          owner = fd.owner;
+        }
+        if (!owner && form.owner && userData.userId && userData.userId.equals(form.owner._id)) {
+          owner = form.owner;
+        }
+        // Check if privs can be shown
+        const showPrivs = !isPrivBlocked(
+          combineBasicPrivileges(form.canEditPrivileges || {}, fd.canEditPrivileges || {}),
+          userData,
+          csrfIsGood,
+          owner
+        );
+        if (includePrivileges) {
+          includePrivs = showPrivs;
+        }
+        if (includePrivs) {
+          dataSetPrivileges = {
+            ...form.formDataDefaultPrivileges,
+            ...(fd.privileges || {}),
+            ...{
+              canEditPrivileges: combineBasicPrivileges(
+                form.canEditPrivileges || {},
+                fd.canEditPrivileges || {}
+              ),
+            },
+          };
+        }
+        // Include possible meta
         if (includeMeta === 'embed' || includeMeta === 'true') {
           dataMetaData = {
             created: fd.created.date,
             edited: fd.edited.length ? fd.edited[0].date : null,
-            ...(userData.isSysAdmin
+            ...(showPrivs
               ? {
                   owner: fd?.owner && 'simpleId' in fd.owner ? fd.owner.simpleId : null,
                   createdBy:
@@ -338,34 +370,6 @@ export const getFormData = async (
                       : null,
                 }
               : {}),
-          };
-        }
-        // Check if privs can be shown
-        if (includePrivileges) {
-          includePrivs = !isPrivBlocked(
-            combinePrivileges(
-              {
-                ...(form.canEditPrivileges || emptyPrivilege),
-                public: 'false',
-                requireCsrfHeader: false,
-              },
-              {
-                ...(fd.canEditPrivileges || emptyPrivilege),
-                public: 'false',
-                requireCsrfHeader: false,
-              }
-            ),
-            userData,
-            csrfIsGood,
-            fd.owner && userData.userId && userData.userId.equals(fd.owner._id)
-              ? fd.owner
-              : form.owner
-          );
-        }
-        if (includePrivs) {
-          dataSetPrivileges = {
-            ...form.formDataDefaultPrivileges,
-            ...(fd.privileges || {}),
           };
         }
         const dataSet = checkAndSetReadData(
@@ -430,11 +434,29 @@ export const getFormData = async (
       const formDataId = formData ? formData._id?.toString() : null;
       let dataMetaData = null;
       let includePrivs = false;
+      // Get owner
+      let owner = null;
+      if (formData?.owner && userData.userId && userData.userId.equals(formData.owner._id)) {
+        owner = formData.owner;
+      }
+      if (!owner && form.owner && userData.userId && userData.userId.equals(form.owner._id)) {
+        owner = form.owner;
+      }
+      // Check if privs can be shown
+      const showPrivs = !isPrivBlocked(
+        combineBasicPrivileges(form.canEditPrivileges || {}, formData?.canEditPrivileges || {}),
+        userData,
+        csrfIsGood,
+        owner
+      );
+      if (includePrivileges) {
+        includePrivs = showPrivs;
+      }
       if ((includeMeta === 'embed' || includeMeta === 'true') && formData) {
         dataMetaData = {
           created: formData?.created.date,
           edited: formData?.edited.length ? formData.edited[0].date : null,
-          ...(userData.isSysAdmin
+          ...(showPrivs
             ? {
                 owner:
                   formData?.owner && 'simpleId' in formData.owner ? formData.owner.simpleId : null,
@@ -451,26 +473,6 @@ export const getFormData = async (
               }
             : {}),
         };
-      }
-      // Check if privs can be shown
-      if (includePrivileges) {
-        includePrivs = !isPrivBlocked(
-          combinePrivileges(
-            {
-              ...(form.canEditPrivileges || emptyPrivilege),
-              public: 'false',
-              requireCsrfHeader: false,
-            },
-            {
-              ...(formData?.canEditPrivileges || emptyPrivilege),
-              public: 'false',
-              requireCsrfHeader: false,
-            }
-          ),
-          userData,
-          csrfIsGood,
-          form.owner || null
-        );
       }
       const dataSet = checkAndSetReadData(
         rawData,
@@ -501,6 +503,10 @@ export const getFormData = async (
         returnObject['$dataPrivileges'] = {
           ...form.formDataDefaultPrivileges,
           ...(formData?.privileges || {}),
+          canEditPrivileges: combineBasicPrivileges(
+            form.canEditPrivileges || {},
+            formData?.canEditPrivileges || {}
+          ),
         };
       }
     }

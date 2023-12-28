@@ -266,6 +266,50 @@ export const combinePrivileges = (
   return combined;
 };
 
+// @TODO: add test
+export const combineBasicPrivileges = (
+  ...privileges: Partial<AllPrivilegeProps>[]
+): BasicPrivilegeProps => {
+  const combined: BasicPrivilegeProps = {
+    users: [],
+    groups: [],
+    excludeUsers: [],
+    excludeGroups: [],
+  };
+  for (let i = 0; i < privileges.length; i++) {
+    const priv = privileges[i];
+    if (priv?.users !== undefined) {
+      if (priv.users.length && 'simpleId' in priv.users[0]) {
+        combined.users = priv.users.map((user) => user._id);
+      } else {
+        combined.users = priv.users;
+      }
+    }
+    if (priv?.groups !== undefined) {
+      if (priv.groups.length && 'simpleId' in priv.groups[0]) {
+        combined.groups = priv.groups.map((group) => group._id);
+      } else {
+        combined.groups = priv.groups;
+      }
+    }
+    if (priv?.excludeUsers !== undefined) {
+      if (priv.excludeUsers.length && 'simpleId' in priv.excludeUsers[0]) {
+        combined.excludeUsers = priv.excludeUsers.map((user) => user._id);
+      } else {
+        combined.excludeUsers = priv.excludeUsers;
+      }
+    }
+    if (priv?.excludeGroups !== undefined) {
+      if (priv.excludeGroups.length && 'simpleId' in priv.excludeGroups[0]) {
+        combined.excludeGroups = priv.excludeGroups.map((group) => group._id);
+      } else {
+        combined.excludeGroups = priv.excludeGroups;
+      }
+    }
+  }
+  return combined;
+};
+
 export const getFormDataElemPrivilegesQuery = (
   currentElemPrivs: string,
   userData: UserData,
