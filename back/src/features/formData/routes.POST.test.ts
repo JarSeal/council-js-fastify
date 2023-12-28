@@ -503,7 +503,68 @@ describe('POST formData', () => {
     expect(body.ok).toBeTruthy();
   });
 
-  // Add privileges fail
+  it('should fail when trying to add privileges and the user does not have privileges to do so', async () => {
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          required: true,
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+        maxDataCreatorDocs: 1,
+      }
+    );
+
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 12,
+          },
+        ],
+      },
+    });
+    const body = JSON.parse(response.body) as FormDataPostReply;
+    expect(response.statusCode).toBe(200);
+    expect(body.ok).toBeTruthy();
+  });
+
   // Add privielges success
   // Add canChangePrivileges fail
   // Add canChangePrivileges success
