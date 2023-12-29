@@ -12,6 +12,7 @@ import {
   isPrivBlocked,
   combinePrivileges,
   dataPrivilegesQuery,
+  combineBasicPrivileges,
 } from '../../utils/userAndPrivilegeChecks';
 import {
   createNewEditedArray,
@@ -178,6 +179,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       // (M) Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
       if (body.privileges || body.canEditPrivileges || formData.find((fd) => fd.privileges)) {
         const formCanEditPrivilegesError = isPrivBlocked(
+          // @TODO: change to user combineBasicPrivileges
           combinePrivileges(
             { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
             {
@@ -204,12 +206,29 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       let hasElemPrivileges = false;
       for (let j = 0; j < formElems.length; j++) {
         const newElem = formData.find((elem) => elem.elemId === formElems[j].elemId);
+        const oldElem = dataSets[i].data.find((elem) => elem.elemId === formElems[j].elemId);
+        let privileges;
+        if (newElem?.privileges) {
+          privileges = {
+            ...(newElem.privileges.read && Object.keys(newElem.privileges.read).length
+              ? { read: newElem.privileges.read }
+              : oldElem?.privileges?.read && Object.keys(oldElem.privileges.read).length
+              ? { read: oldElem.privileges.read }
+              : {}),
+            ...(newElem.privileges.edit && Object.keys(newElem.privileges.edit).length
+              ? { edit: newElem.privileges.edit }
+              : oldElem?.privileges?.edit && Object.keys(oldElem.privileges.edit).length
+              ? { edit: oldElem.privileges.edit }
+              : {}),
+          };
+        } else if (oldElem?.privileges) {
+          privileges = oldElem.privileges;
+        }
         if (newElem) {
-          updatedData.push(newElem);
+          updatedData.push({ ...newElem, ...(privileges ? { privileges } : {}) });
           if (newElem.privileges) hasElemPrivileges = true;
           continue;
         }
-        const oldElem = dataSets[i].data.find((elem) => elem.elemId === formElems[j].elemId);
         if (oldElem) {
           updatedData.push(oldElem);
           if (oldElem.privileges) hasElemPrivileges = true;
@@ -217,6 +236,23 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       }
 
       // (M) Push to bulkWrite array
+      const privileges = {
+        ...(body.privileges?.read
+          ? { read: body.privileges.read }
+          : dataSets[i].privileges?.read
+          ? { read: dataSets[i].privileges?.read }
+          : {}),
+        ...(body.privileges?.edit
+          ? { edit: body.privileges.edit }
+          : dataSets[i].privileges?.edit
+          ? { edit: dataSets[i].privileges?.edit }
+          : {}),
+        ...(body.privileges?.delete
+          ? { delete: body.privileges.delete }
+          : dataSets[i].privileges?.delete
+          ? { delete: dataSets[i].privileges?.delete }
+          : {}),
+      };
       bulkWrite.push({
         updateOne: {
           filter: { _id: dataSets[i]._id },
@@ -230,7 +266,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
               ...newOwnerObject,
               hasElemPrivileges,
               data: updatedData,
-              ...(body.privileges ? { privileges: body.privileges } : {}),
+              ...(Object.keys(privileges).length ? { privileges: privileges } : {}),
               ...(body.canEditPrivileges ? { canEditPrivileges: body.canEditPrivileges } : {}),
             },
           },
@@ -335,14 +371,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     // (S) Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
     if (body.privileges || body.canEditPrivileges || body.formData.find((fd) => fd.privileges)) {
       const formCanEditPrivilegesError = isPrivBlocked(
-        combinePrivileges(
-          { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
-          {
-            ...(dataSet.canEditPrivileges
-              ? { ...dataSet.canEditPrivileges, public: 'false', requireCsrfHeader: false }
-              : {}),
-          }
-        ),
+        combineBasicPrivileges(form.canEditPrivileges || {}, dataSet.canEditPrivileges || {}),
         userData,
         true,
         formDataOwner
@@ -361,12 +390,29 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     let hasElemPrivileges = false;
     for (let i = 0; i < formElems.length; i++) {
       const newElem = formData.find((elem) => elem.elemId === formElems[i].elemId);
+      const oldElem = dataSet.data.find((elem) => elem.elemId === formElems[i].elemId);
+      let privileges;
+      if (newElem?.privileges) {
+        privileges = {
+          ...(newElem.privileges.read && Object.keys(newElem.privileges.read).length
+            ? { read: newElem.privileges.read }
+            : oldElem?.privileges?.read && Object.keys(oldElem.privileges.read).length
+            ? { read: oldElem.privileges.read }
+            : {}),
+          ...(newElem.privileges.edit && Object.keys(newElem.privileges.edit).length
+            ? { edit: newElem.privileges.edit }
+            : oldElem?.privileges?.edit && Object.keys(oldElem.privileges.edit).length
+            ? { edit: oldElem.privileges.edit }
+            : {}),
+        };
+      } else if (oldElem?.privileges) {
+        privileges = oldElem.privileges;
+      }
       if (newElem) {
-        updatedData.push(newElem);
+        updatedData.push({ ...newElem, ...(privileges ? { privileges } : {}) });
         if (newElem.privileges) hasElemPrivileges = true;
         continue;
       }
-      const oldElem = dataSet.data.find((elem) => elem.elemId === formElems[i].elemId);
       if (oldElem) {
         updatedData.push(oldElem);
         if (oldElem.privileges) hasElemPrivileges = true;
@@ -383,6 +429,23 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     }
 
     // (S) Save formData dataSet
+    const privileges = {
+      ...(body.privileges?.read
+        ? { read: body.privileges.read }
+        : dataSet.privileges?.read
+        ? { read: dataSet.privileges.read }
+        : {}),
+      ...(body.privileges?.edit
+        ? { edit: body.privileges.edit }
+        : dataSet.privileges?.edit
+        ? { edit: dataSet.privileges.edit }
+        : {}),
+      ...(body.privileges?.delete
+        ? { delete: body.privileges.delete }
+        : dataSet.privileges?.delete
+        ? { delete: dataSet.privileges.delete }
+        : {}),
+    };
     const updateResult = await DBFormDataModel.updateOne(
       { _id: dataSet._id },
       {
@@ -395,7 +458,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
           ...ownerChangingObject,
           hasElemPrivileges,
           data: updatedData,
-          ...(body.privileges ? { privileges: body.privileges } : {}),
+          ...(Object.keys(privileges).length ? { privileges: privileges } : {}),
           ...(body.canEditPrivileges ? { canEditPrivileges: body.canEditPrivileges } : {}),
         },
       }
