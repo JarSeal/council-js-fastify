@@ -3,7 +3,12 @@ import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
 import { createForm, createSysAdmin, createUser, csrfHeader, validAgentId } from '../../test/utils';
-import type { FormDataPrivileges, PublicPrivilegeProp } from '../../dbModels/_modelTypePartials';
+import type {
+  BasicPrivilegeProps,
+  FormDataPrivileges,
+  PublicPrivilegeProp,
+  UserId,
+} from '../../dbModels/_modelTypePartials';
 import { SESSION_COOKIE_NAME } from '../../core/config';
 import type { FormDataGetReply, FormDataPostReply, FormDataPutReply } from './routes';
 
@@ -1900,438 +1905,833 @@ describe('PUT formData', () => {
     expect(bodyMulti.code).toBe('UNAUTHORIZED');
   });
 
-  // it("should be able to add canEditPrivileges successfully when user in form's canEditPrivileges", async () => {
-  //   const userId = await createUser('myusername');
-  //   await createForm(
-  //     'myform',
-  //     '/myform',
-  //     [
-  //       {
-  //         elemId: 'testElem0',
-  //         orderNr: 0,
-  //         elemType: 'inputText',
-  //         valueType: 'string',
-  //         required: true,
-  //       },
-  //       {
-  //         elemId: 'testElem1',
-  //         orderNr: 1,
-  //         elemType: 'inputNumber',
-  //         valueType: 'number',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         priCategoryId: 'form',
-  //         priTargetId: 'myform',
-  //         priAccessId: 'canUseForm',
-  //         privilegeAccess: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     ],
-  //     {
-  //       formDataDefaultPrivileges: {
-  //         read: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //         create: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //       canEditPrivileges: {
-  //         users: [userId],
-  //       },
-  //     }
-  //   );
+  it("should be able to edit canEditPrivileges successfully when user in form's canEditPrivileges", async () => {
+    const userId = await createUser('myusername');
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          required: true,
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          read: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          edit: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+        canEditPrivileges: {
+          users: [userId],
+        },
+      }
+    );
 
-  //   const loginResponse = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/login',
-  //     body: {
-  //       usernameOrEmail: 'myusername',
-  //       pass: 'password',
-  //       loginMethod: 'username',
-  //       agentId: validAgentId,
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
 
-  //   const userId2 = await createUser('someotherusername');
-  //   const response = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'some string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 12,
-  //         },
-  //       ],
-  //       canEditPrivileges: { users: [userId, userId2] },
-  //       getData: { includePrivileges: true },
-  //     },
-  //     cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
-  //     ...csrfHeader,
-  //   });
-  //   const body = JSON.parse(response.body) as FormDataPostReply;
-  //   expect(response.statusCode).toBe(200);
-  //   const privileges = body.getData?.$dataPrivileges as FormDataPrivileges & {
-  //     canEditPrivileges: BasicPrivilegeProps;
-  //   };
-  //   expect(privileges.read?.public).toBe('true');
-  //   expect(privileges.read?.requireCsrfHeader).toBeFalsy();
-  //   expect(privileges.canEditPrivileges).toStrictEqual({
-  //     users: [userId.toString(), userId2.toString()],
-  //     groups: [],
-  //     excludeUsers: [],
-  //     excludeGroups: [],
-  //   });
-  //   const getData = body.getData as FormDataGetReply;
-  //   expect(getData?.data).toStrictEqual([
-  //     {
-  //       elemId: 'testElem0',
-  //       value: 'some string',
-  //       orderNr: 0,
-  //       valueType: 'string',
-  //     },
-  //     {
-  //       elemId: 'testElem1',
-  //       value: 12,
-  //       orderNr: 1,
-  //       valueType: 'number',
-  //     },
-  //   ]);
-  // });
+    const userId2 = await createUser('someotherusername');
 
-  // it('should be able to add canEditPrivileges successfully when user is the owner', async () => {
-  //   const userId = await createUser('myusername');
-  //   await createForm(
-  //     'myform',
-  //     '/myform',
-  //     [
-  //       {
-  //         elemId: 'testElem0',
-  //         orderNr: 0,
-  //         elemType: 'inputText',
-  //         valueType: 'string',
-  //         required: true,
-  //       },
-  //       {
-  //         elemId: 'testElem1',
-  //         orderNr: 1,
-  //         elemType: 'inputNumber',
-  //         valueType: 'number',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         priCategoryId: 'form',
-  //         priTargetId: 'myform',
-  //         priAccessId: 'canUseForm',
-  //         privilegeAccess: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     ],
-  //     {
-  //       formDataDefaultPrivileges: {
-  //         read: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //         create: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //       owner: userId,
-  //     }
-  //   );
+    const createResponse1 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 12,
+          },
+        ],
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody1 = JSON.parse(createResponse1.body) as FormDataPostReply;
 
-  //   const loginResponse = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/login',
-  //     body: {
-  //       usernameOrEmail: 'myusername',
-  //       pass: 'password',
-  //       loginMethod: 'username',
-  //       agentId: validAgentId,
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+    const responseSingle = await app.inject({
+      method: 'PUT',
+      path: '/api/v1/myform',
+      body: {
+        dataId: createBody1.dataId,
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some modified string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 15,
+          },
+        ],
+        canEditPrivileges: { users: [userId, userId2] },
+        getData: { includePrivileges: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+    expect(responseSingle.statusCode).toBe(200);
+    const privileges1 = bodySingle.getData?.$dataPrivileges as FormDataPrivileges & {
+      canEditPrivileges: BasicPrivilegeProps;
+    };
+    expect(privileges1.read?.public).toBe('true');
+    expect(privileges1.read?.requireCsrfHeader).toBeFalsy();
+    expect(privileges1.canEditPrivileges).toStrictEqual({
+      users: [userId.toString(), userId2.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    const getData1 = bodySingle.getData as FormDataGetReply;
+    expect(getData1?.data).toStrictEqual([
+      {
+        elemId: 'testElem0',
+        value: 'some modified string',
+        orderNr: 0,
+        valueType: 'string',
+      },
+      {
+        elemId: 'testElem1',
+        value: 15,
+        orderNr: 1,
+        valueType: 'number',
+      },
+    ]);
 
-  //   const response = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'some string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 12,
-  //         },
-  //       ],
-  //       canEditPrivileges: { users: [userId.toString()] },
-  //       getData: { includePrivileges: true },
-  //     },
-  //     cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
-  //     ...csrfHeader,
-  //   });
-  //   const body = JSON.parse(response.body) as FormDataPostReply;
-  //   expect(response.statusCode).toBe(200);
-  //   const privileges = body.getData?.$dataPrivileges as FormDataPrivileges & {
-  //     canEditPrivileges: BasicPrivilegeProps;
-  //   };
-  //   expect(privileges.read?.public).toBe('true');
-  //   expect(privileges.read?.requireCsrfHeader).toBeFalsy();
-  //   expect(privileges.canEditPrivileges).toStrictEqual({
-  //     users: [userId.toString()],
-  //     groups: [],
-  //     excludeUsers: [],
-  //     excludeGroups: [],
-  //   });
-  //   const getData = body.getData as FormDataGetReply;
-  //   expect(getData?.data).toStrictEqual([
-  //     {
-  //       elemId: 'testElem0',
-  //       value: 'some string',
-  //       orderNr: 0,
-  //       valueType: 'string',
-  //     },
-  //     {
-  //       elemId: 'testElem1',
-  //       value: 12,
-  //       orderNr: 1,
-  //       valueType: 'number',
-  //     },
-  //   ]);
-  // });
+    const createResponse2 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some otherstring',
+          },
+          {
+            elemId: 'testElem1',
+            value: 18,
+          },
+        ],
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody2 = JSON.parse(createResponse2.body) as FormDataPostReply;
 
-  // it('should not be able to change owner and should fail only by not adding the owner (silently)', async () => {
-  //   const userId = await createUser('myusername');
-  //   await createForm(
-  //     'myform',
-  //     '/myform',
-  //     [
-  //       {
-  //         elemId: 'testElem0',
-  //         orderNr: 0,
-  //         elemType: 'inputText',
-  //         valueType: 'string',
-  //         required: true,
-  //       },
-  //       {
-  //         elemId: 'testElem1',
-  //         orderNr: 1,
-  //         elemType: 'inputNumber',
-  //         valueType: 'number',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         priCategoryId: 'form',
-  //         priTargetId: 'myform',
-  //         priAccessId: 'canUseForm',
-  //         privilegeAccess: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     ],
-  //     {
-  //       formDataDefaultPrivileges: {
-  //         read: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //         create: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     }
-  //   );
+    const responseMulti = await app.inject({
+      method: 'PUT',
+      path: '/api/v1/myform',
+      body: {
+        dataId: [createBody1.dataId, createBody2.dataId],
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some modified string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 15,
+          },
+        ],
+        canEditPrivileges: { users: [userId, userId2] },
+        getData: { includePrivileges: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+    expect(responseMulti.statusCode).toBe(200);
+    const privileges2 = bodyMulti.getData?.$dataPrivileges as (FormDataPrivileges & {
+      canEditPrivileges: BasicPrivilegeProps;
+    })[];
+    expect(privileges2[0].read?.public).toBe('true');
+    expect(privileges2[0].read?.requireCsrfHeader).toBeFalsy();
+    expect(privileges2[0].canEditPrivileges).toStrictEqual({
+      users: [userId.toString(), userId2.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    expect(privileges2[1].read?.public).toBe('true');
+    expect(privileges2[1].read?.requireCsrfHeader).toBeFalsy();
+    expect(privileges2[1].canEditPrivileges).toStrictEqual({
+      users: [userId.toString(), userId2.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    const getData2 = bodyMulti.getData as FormDataGetReply;
+    expect(getData2?.data).toStrictEqual([
+      [
+        {
+          elemId: 'testElem0',
+          value: 'some modified string',
+          orderNr: 0,
+          valueType: 'string',
+        },
+        {
+          elemId: 'testElem1',
+          value: 15,
+          orderNr: 1,
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          elemId: 'testElem0',
+          value: 'some modified string',
+          orderNr: 0,
+          valueType: 'string',
+        },
+        {
+          elemId: 'testElem1',
+          value: 15,
+          orderNr: 1,
+          valueType: 'number',
+        },
+      ],
+    ]);
+  });
 
-  //   const loginResponse = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/login',
-  //     body: {
-  //       usernameOrEmail: 'myusername',
-  //       pass: 'password',
-  //       loginMethod: 'username',
-  //       agentId: validAgentId,
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+  it('should be able to edit canEditPrivileges successfully when user is the owner', async () => {
+    const userId = await createUser('myusername');
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          required: true,
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          read: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          edit: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+        owner: userId,
+      }
+    );
 
-  //   const response = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'some string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 12,
-  //         },
-  //       ],
-  //       owner: userId.toString(),
-  //       getData: { includeMeta: true },
-  //     },
-  //     cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
-  //     ...csrfHeader,
-  //   });
-  //   const body = JSON.parse(response.body) as FormDataPostReply;
-  //   expect(response.statusCode).toBe(200);
-  //   const getData = body.getData as FormDataGetReply;
-  //   expect(getData?.data).toStrictEqual([
-  //     {
-  //       elemId: 'testElem0',
-  //       value: 'some string',
-  //       orderNr: 0,
-  //       valueType: 'string',
-  //     },
-  //     {
-  //       elemId: 'testElem1',
-  //       value: 12,
-  //       orderNr: 1,
-  //       valueType: 'number',
-  //     },
-  //   ]);
-  //   const metaDataArray = getData?.$dataMetaData as {
-  //     created: Date;
-  //     edited: Date | null;
-  //     owner?: UserId;
-  //     createdBy?: UserId;
-  //     editedBy?: UserId;
-  //   }[];
-  //   const metaData = metaDataArray[0] || {};
-  //   expect(Object.keys(metaData)).toHaveLength(2);
-  // });
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
 
-  // it('should be able to change owner successfully', async () => {
-  //   const userId = await createUser('myusername');
-  //   await createForm(
-  //     'myform',
-  //     '/myform',
-  //     [
-  //       {
-  //         elemId: 'testElem0',
-  //         orderNr: 0,
-  //         elemType: 'inputText',
-  //         valueType: 'string',
-  //         required: true,
-  //       },
-  //       {
-  //         elemId: 'testElem1',
-  //         orderNr: 1,
-  //         elemType: 'inputNumber',
-  //         valueType: 'number',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         priCategoryId: 'form',
-  //         priTargetId: 'myform',
-  //         priAccessId: 'canUseForm',
-  //         privilegeAccess: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     ],
-  //     {
-  //       formDataDefaultPrivileges: {
-  //         read: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //         create: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //       owner: userId,
-  //     }
-  //   );
+    const createResponse1 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 12,
+          },
+        ],
+        getData: { includePrivileges: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody1 = JSON.parse(createResponse1.body) as FormDataPostReply;
 
-  //   const loginResponse = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/login',
-  //     body: {
-  //       usernameOrEmail: 'myusername',
-  //       pass: 'password',
-  //       loginMethod: 'username',
-  //       agentId: validAgentId,
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+    const responseSingle = await app.inject({
+      method: 'PUT',
+      path: '/api/v1/myform',
+      body: {
+        dataId: createBody1.dataId,
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some modified string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 15,
+          },
+        ],
+        canEditPrivileges: { users: [userId.toString()] },
+        getData: { includePrivileges: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+    expect(responseSingle.statusCode).toBe(200);
+    const privileges1 = bodySingle.getData?.$dataPrivileges as FormDataPrivileges & {
+      canEditPrivileges: BasicPrivilegeProps;
+    };
+    expect(privileges1.read?.public).toBe('true');
+    expect(privileges1.read?.requireCsrfHeader).toBeFalsy();
+    expect(privileges1.canEditPrivileges).toStrictEqual({
+      users: [userId.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    const getData1 = bodySingle.getData as FormDataGetReply;
+    expect(getData1?.data).toStrictEqual([
+      {
+        elemId: 'testElem0',
+        value: 'some modified string',
+        orderNr: 0,
+        valueType: 'string',
+      },
+      {
+        elemId: 'testElem1',
+        value: 15,
+        orderNr: 1,
+        valueType: 'number',
+      },
+    ]);
 
-  //   const response = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'some string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 12,
-  //         },
-  //       ],
-  //       owner: userId.toString(),
-  //       getData: { includeMeta: true },
-  //     },
-  //     cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
-  //     ...csrfHeader,
-  //   });
-  //   const body = JSON.parse(response.body) as FormDataPostReply;
-  //   expect(response.statusCode).toBe(200);
-  //   const getData = body.getData as FormDataGetReply;
-  //   expect(getData?.data).toStrictEqual([
-  //     {
-  //       elemId: 'testElem0',
-  //       value: 'some string',
-  //       orderNr: 0,
-  //       valueType: 'string',
-  //     },
-  //     {
-  //       elemId: 'testElem1',
-  //       value: 12,
-  //       orderNr: 1,
-  //       valueType: 'number',
-  //     },
-  //   ]);
-  //   const metaDataArray = getData?.$dataMetaData as {
-  //     created: Date;
-  //     edited: Date | null;
-  //     owner?: UserId;
-  //     createdBy?: UserId;
-  //     editedBy?: UserId;
-  //   }[];
-  //   const metaData = metaDataArray[0] || {};
-  //   expect(Object.keys(metaData)).toHaveLength(5);
-  //   expect(metaData.owner).toBe('myusername');
-  // });
+    const createResponse2 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 18,
+          },
+        ],
+        getData: { includePrivileges: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody2 = JSON.parse(createResponse2.body) as FormDataPostReply;
+
+    const responseMulti = await app.inject({
+      method: 'PUT',
+      path: '/api/v1/myform',
+      body: {
+        dataId: [createBody1.dataId, createBody2.dataId],
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some multi-modified string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 21,
+          },
+        ],
+        canEditPrivileges: { users: [userId.toString()] },
+        getData: { includePrivileges: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+    expect(responseMulti.statusCode).toBe(200);
+    const privileges2 = bodyMulti.getData?.$dataPrivileges as (FormDataPrivileges & {
+      canEditPrivileges: BasicPrivilegeProps;
+    })[];
+    expect(privileges2[0].read?.public).toBe('true');
+    expect(privileges2[0].read?.requireCsrfHeader).toBeFalsy();
+    expect(privileges2[0].canEditPrivileges).toStrictEqual({
+      users: [userId.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    const getData2 = bodyMulti.getData as FormDataGetReply;
+    expect(getData2?.data).toStrictEqual([
+      [
+        {
+          elemId: 'testElem0',
+          value: 'some multi-modified string',
+          orderNr: 0,
+          valueType: 'string',
+        },
+        {
+          elemId: 'testElem1',
+          value: 21,
+          orderNr: 1,
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          elemId: 'testElem0',
+          value: 'some multi-modified string',
+          orderNr: 0,
+          valueType: 'string',
+        },
+        {
+          elemId: 'testElem1',
+          value: 21,
+          orderNr: 1,
+          valueType: 'number',
+        },
+      ],
+    ]);
+  });
+
+  it('should fail to edit owner', async () => {
+    const userId = await createUser('myusername');
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          required: true,
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          read: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          edit: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      }
+    );
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    const createResponse1 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 12,
+          },
+        ],
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody1 = JSON.parse(createResponse1.body) as FormDataPostReply;
+
+    const responseSingle = await app.inject({
+      method: 'PUT',
+      path: '/api/v1/myform',
+      body: {
+        dataId: createBody1.dataId,
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some modified string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 15,
+          },
+        ],
+        owner: userId.toString(),
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const bodySingle = JSON.parse(responseSingle.body) as FastifyError;
+    expect(responseSingle.statusCode).toBe(401);
+    expect(bodySingle.code).toBe('UNAUTHORIZED');
+
+    const createResponse2 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 2,
+          },
+        ],
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody2 = JSON.parse(createResponse2.body) as FormDataPostReply;
+
+    const responseMulti = await app.inject({
+      method: 'PUT',
+      path: '/api/v1/myform',
+      body: {
+        dataId: [createBody1.dataId, createBody2.dataId],
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some multi-modified string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 21,
+          },
+        ],
+        owner: userId.toString(),
+        getData: { includeMeta: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const bodyMulti = JSON.parse(responseMulti.body) as FastifyError;
+    expect(responseMulti.statusCode).toBe(401);
+    expect(bodyMulti.code).toBe('UNAUTHORIZED');
+  });
+
+  it('should be able to edit owner successfully', async () => {
+    const userId = await createUser('myusername');
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          required: true,
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          read: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          edit: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+        owner: userId,
+      }
+    );
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    const createResponse1 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 12,
+          },
+        ],
+        owner: userId.toString(),
+        getData: { includeMeta: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody1 = JSON.parse(createResponse1.body) as FormDataPostReply;
+
+    const responseSingle = await app.inject({
+      method: 'PUT',
+      path: '/api/v1/myform',
+      body: {
+        dataId: createBody1.dataId,
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some modified string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 18,
+          },
+        ],
+        owner: userId.toString(),
+        getData: { includeMeta: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+
+    expect(responseSingle.statusCode).toBe(200);
+    const getData1 = bodySingle.getData as FormDataGetReply;
+    expect(getData1?.data).toStrictEqual([
+      {
+        elemId: 'testElem0',
+        value: 'some modified string',
+        orderNr: 0,
+        valueType: 'string',
+      },
+      {
+        elemId: 'testElem1',
+        value: 18,
+        orderNr: 1,
+        valueType: 'number',
+      },
+    ]);
+    const metaDataArray1 = getData1?.$dataMetaData as {
+      created: Date;
+      edited: Date | null;
+      owner?: UserId;
+      createdBy?: UserId;
+      editedBy?: UserId;
+    }[];
+    const metaData1 = metaDataArray1[0] || {};
+    expect(Object.keys(metaData1)).toHaveLength(5);
+    expect(metaData1.owner).toBe('myusername');
+
+    const createResponse2 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 12,
+          },
+        ],
+        owner: userId.toString(),
+        getData: { includeMeta: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody2 = JSON.parse(createResponse2.body) as FormDataPostReply;
+
+    const responseMulti = await app.inject({
+      method: 'PUT',
+      path: '/api/v1/myform',
+      body: {
+        dataId: [createBody1.dataId, createBody2.dataId],
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some multi-modified string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 21,
+          },
+        ],
+        owner: userId.toString(),
+        getData: { includeMeta: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+
+    expect(responseMulti.statusCode).toBe(200);
+    const getData2 = bodyMulti.getData as FormDataGetReply;
+    expect(getData2?.data).toStrictEqual([
+      [
+        {
+          elemId: 'testElem0',
+          value: 'some multi-modified string',
+          orderNr: 0,
+          valueType: 'string',
+        },
+        {
+          elemId: 'testElem1',
+          value: 21,
+          orderNr: 1,
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          elemId: 'testElem0',
+          value: 'some multi-modified string',
+          orderNr: 0,
+          valueType: 'string',
+        },
+        {
+          elemId: 'testElem1',
+          value: 21,
+          orderNr: 1,
+          valueType: 'number',
+        },
+      ],
+    ]);
+    const metaDataArray2 = getData2?.$dataMetaData as {
+      created: Date;
+      edited: Date | null;
+      owner?: UserId;
+      createdBy?: UserId;
+      editedBy?: UserId;
+    }[];
+    const metaData2 = metaDataArray2[0] || {};
+    expect(Object.keys(metaData2)).toHaveLength(5);
+    expect(metaData2.owner).toBe('myusername');
+  });
 });

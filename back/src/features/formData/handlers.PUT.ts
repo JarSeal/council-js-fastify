@@ -426,6 +426,13 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       if (!Object.keys(ownerChangingObject).length) {
         ownerChangingObject = getOwnerChangingObject(form.owner, userData, body.owner);
       }
+      if (!Object.keys(ownerChangingObject).length) {
+        return res.send(
+          new errors.UNAUTHORIZED(
+            `User cannot change the owner in PUT/edit formData handler, url: ${url}`
+          )
+        );
+      }
     }
 
     // (S) Save formData dataSet
