@@ -120,6 +120,19 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     }
   }
 
+  // Check and prepare owner change
+  let ownerChangingObject = {};
+  if (body.owner) {
+    ownerChangingObject = getOwnerChangingObject(form.owner, userData, body.owner);
+    if (!Object.keys(ownerChangingObject).length) {
+      return res.send(
+        new errors.UNAUTHORIZED(
+          `User cannot add the owner in POST/create formData handler, url: ${url}`
+        )
+      );
+    }
+  }
+
   // Validate formData values against form elems
   const validatorError = validateFormDataInput(formElems, formData);
   if (validatorError) {

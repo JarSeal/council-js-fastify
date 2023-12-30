@@ -1173,35 +1173,12 @@ describe('POST formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const body = JSON.parse(response.body) as FormDataPostReply;
-    expect(response.statusCode).toBe(200);
-    const getData = body.getData as FormDataGetReply;
-    expect(getData?.data).toStrictEqual([
-      {
-        elemId: 'testElem0',
-        value: 'some string',
-        orderNr: 0,
-        valueType: 'string',
-      },
-      {
-        elemId: 'testElem1',
-        value: 12,
-        orderNr: 1,
-        valueType: 'number',
-      },
-    ]);
-    const metaDataArray = getData?.$dataMetaData as {
-      created: Date;
-      edited: Date | null;
-      owner?: UserId;
-      createdBy?: UserId;
-      editedBy?: UserId;
-    }[];
-    const metaData = metaDataArray[0] || {};
-    expect(Object.keys(metaData)).toHaveLength(2);
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(401);
+    expect(body.code).toBe('UNAUTHORIZED');
   });
 
-  it('should be able to change owner successfully', async () => {
+  it('should be able to add owner successfully', async () => {
     const userId = await createUser('myusername');
     await createForm(
       'myform',
