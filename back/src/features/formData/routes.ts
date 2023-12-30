@@ -10,6 +10,7 @@ import {
   transTextSchema,
 } from '../../@types/form';
 import { formDataPut } from './handlers.PUT';
+import { formDataDelete } from './handlers.DELETE';
 
 // GET
 export const getFormReplySchema = Type.Object({
@@ -120,7 +121,7 @@ export const formDataPutBodySchema = Type.Object({
   owner: Type.Optional(Type.String()),
 });
 export type FormDataPutBody = Static<typeof formDataPutBodySchema>;
-export const formDataPutBodyReplySchema = Type.Object({
+export const formDataPutAndDeleteBodyReplySchema = Type.Object({
   ok: Type.Boolean(),
   dataId: Type.Optional(Type.Union([Type.String(), Type.Array(Type.String())])),
   getData: Type.Optional(getReplySchema),
@@ -132,11 +133,23 @@ export const formDataPutBodyReplySchema = Type.Object({
       customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
     })
   ),
+  targetCount: Type.Optional(Type.Number()),
+  modifiedCount: Type.Optional(Type.Number()),
 });
-export type FormDataPutReply = Static<typeof formDataPutBodyReplySchema>;
+export type FormDataPutAndDeleteReply = Static<typeof formDataPutAndDeleteBodyReplySchema>;
 export interface FormDataPutRoute extends RouteGenericInterface {
   readonly Body: FormDataPutBody;
-  readonly Reply: FormDataPutReply | FastifyError;
+  readonly Reply: FormDataPutAndDeleteReply | FastifyError;
+}
+
+// DELETE
+export const deleteQuerystringSchema = Type.Object({
+  dataId: Type.Union([Type.Array(Type.String()), Type.String()]),
+});
+export type DeleteQuerystring = Static<typeof deleteQuerystringSchema>;
+export interface FormDataDeleteRoute extends RouteGenericInterface {
+  readonly Reply: FormDataPutAndDeleteReply | FastifyError;
+  readonly Querystring: DeleteQuerystring;
 }
 
 const formDataRoute: FastifyPluginAsync = (instance) => {
@@ -166,7 +179,20 @@ const formDataRoute: FastifyPluginAsync = (instance) => {
     handler: formDataPut,
     schema: {
       body: formDataPutBodySchema,
-      response: { 200: formDataPutBodyReplySchema, 400: formDataPutBodyReplySchema },
+      response: {
+        200: formDataPutAndDeleteBodyReplySchema,
+        400: formDataPutAndDeleteBodyReplySchema,
+      },
+    },
+  });
+
+  instance.route<FormDataDeleteRoute>({
+    method: 'DELETE',
+    url: '/*',
+    handler: formDataDelete,
+    schema: {
+      response: { 200: formDataPutAndDeleteBodyReplySchema },
+      querystring: deleteQuerystringSchema,
     },
   });
 

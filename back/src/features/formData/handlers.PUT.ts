@@ -1,7 +1,7 @@
 import type { RouteHandler } from 'fastify';
 import { type Types, isObjectIdOrHexString } from 'mongoose';
 
-import type { FormDataPutReply, FormDataPutRoute } from './routes';
+import type { FormDataPutAndDeleteReply, FormDataPutRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
@@ -57,7 +57,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   const formData = body.formData;
   const dataId = body.dataId;
   const dataIdAll = dataId === 'all';
-  const returnResponse: FormDataPutReply = { ok: false };
+  const returnResponse: FormDataPutAndDeleteReply = { ok: false };
 
   if ((Array.isArray(dataId) && dataId.length > 1) || dataIdAll) {
     // Multiple (M) dataSet edit
@@ -96,9 +96,8 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       return res.status(400).send({ ok: false, error: validatorError });
     }
 
-    // (M) Generate dataIdsA array (not sure if we need these)
+    // (M) Generate dataIdsA array
     const savedDataIds = dataSets.map((doc) => doc._id);
-    savedDataIds;
 
     // (START LOOP)
     let newOwnerObject = {};
@@ -286,6 +285,10 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
 
     // (M) Success
     returnResponse.ok = true;
+    if (!dataIdAll) {
+      returnResponse.targetCount = savedDataIds.length;
+      returnResponse.modifiedCount = updateResult.modifiedCount;
+    }
     returnResponse.dataId = savedDataIds.map((id) => id.toString());
   } else {
     // Single (S) dataSet edit
