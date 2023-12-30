@@ -43,10 +43,10 @@ export const transTextDbSchema = {
 };
 
 export const basicPrivilegePropsSchema = {
-  users: { type: mongoIdArraySchema, default: undefined },
-  groups: { type: mongoIdArraySchema, default: undefined },
-  excludeUsers: { type: mongoIdArraySchema, default: undefined },
-  excludeGroups: { type: mongoIdArraySchema, default: undefined },
+  users: { type: [{ ...mongoIdArraySchema[0], ref: 'User' }], default: undefined },
+  groups: { type: [{ ...mongoIdArraySchema[0], ref: 'Group' }], default: undefined },
+  excludeUsers: { type: [{ ...mongoIdArraySchema[0], ref: 'User' }], default: undefined },
+  excludeGroups: { type: [{ ...mongoIdArraySchema[0], ref: 'Group' }], default: undefined },
 };
 
 export const allPrivilegePropsSchema = {

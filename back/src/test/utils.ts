@@ -7,6 +7,7 @@ import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../core/config';
 import DBFormModel from '../dbModels/form';
 import type {
   AllPrivilegeProps,
+  BasicPrivilegeProps,
   FormDataPrivileges,
   FormDataValueType,
   FormElem,
@@ -179,6 +180,7 @@ export const createForm = async (
     formTitle?: string;
     formText?: string;
     lockOrder?: boolean;
+    canEditPrivileges?: BasicPrivilegeProps;
   }
 ) => {
   const adminId = await createSysAdmin();
@@ -203,6 +205,7 @@ export const createForm = async (
   if (opts?.maxDataCreatorDocs) form.maxDataCreatorDocs = opts.maxDataCreatorDocs;
   if (opts?.formDataOwner) form.formDataOwner = opts.formDataOwner;
   if (opts?.fillerIsFormDataOwner) form.fillerIsFormDataOwner = opts.fillerIsFormDataOwner;
+  if (opts?.canEditPrivileges) form.canEditPrivileges = opts.canEditPrivileges;
 
   form.formDataDefaultPrivileges = {
     read: {

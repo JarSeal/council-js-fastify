@@ -1,9 +1,12 @@
 import type { Types } from 'mongoose';
 
+export type UserId = Types.ObjectId | { simpleId: string; _id: Types.ObjectId } | null;
+export type GroupId = Types.ObjectId | { simpleId: string; name: string; _id: Types.ObjectId };
+
 export type Edited = {
-  user: Types.ObjectId;
+  user: UserId;
   date: Date;
-}[];
+};
 
 export type Token = {
   token?: string | null;
@@ -42,20 +45,39 @@ export type FormDataValueType =
 
 export type PublicPrivilegeProp = 'true' | 'false' | 'onlyPublic';
 
-export type AllPrivilegeProps = {
+export type BasicPrivilegeProps = {
+  users?: NonNullable<UserId>[];
+  groups?: GroupId[];
+  excludeUsers?: NonNullable<UserId>[];
+  excludeGroups?: GroupId[];
+};
+
+export type AllPrivilegeProps = BasicPrivilegeProps & {
   public: PublicPrivilegeProp;
   requireCsrfHeader: boolean;
-  users: Types.ObjectId[];
-  groups: Types.ObjectId[];
-  excludeUsers: Types.ObjectId[];
-  excludeGroups: Types.ObjectId[];
+};
+
+export type AllPrivilegePropsAsStringIds = {
+  public?: PublicPrivilegeProp;
+  requireCsrfHeader?: boolean;
+  users?: string[];
+  groups?: string[];
+  excludeUsers?: string[];
+  excludeGroups?: string[];
 };
 
 export type FormDataPrivileges = {
-  read: AllPrivilegeProps;
-  create: AllPrivilegeProps;
-  edit: AllPrivilegeProps;
-  delete: AllPrivilegeProps;
+  read?: Partial<AllPrivilegeProps>;
+  create?: Partial<AllPrivilegeProps>;
+  edit?: Partial<AllPrivilegeProps>;
+  delete?: Partial<AllPrivilegeProps>;
+};
+
+export type FormDataPrivilegesAsStringIds = {
+  read?: Partial<AllPrivilegePropsAsStringIds>;
+  create?: Partial<AllPrivilegePropsAsStringIds>;
+  edit?: Partial<AllPrivilegePropsAsStringIds>;
+  delete?: Partial<AllPrivilegePropsAsStringIds>;
 };
 
 export type FormElem = {

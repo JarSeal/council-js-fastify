@@ -16,7 +16,7 @@ export const valueTypeSchema = Type.Union([
   Type.Literal('unknown'),
 ]);
 
-export const mongoIdArraySchema = Type.Array(Type.Unknown());
+export const mongoIdArraySchema = Type.Array(Type.String());
 
 export const transTextSchema = Type.Optional(
   Type.Object({
@@ -26,17 +26,21 @@ export const transTextSchema = Type.Optional(
 );
 export type TransText = Static<typeof transTextSchema>;
 
-export const basicPrivilegePropsSchema = Type.Object({
+const basicPrivilegeProps = {
   users: Type.Optional(mongoIdArraySchema),
   groups: Type.Optional(mongoIdArraySchema),
   excludeUsers: Type.Optional(mongoIdArraySchema),
   excludeGroups: Type.Optional(mongoIdArraySchema),
-});
+};
+
+export const basicPrivilegePropsSchema = Type.Object(basicPrivilegeProps);
 
 export const allPrivilegePropsSchema = Type.Object({
-  public: Type.Union([Type.Literal('true'), Type.Literal('false'), Type.Literal('onlyPublic')]),
-  requireCsrfHeader: Type.Boolean(),
-  ...basicPrivilegePropsSchema.schema,
+  public: Type.Optional(
+    Type.Union([Type.Literal('true'), Type.Literal('false'), Type.Literal('onlyPublic')])
+  ),
+  requireCsrfHeader: Type.Optional(Type.Boolean()),
+  ...basicPrivilegeProps,
 });
 
 export const formDataPrivilegesSchema = Type.Object({

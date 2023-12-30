@@ -1,8 +1,12 @@
 import type { FastifyError, FastifyRequest } from 'fastify';
-import type { Types } from 'mongoose';
+import { type Types } from 'mongoose';
 
 import DBGroupModel from '../dbModels/group';
-import type { AllPrivilegeProps } from '../dbModels/_modelTypePartials';
+import type {
+  AllPrivilegeProps,
+  BasicPrivilegeProps,
+  UserId,
+} from '../dbModels/_modelTypePartials';
 import { errors } from '../core/errors';
 
 export const emptyPrivilege: AllPrivilegeProps = {
@@ -53,7 +57,8 @@ export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
 export const isPrivBlocked = (
   privilege: AllPrivilegeProps | Partial<AllPrivilegeProps> | undefined,
   userData: UserData,
-  csrfIsGood: boolean
+  csrfIsGood: boolean,
+  owner?: UserId
 ): null | FastifyError => {
   if (!privilege) {
     return new errors.UNAUTHORIZED('Privilege not found');
@@ -78,17 +83,26 @@ export const isPrivBlocked = (
     return new errors.SESSION_CANNOT_BE_SIGNED_IN();
   }
 
-  // From here on out, if public='true', unsigned and signed in users and sysAdmins
+  // From here on out if public='true', unsigned and signed in users and sysAdmins
   // are good to go, because if unsigned users made it this far they area good and
-  // because sysAdmins can access everything
-  if (priv.public === 'true' || priv.public === 'onlyPublic' || userData.isSysAdmin) {
+  // because sysAdmins and owners can access everything
+  const ownerId = owner && '_id' in owner ? owner._id : owner;
+  if (
+    priv.public === 'true' ||
+    priv.public === 'onlyPublic' ||
+    userData.isSysAdmin ||
+    (ownerId && userData.userId?.equals(ownerId))
+  ) {
     return null;
   }
 
+  // Now check if current signed in user is in included users or groups
+  // and not in excluded users and groups
+
   // Check included users (n + k + m^2)
-  if (userData.userId) {
+  if (userData.userId && priv.users) {
     for (let i = 0; i < priv.users.length; i++) {
-      if (priv.users[i].equals(userData.userId)) {
+      if (userData.userId.equals(priv.users[i] as Types.ObjectId)) {
         // Good to go, if not in excluded users nor groups
         return (
           checkExcludedUsers(userData, priv.excludeUsers) ||
@@ -99,10 +113,10 @@ export const isPrivBlocked = (
   }
 
   // Check included groups (n^2 + k + m^2)
-  if (userData.userGroups.length && priv.groups.length) {
+  if (userData.userGroups.length && priv.groups) {
     for (let i = 0; i < priv.groups.length; i++) {
       for (let j = 0; j < userData.userGroups.length; j++) {
-        if (userData.userGroups[j].equals(priv.groups[i])) {
+        if (userData.userGroups[j].equals(priv.groups[i] as Types.ObjectId)) {
           // Good to go, if not in excluded users nor groups
           return (
             checkExcludedUsers(userData, priv.excludeUsers) ||
@@ -117,11 +131,14 @@ export const isPrivBlocked = (
   return new errors.FORBIDDEN('No privileges');
 };
 
-const checkExcludedUsers = (userData: UserData, excludedUsers: Types.ObjectId[]) => {
+const checkExcludedUsers = (
+  userData: UserData,
+  excludedUsers: BasicPrivilegeProps['excludeUsers']
+) => {
   // Check excluded users
-  if (userData.userId) {
+  if (userData.userId && excludedUsers) {
     for (let i = 0; i < excludedUsers.length; i++) {
-      if (excludedUsers[i].equals(userData.userId)) {
+      if (userData.userId.equals(excludedUsers[i] as Types.ObjectId)) {
         return new errors.FORBIDDEN('User in excluded users');
       }
     }
@@ -129,12 +146,15 @@ const checkExcludedUsers = (userData: UserData, excludedUsers: Types.ObjectId[])
   return null;
 };
 
-const checkExcludedGroups = (userData: UserData, excludedGroups: Types.ObjectId[]) => {
-  // Check excluded groups (compare two arrays and see if none match)
-  if (userData.userGroups.length && excludedGroups.length) {
+const checkExcludedGroups = (
+  userData: UserData,
+  excludedGroups: BasicPrivilegeProps['excludeGroups']
+) => {
+  // Check excluded groups (compare two arrays and see if they match or not)
+  if (userData.userGroups.length && excludedGroups) {
     for (let i = 0; i < excludedGroups.length; i++) {
       for (let j = 0; j < userData.userGroups.length; j++) {
-        if (userData.userGroups[j].equals(excludedGroups[i])) {
+        if (userData.userGroups[j].equals(excludedGroups[i] as Types.ObjectId)) {
           return new errors.FORBIDDEN('User in excluded group');
         }
       }
@@ -143,12 +163,18 @@ const checkExcludedGroups = (userData: UserData, excludedGroups: Types.ObjectId[
   return null;
 };
 
-export const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood: boolean) => [
-  { 'privileges.read.public': { $ne: 'onlyPublic' } },
+type PrivilegeScope = 'read' | 'edit' | 'create' | 'delete';
+
+const dataAsSignedInPrivilegesQuery = (
+  scope: PrivilegeScope,
+  userData: UserData,
+  csrfIsGood: boolean
+) => [
+  { [`privileges.${scope}.public`]: { $ne: 'onlyPublic' } },
   {
     $or: [
-      { 'privileges.read.requireCsrfHeader': { $ne: true } },
-      { 'privileges.read.requireCsrfHeader': csrfIsGood },
+      { [`privileges.${scope}.requireCsrfHeader`]: { $ne: true } },
+      { [`privileges.${scope}.requireCsrfHeader`]: csrfIsGood },
     ],
   },
   ...(userData.isSysAdmin
@@ -156,17 +182,17 @@ export const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood
     : [
         {
           $or: [
-            { 'privileges.read.public': 'true' },
+            { [`privileges.${scope}.public`]: 'true' },
             {
               $and: [
                 {
                   $or: [
-                    { 'privileges.read.users': userData.userId },
-                    { 'privileges.read.groups': { $in: userData.userGroups } },
+                    { [`privileges.${scope}.users`]: userData.userId },
+                    { [`privileges.${scope}.groups`]: { $in: userData.userGroups } },
                   ],
                 },
-                { 'privileges.read.excludeUsers': { $ne: userData.userId } },
-                { 'privileges.read.excludeGroups': { $nin: userData.userGroups } },
+                { [`privileges.${scope}.excludeUsers`]: { $ne: userData.userId } },
+                { [`privileges.${scope}.excludeGroups`]: { $nin: userData.userGroups } },
               ],
             },
           ],
@@ -174,37 +200,112 @@ export const readDataAsSignedInPrivilegesQuery = (userData: UserData, csrfIsGood
       ]),
 ];
 
-export const readDataAsSignedOutPrivilegesQuery = (csrfIsGood: boolean) => [
+const dataAsSignedOutPrivilegesQuery = (scope: PrivilegeScope, csrfIsGood: boolean) => [
   {
-    $or: [{ 'privileges.read.public': 'true' }, { 'privileges.read.public': 'onlyPublic' }],
+    $or: [
+      { [`privileges.${scope}.public`]: 'true' },
+      { [`privileges.${scope}.public`]: 'onlyPublic' },
+    ],
   },
   {
     $or: [
-      { 'privileges.read.requireCsrfHeader': { $ne: true } },
-      { 'privileges.read.requireCsrfHeader': csrfIsGood },
+      { [`privileges.${scope}.requireCsrfHeader`]: { $ne: true } },
+      { [`privileges.${scope}.requireCsrfHeader`]: csrfIsGood },
     ],
   },
 ];
 
-export const readDataPrivilegesQuery = (userData: UserData, csrfIsGood: boolean) => {
+export const dataPrivilegesQuery = (
+  scope: PrivilegeScope,
+  userData: UserData,
+  csrfIsGood: boolean
+) => {
   if (userData.isSignedIn) {
-    return readDataAsSignedInPrivilegesQuery(userData, csrfIsGood);
+    return dataAsSignedInPrivilegesQuery(scope, userData, csrfIsGood);
   }
-  return readDataAsSignedOutPrivilegesQuery(csrfIsGood);
+  return dataAsSignedOutPrivilegesQuery(scope, csrfIsGood);
 };
 
 export const combinePrivileges = (
   ...privileges: Partial<AllPrivilegeProps>[]
 ): AllPrivilegeProps => {
-  const combined = emptyPrivilege;
+  const combined = { ...emptyPrivilege };
   for (let i = 0; i < privileges.length; i++) {
     const priv = privileges[i];
     if (priv?.public !== undefined) combined.public = priv.public;
     if (priv?.requireCsrfHeader !== undefined) combined.requireCsrfHeader = priv.requireCsrfHeader;
-    if (priv?.users !== undefined) combined.users = priv.users;
-    if (priv?.groups !== undefined) combined.groups = priv.groups;
-    if (priv?.excludeUsers !== undefined) combined.excludeUsers = priv.excludeUsers;
-    if (priv?.excludeGroups !== undefined) combined.excludeGroups = priv.excludeGroups;
+    if (priv?.users !== undefined) {
+      if (priv.users.length && 'simpleId' in priv.users[0]) {
+        combined.users = priv.users.map((user) => user._id);
+      } else {
+        combined.users = priv.users;
+      }
+    }
+    if (priv?.groups !== undefined) {
+      if (priv.groups.length && 'simpleId' in priv.groups[0]) {
+        combined.groups = priv.groups.map((group) => group._id);
+      } else {
+        combined.groups = priv.groups;
+      }
+    }
+    if (priv?.excludeUsers !== undefined) {
+      if (priv.excludeUsers.length && 'simpleId' in priv.excludeUsers[0]) {
+        combined.excludeUsers = priv.excludeUsers.map((user) => user._id);
+      } else {
+        combined.excludeUsers = priv.excludeUsers;
+      }
+    }
+    if (priv?.excludeGroups !== undefined) {
+      if (priv.excludeGroups.length && 'simpleId' in priv.excludeGroups[0]) {
+        combined.excludeGroups = priv.excludeGroups.map((group) => group._id);
+      } else {
+        combined.excludeGroups = priv.excludeGroups;
+      }
+    }
+  }
+  return combined;
+};
+
+// @TODO: add test
+export const combineBasicPrivileges = (
+  ...privileges: Partial<AllPrivilegeProps>[]
+): BasicPrivilegeProps => {
+  const combined: BasicPrivilegeProps = {
+    users: [],
+    groups: [],
+    excludeUsers: [],
+    excludeGroups: [],
+  };
+  for (let i = 0; i < privileges.length; i++) {
+    const priv = privileges[i];
+    if (priv?.users !== undefined) {
+      if (priv.users.length && 'simpleId' in priv.users[0]) {
+        combined.users = priv.users.map((user) => user._id);
+      } else {
+        combined.users = priv.users;
+      }
+    }
+    if (priv?.groups !== undefined) {
+      if (priv.groups.length && 'simpleId' in priv.groups[0]) {
+        combined.groups = priv.groups.map((group) => group._id);
+      } else {
+        combined.groups = priv.groups;
+      }
+    }
+    if (priv?.excludeUsers !== undefined) {
+      if (priv.excludeUsers.length && 'simpleId' in priv.excludeUsers[0]) {
+        combined.excludeUsers = priv.excludeUsers.map((user) => user._id);
+      } else {
+        combined.excludeUsers = priv.excludeUsers;
+      }
+    }
+    if (priv?.excludeGroups !== undefined) {
+      if (priv.excludeGroups.length && 'simpleId' in priv.excludeGroups[0]) {
+        combined.excludeGroups = priv.excludeGroups.map((group) => group._id);
+      } else {
+        combined.excludeGroups = priv.excludeGroups;
+      }
+    }
   }
   return combined;
 };

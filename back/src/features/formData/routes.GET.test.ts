@@ -12,7 +12,12 @@ import {
   csrfHeader,
   validAgentId,
 } from '../../test/utils';
-import type { PublicPrivilegeProp, TransText } from '../../dbModels/_modelTypePartials';
+import type {
+  BasicPrivilegeProps,
+  FormDataPrivileges,
+  PublicPrivilegeProp,
+  TransText,
+} from '../../dbModels/_modelTypePartials';
 import { SESSION_COOKIE_NAME } from '../../core/config';
 import type { PaginationData } from '../../utils/parsingAndConverting';
 import { emptyFormDataPrivileges } from '../../utils/userAndPrivilegeChecks';
@@ -1412,7 +1417,7 @@ describe('GET formData', () => {
       privilegeAccess: { public: 'true' as PublicPrivilegeProp },
     };
     await createForm(
-      'myForm',
+      formId,
       url,
       [
         {
@@ -2390,7 +2395,8 @@ describe('GET formData', () => {
     expect(paginationP2.hasPrevPage).toBeTruthy();
   });
 
-  it('should return the data, $dataIds, $dataLabels, and $dataMetaData, and also sort the data accordingly', async () => {
+  it('should return the data, $dataIds, $dataLabels, $dataMetaData, and $dataPrivileges, and also sort the data accordingly', async () => {
+    const userId = await createUser('myusername');
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -2425,6 +2431,7 @@ describe('GET formData', () => {
         formDataDefaultPrivileges: {
           read: { public: 'true', requireCsrfHeader: true },
         },
+        canEditPrivileges: { users: [userId] },
       }
     );
     const formDataId1 = await createFormData(formId, url, {}, [
@@ -2646,6 +2653,66 @@ describe('GET formData', () => {
     expect(Object.keys(body).length).toBe(2);
     expect(body.myElem1).toBe(12);
     expect(body.myElem2).toBe('Some string');
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    response = await app.inject({
+      method: 'GET',
+      path: `/api/v1${url}?dataId=all&includePrivileges=true&sort=0`,
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    body = JSON.parse(response.body) as FormDataGetReply;
+    data = body.data as Data[][];
+    const privileges = body.$dataPrivileges as (FormDataPrivileges & {
+      canEditPrivileges: BasicPrivilegeProps;
+    })[];
+    expect(response.statusCode).toBe(200);
+    expect(Object.keys(body).length).toBe(3);
+    expect(data[0][0].value).toBe(0);
+    expect(data[0][1].value).toBe('Some ugly string');
+    expect(data[1][0].value).toBe(11);
+    expect(data[1][1].value).toBe('Some long string');
+    expect(data[2][0].value).toBe(12);
+    expect(data[2][1].value).toBe('Some string');
+    expect(data[3][0].value).toBe(152);
+    expect(data[3][1].value).toBe('Some beautiful string');
+    expect(privileges).toHaveLength(4);
+    expect(privileges[0].canEditPrivileges).toStrictEqual({
+      users: [userId.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    expect(privileges[1].canEditPrivileges).toStrictEqual({
+      users: [userId.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    expect(privileges[2].canEditPrivileges).toStrictEqual({
+      users: [userId.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    expect(privileges[3].canEditPrivileges).toStrictEqual({
+      users: [userId.toString()],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
   });
 
   it('should return all data, but only with specified elemIds and should not return data if elemId not found', async () => {

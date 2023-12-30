@@ -1,7 +1,6 @@
 const { default: mongoose } = require('mongoose');
 const { groupCount, createGroupId } = require('./_config');
 const { default: DBGroupModel } = require('../../dist/back/src/dbModels/group');
-const { default: DBUserModel } = require('../../dist/back/src/dbModels/user');
 
 const removeGroups = async () => {
   console.log('\nGROUPS:');

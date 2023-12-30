@@ -1,8 +1,12 @@
 import { type Types, type PaginateModel, Schema, model } from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-import { dateDBSchema, formDataPrivilegesSchema } from './_schemaPartials';
-import type { Edited, FormDataPrivileges } from './_modelTypePartials';
+import {
+  basicPrivilegePropsSchema,
+  dateDBSchema,
+  formDataPrivilegesSchema,
+} from './_schemaPartials';
+import type { BasicPrivilegeProps, Edited, FormDataPrivileges, UserId } from './_modelTypePartials';
 
 export interface DBFormData {
   // Mongo ID
@@ -17,17 +21,21 @@ export interface DBFormData {
 
   // Logs and owner
   created: {
-    user: Types.ObjectId | null;
+    user: UserId;
     date: Date;
   };
-  edited: Edited;
-  owner: Types.ObjectId | null;
+  edited: Edited[];
+  editedHistoryCount?: number;
+  owner: UserId;
 
-  // Whether elements' have specific privileges that need to be checked (optimisation)
+  // Whether elements' have specific privileges that need to be checked (this is for optimisation)
   hasElemPrivileges?: boolean;
 
   // Privileges for all elements, but these are overridden if element has specific privileges
-  privileges: FormDataPrivileges;
+  privileges?: Partial<FormDataPrivileges>;
+
+  // Who or what group(s) can and cannot edit privileges for particular dataSet
+  canEditPrivileges?: BasicPrivilegeProps;
 
   // Form element data
   data: {
@@ -38,7 +46,7 @@ export interface DBFormData {
     value: unknown;
 
     // Element specific privileges
-    privileges?: Omit<FormDataPrivileges, 'create'>;
+    privileges?: Omit<FormDataPrivileges, 'create' | 'delete'>;
   }[];
 }
 
@@ -59,9 +67,11 @@ const formDataSchema = new Schema<DBFormData>({
       date: dateDBSchema,
     },
   ],
+  editedHistoryCount: { type: Number },
   owner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   hasElemPrivileges: { type: Boolean },
   privileges: formDataPrivilegesSchema,
+  canEditPrivileges: basicPrivilegePropsSchema,
   data: [
     {
       _id: false,
@@ -87,5 +97,9 @@ const DBFormDataModel = model<DBFormData, PaginateModel<DBFormData>>(
   formDataSchema,
   'formData'
 );
+
+// @TODO: add model for special UserData formData model and collection (userData)
+// and do a named export or export formDataSchema and use it to create new special
+// models outside of this (default is the one below)
 
 export default DBFormDataModel;

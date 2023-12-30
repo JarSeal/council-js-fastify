@@ -3,37 +3,15 @@ import { type Static, Type } from '@sinclair/typebox';
 
 import { formDataGet } from './handlers.GET';
 import { formDataPost } from './handlers.POST';
-import { formElemPublicSchema, transTextSchema } from '../../@types/form';
+import {
+  allPrivilegePropsSchema,
+  basicPrivilegePropsSchema,
+  formElemPublicSchema,
+  transTextSchema,
+} from '../../@types/form';
+import { formDataPut } from './handlers.PUT';
 
-export const postBodySchema = Type.Object({
-  formData: Type.Array(
-    Type.Object({
-      elemId: Type.String(),
-      value: Type.Unknown(),
-    })
-  ),
-});
-export type FormDataPostBody = Static<typeof postBodySchema>;
-
-export const postBodyReplySchema = Type.Object({
-  ok: Type.Boolean(),
-  dataId: Type.Optional(Type.String()),
-  error: Type.Optional(
-    Type.Object({
-      errorId: Type.String(),
-      message: Type.String(),
-      elemId: Type.Optional(Type.String()),
-      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
-    })
-  ),
-});
-export type FormDataPostReply = Static<typeof postBodyReplySchema>;
-
-export interface FormDataPostRoute extends RouteGenericInterface {
-  readonly Body: FormDataPostBody;
-  readonly Reply: FormDataPostReply | FastifyError;
-}
-
+// GET
 export const getFormReplySchema = Type.Object({
   formTitle: transTextSchema,
   formText: transTextSchema,
@@ -45,7 +23,6 @@ export type GetFormReply = Static<typeof getFormReplySchema>;
 // @CONSIDER: is this getReplySchema enough? Should there be more specific typing?
 export const getReplySchema = Type.Record(Type.String(), Type.Unknown());
 export type FormDataGetReply = Static<typeof getReplySchema>;
-
 export const getQuerystringSchema = Type.Object({
   getForm: Type.Optional(Type.Boolean()),
   dataId: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
@@ -60,15 +37,106 @@ export const getQuerystringSchema = Type.Object({
   includeDataIds: Type.Optional(Type.String()),
   includeLabels: Type.Optional(Type.String()),
   includeMeta: Type.Optional(Type.String()),
+  includePrivileges: Type.Optional(Type.Boolean()),
   meAsCreator: Type.Optional(Type.Boolean()),
   meAsOwner: Type.Optional(Type.Boolean()),
   meAsEditor: Type.Optional(Type.Boolean()),
 });
 export type GetQuerystring = Static<typeof getQuerystringSchema>;
-
 export interface FormDataGetRoute extends RouteGenericInterface {
   readonly Reply: FormDataGetReply | FastifyError;
   readonly Querystring: GetQuerystring;
+}
+
+// POST
+export const formDataPostBodySchema = Type.Object({
+  formData: Type.Array(
+    Type.Object({
+      elemId: Type.String(),
+      value: Type.Unknown(),
+      privileges: Type.Optional(
+        Type.Object({
+          read: Type.Optional(allPrivilegePropsSchema),
+          edit: Type.Optional(allPrivilegePropsSchema),
+        })
+      ),
+    })
+  ),
+  getData: Type.Optional(Type.Union([Type.Boolean(), getQuerystringSchema])),
+  privileges: Type.Optional(
+    Type.Object({
+      read: Type.Optional(allPrivilegePropsSchema),
+      edit: Type.Optional(allPrivilegePropsSchema),
+      delete: Type.Optional(allPrivilegePropsSchema),
+    })
+  ),
+  canEditPrivileges: Type.Optional(basicPrivilegePropsSchema),
+  owner: Type.Optional(Type.String()),
+});
+export type FormDataPostBody = Static<typeof formDataPostBodySchema>;
+export const formDataPostBodyReplySchema = Type.Object({
+  ok: Type.Boolean(),
+  dataId: Type.Optional(Type.String()),
+  getData: Type.Optional(getReplySchema),
+  error: Type.Optional(
+    Type.Object({
+      errorId: Type.String(),
+      message: Type.String(),
+      elemId: Type.Optional(Type.String()),
+      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
+    })
+  ),
+});
+export type FormDataPostReply = Static<typeof formDataPostBodyReplySchema>;
+export interface FormDataPostRoute extends RouteGenericInterface {
+  readonly Body: FormDataPostBody;
+  readonly Reply: FormDataPostReply | FastifyError;
+}
+
+// PUT
+export const formDataPutBodySchema = Type.Object({
+  dataId: Type.Union([Type.String(), Type.Array(Type.String())]),
+  formData: Type.Array(
+    Type.Object({
+      elemId: Type.String(),
+      value: Type.Unknown(),
+      privileges: Type.Optional(
+        Type.Object({
+          read: Type.Optional(allPrivilegePropsSchema),
+          edit: Type.Optional(allPrivilegePropsSchema),
+        })
+      ),
+    })
+  ),
+  getData: Type.Optional(Type.Union([Type.Boolean(), getQuerystringSchema])),
+  privileges: Type.Optional(
+    Type.Object({
+      read: Type.Optional(allPrivilegePropsSchema),
+      edit: Type.Optional(allPrivilegePropsSchema),
+      delete: Type.Optional(allPrivilegePropsSchema),
+    })
+  ),
+  canEditPrivileges: Type.Optional(basicPrivilegePropsSchema),
+  owner: Type.Optional(Type.String()),
+});
+export type FormDataPutBody = Static<typeof formDataPutBodySchema>;
+export const formDataPutBodyReplySchema = Type.Object({
+  ok: Type.Boolean(),
+  dataId: Type.Optional(Type.Union([Type.String(), Type.Array(Type.String())])),
+  getData: Type.Optional(getReplySchema),
+  error: Type.Optional(
+    Type.Object({
+      errorId: Type.String(),
+      message: Type.String(),
+      elemId: Type.Optional(Type.String()),
+      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
+    })
+  ),
+});
+export type FormDataPutReply = Static<typeof formDataPutBodyReplySchema>;
+export interface FormDataPutRoute extends RouteGenericInterface {
+  readonly Body: FormDataPutBody;
+  readonly Reply: FormDataPutReply | FastifyError;
 }
 
 const formDataRoute: FastifyPluginAsync = (instance) => {
@@ -87,8 +155,18 @@ const formDataRoute: FastifyPluginAsync = (instance) => {
     url: '/*',
     handler: formDataPost,
     schema: {
-      body: postBodySchema,
-      response: { 200: postBodyReplySchema, 400: postBodyReplySchema },
+      body: formDataPostBodySchema,
+      response: { 200: formDataPostBodyReplySchema, 400: formDataPostBodyReplySchema },
+    },
+  });
+
+  instance.route<FormDataPutRoute>({
+    method: 'PUT',
+    url: '/*',
+    handler: formDataPut,
+    schema: {
+      body: formDataPutBodySchema,
+      response: { 200: formDataPutBodyReplySchema, 400: formDataPutBodyReplySchema },
     },
   });
 

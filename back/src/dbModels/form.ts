@@ -6,8 +6,16 @@ import {
   formElemDbSchema,
   formDataPrivilegesSchema,
   transTextDbSchema,
+  basicPrivilegePropsSchema,
 } from './_schemaPartials';
-import type { Edited, FormDataPrivileges, FormElem, TransText } from './_modelTypePartials';
+import type {
+  BasicPrivilegeProps,
+  Edited,
+  FormDataPrivileges,
+  FormElem,
+  TransText,
+  UserId,
+} from './_modelTypePartials';
 
 export interface DBForm {
   // Mongo ID
@@ -21,12 +29,13 @@ export interface DBForm {
   name: string;
   description: string;
   created: {
-    user: Types.ObjectId | null;
+    user: UserId;
     date: Date;
   };
-  edited: Edited;
+  edited: Edited[];
+  editedHistoryCount?: number;
   systemDocument: boolean;
-  owner: Types.ObjectId | null;
+  owner: UserId;
 
   // API url
   url: string;
@@ -47,16 +56,24 @@ export interface DBForm {
 
   // How many documents can be sent with this form per creator.user (must be signed in)
   // Usually this is either undefined or 1 (undefined = infinite)
+  // This will only affect formData forms
   maxDataCreatorDocs?: number;
 
   // Form data owner
-  formDataOwner?: Types.ObjectId | null;
+  // This will only affect formData forms
+  formDataOwner?: UserId;
 
   // Whether the formData owner is the one who fills the form (formDataOwner must be undefind or null)
+  // This will only affect formData forms
   fillerIsFormDataOwner?: boolean;
 
   // Default privileges to be passed to the formData document
-  formDataDefaultPrivileges: FormDataPrivileges;
+  // These will only affect formData forms
+  formDataDefaultPrivileges?: FormDataPrivileges;
+
+  // Who or what group(s) can and cannot edit privileges
+  // These will only affect formData forms
+  canEditPrivileges?: BasicPrivilegeProps;
 }
 
 const formSchema = new Schema<DBForm>({
@@ -74,6 +91,7 @@ const formSchema = new Schema<DBForm>({
       date: dateDBSchema,
     },
   ],
+  editedHistoryCount: { type: Number },
   systemDocument: { type: Boolean, default: false },
   owner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   url: { type: String, unique: true, required: true },
@@ -88,6 +106,7 @@ const formSchema = new Schema<DBForm>({
   formDataOwner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   fillerIsFormDataOwner: { type: Boolean },
   formDataDefaultPrivileges: formDataPrivilegesSchema,
+  canEditPrivileges: basicPrivilegePropsSchema,
 });
 
 formSchema.set('toJSON', {

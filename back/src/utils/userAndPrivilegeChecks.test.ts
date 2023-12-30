@@ -71,7 +71,7 @@ describe('userAndPrivilegeChecks', () => {
     });
   });
 
-  it('should check privilegde: CSRF and public', async () => {
+  it('should check privilege: CSRF and public', async () => {
     // CSRF and public check
     // ***********************************
     let req = {} as FastifyRequest;
@@ -140,7 +140,7 @@ describe('userAndPrivilegeChecks', () => {
     expect(privBlocked?.message).toBe('Cannot be signed in to access route');
   });
 
-  it('should check privilegde: sysAdmin', async () => {
+  it('should check privilege: sysAdmin', async () => {
     // sysAdmin check
     // ***********************************
     const adminId = await createSysAdmin();
@@ -157,6 +157,27 @@ describe('userAndPrivilegeChecks', () => {
     const userData = await getUserData(req);
     const privilege = { public: 'false', excludeUsers: [adminId] } as Partial<AllPrivilegeProps>;
     const privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req));
+    expect(privBlocked).toBe(null);
+  });
+
+  it('should check privilege: owner', async () => {
+    // owner check
+    // ***********************************
+    const userId = await createUser('myuser');
+    const owner = userId;
+    const req = {
+      headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
+      session: {
+        isSignedIn: true,
+        username: 'myuser',
+        userId,
+        agentId: '',
+        cookie: {},
+      },
+    } as unknown as FastifyRequest;
+    const userData = await getUserData(req);
+    const privilege = { public: 'false', excludeUsers: [userId] } as Partial<AllPrivilegeProps>;
+    const privBlocked = isPrivBlocked(privilege, userData, isCsrfGood(req), owner);
     expect(privBlocked).toBe(null);
   });
 
@@ -255,7 +276,7 @@ describe('userAndPrivilegeChecks', () => {
     expect(privBlocked).toBe(null);
   });
 
-  it('should reject when user belongs to excluded group', async () => {
+  it('should reject when user belongs to an excluded group', async () => {
     const username = 'myusername';
     const userId = await createUser(username, { verified: true });
     const adminId = await createSysAdmin();

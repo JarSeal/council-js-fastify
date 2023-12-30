@@ -18,7 +18,8 @@ export interface DBGroup {
     user: Types.ObjectId | null;
     date: Date;
   };
-  edited: Edited;
+  edited: Edited[];
+  editedHistoryCount?: number;
   systemDocument?: boolean;
   owner: Types.ObjectId;
 
@@ -43,6 +44,7 @@ const groupSchema = new Schema<DBGroup>({
       date: dateDBSchema,
     },
   ],
+  editedHistoryCount: { type: Number },
   systemDocument: { type: Boolean, default: false },
   owner: { type: Schema.Types.ObjectId, required: true },
   members: mongoIdArraySchema,

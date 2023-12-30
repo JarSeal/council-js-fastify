@@ -1,10 +1,23 @@
-import { isObjectIdOrHexString, Types, type PaginateResult } from 'mongoose';
+import {
+  isObjectIdOrHexString,
+  Types,
+  type PaginateResult,
+  type Types as MongooseTypes,
+} from 'mongoose';
 
 import { apiVersion } from '../core/apis';
 import { apiRoot } from '../core/app';
 import type { DBForm } from '../dbModels/form';
 import DBUserModel from '../dbModels/user';
 import { getFormDataElemPrivilegesQuery, type UserData } from './userAndPrivilegeChecks';
+import type {
+  AllPrivilegeProps,
+  AllPrivilegePropsAsStringIds,
+  Edited,
+  FormDataPrivileges,
+  FormDataPrivilegesAsStringIds,
+  UserId,
+} from '../dbModels/_modelTypePartials';
 
 export const getApiPathFromReqUrl = (reqUrl: string) =>
   reqUrl.split('?')[0].replace(apiRoot + apiVersion, '');
@@ -313,4 +326,99 @@ const getSearchQueryByValueType = (
         ],
       };
   }
+};
+
+export const convertFormDataPrivilegesForSave = (
+  privileges?: Partial<FormDataPrivilegesAsStringIds>
+) => {
+  if (!privileges) return null;
+
+  const convertedPrivileges: Partial<FormDataPrivileges> = {};
+
+  if (privileges.read) {
+    const newPrivs = convertPrivilegeIdStringsToObjectIds(privileges.read);
+    if (newPrivs) convertedPrivileges.read = newPrivs;
+  }
+  if (privileges.edit) {
+    const newPrivs = convertPrivilegeIdStringsToObjectIds(privileges.edit);
+    if (newPrivs) convertedPrivileges.edit = newPrivs;
+  }
+  if (privileges.create) {
+    const newPrivs = convertPrivilegeIdStringsToObjectIds(privileges.create);
+    if (newPrivs) convertedPrivileges.create = newPrivs;
+  }
+  if (privileges.delete) {
+    const newPrivs = convertPrivilegeIdStringsToObjectIds(privileges.delete);
+    if (newPrivs) convertedPrivileges.delete = newPrivs;
+  }
+
+  return Object.keys(convertedPrivileges).length ? convertedPrivileges : null;
+};
+
+export const convertPrivilegeIdStringsToObjectIds = (privilege?: AllPrivilegePropsAsStringIds) => {
+  if (!privilege) return null;
+
+  const convertedPrivilege: Partial<AllPrivilegeProps> = {
+    ...(privilege.public ? { public: privilege.public || 'false' } : {}),
+    ...(privilege.requireCsrfHeader !== undefined
+      ? { requireCsrfHeader: privilege.requireCsrfHeader || true }
+      : {}),
+  };
+
+  if (privilege.users) {
+    convertedPrivilege.users = [];
+    for (let i = 0; i < privilege.users.length; i++) {
+      convertedPrivilege.users.push(new Types.ObjectId(privilege.users[i]));
+    }
+  }
+  if (privilege.groups) {
+    convertedPrivilege.groups = [];
+    for (let i = 0; i < privilege.groups.length; i++) {
+      convertedPrivilege.groups.push(new Types.ObjectId(privilege.groups[i]));
+    }
+  }
+  if (privilege.excludeUsers) {
+    convertedPrivilege.excludeUsers = [];
+    for (let i = 0; i < privilege.excludeUsers.length; i++) {
+      convertedPrivilege.excludeUsers.push(new Types.ObjectId(privilege.excludeUsers[i]));
+    }
+  }
+  if (privilege.excludeGroups) {
+    convertedPrivilege.excludeGroups = [];
+    for (let i = 0; i < privilege.excludeGroups.length; i++) {
+      convertedPrivilege.excludeGroups.push(new Types.ObjectId(privilege.excludeGroups[i]));
+    }
+  }
+
+  return Object.keys(convertedPrivilege).length ? convertedPrivilege : null;
+};
+
+export const createNewEditedArray = (
+  oldArray: Edited[],
+  userId: MongooseTypes.ObjectId | null,
+  count?: number,
+  forcedDate?: Date
+) => {
+  const COUNT = count || 10; // @TODO: get this default edit array count (here 10) from settings
+  const date = forcedDate || new Date();
+  const oldArrayCopy = [...oldArray];
+  oldArrayCopy.unshift({ user: userId, date });
+  const newArray = oldArrayCopy.filter((_, index) => index < COUNT);
+  return newArray;
+};
+
+export const getUserId = (userId?: UserId) => {
+  if (!userId) return null;
+  if ('_id' in userId) return userId._id;
+  if (isObjectIdOrHexString(userId)) return userId;
+  return null;
+};
+
+export const getOwnerChangingObject = (curOwner: UserId, userData: UserData, newOwner?: string) => {
+  const curOwnerId = getUserId(curOwner);
+  if (!newOwner || !userData.userId || (!curOwnerId && !userData.isSysAdmin)) return {};
+  if ((curOwnerId && curOwnerId.equals(userData.userId)) || userData.isSysAdmin) {
+    return { owner: new Types.ObjectId(newOwner) };
+  }
+  return {};
 };

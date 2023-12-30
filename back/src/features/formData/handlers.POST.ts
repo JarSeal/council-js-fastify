@@ -1,14 +1,20 @@
 import type { RouteHandler } from 'fastify';
 
-import type { FormDataPostRoute } from './routes';
+import type { FormDataPostReply, FormDataPostRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
 import { getUserData, isPrivBlocked, combinePrivileges } from '../../utils/userAndPrivilegeChecks';
-import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
+import {
+  convertFormDataPrivilegesForSave,
+  convertPrivilegeIdStringsToObjectIds,
+  getApiPathFromReqUrl,
+  getOwnerChangingObject,
+} from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
+import { getFormData } from './handlers.GET';
 
 // Create (POST)
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -24,26 +30,52 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     return res.send(new errors.NOT_FOUND(`Could not find form with url: ${url}`));
   }
 
-  // Get canUseForm privilege (this is also checked when getting the form)
+  // Check canUseForm privilege and formDataDefaultPrivileges (create)
   const privilegeId = `form__${form.simpleId}__canUseForm`;
   const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-
-  // Check form's formDataDefaultPrivileges (create)
-  const formDataDefaultCreatePrivileges = combinePrivileges(
-    privilege?.privilegeAccess || {},
-    form.formDataDefaultPrivileges?.create || {}
-  );
-  const createFormDataPrivError = isPrivBlocked(
-    formDataDefaultCreatePrivileges,
+  let createFormDataPrivError = isPrivBlocked(
+    privilege?.privilegeAccess,
     userData,
-    csrfIsGood
+    csrfIsGood,
+    form.owner
   );
   if (createFormDataPrivError) {
     return res.send(
       new errors.UNAUTHORIZED(
-        `User not privileged to create formData in POST/create formData handler, formDataDefaultPrivileges, url: ${url}`
+        `User not privileged to create formData in POST/create formData handler, privilegeId: '${privilegeId}', url: ${url}`
       )
     );
+  }
+  const formDataDefaultCreatePrivs = form.formDataDefaultPrivileges?.create;
+  createFormDataPrivError = isPrivBlocked(
+    formDataDefaultCreatePrivs,
+    userData,
+    csrfIsGood,
+    form.owner
+  );
+  if (createFormDataPrivError) {
+    return res.send(
+      new errors.UNAUTHORIZED(
+        `User not privileged to create formData in POST/create formData handler, formDataDefaultPrivileges.create, url: ${url}`
+      )
+    );
+  }
+
+  // Check if any privileges are passed and if the user has privileges to set them (canEditPrivileges)
+  if (body.privileges || body.canEditPrivileges || body.formData.find((fd) => fd.privileges)) {
+    const formCanEditPrivilegesError = isPrivBlocked(
+      { ...form.canEditPrivileges, public: 'false', requireCsrfHeader: false },
+      userData,
+      true,
+      form.owner
+    );
+    if (formCanEditPrivilegesError) {
+      return res.send(
+        new errors.UNAUTHORIZED(
+          `User not privileged to set privileges in POST/create formData handler, canEditPrivileges, url: ${url}`
+        )
+      );
+    }
   }
 
   const formElems = form.form.formElems;
@@ -69,10 +101,15 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     if (!elem || elem.doNotSave) continue;
     if (elem.privileges?.create) {
       const elemDataCreatePrivileges = combinePrivileges(
-        formDataDefaultCreatePrivileges,
-        elem.privileges.create || {}
+        formDataDefaultCreatePrivs || {},
+        elem.privileges?.create || {}
       );
-      const elemFormDataPrivError = isPrivBlocked(elemDataCreatePrivileges, userData, csrfIsGood);
+      const elemFormDataPrivError = isPrivBlocked(
+        elemDataCreatePrivileges,
+        userData,
+        csrfIsGood,
+        form.owner
+      );
       if (elemFormDataPrivError) {
         return res.send(
           new errors.UNAUTHORIZED(
@@ -80,6 +117,19 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
           )
         );
       }
+    }
+  }
+
+  // Check and prepare owner change
+  let ownerChangingObject = {};
+  if (body.owner) {
+    ownerChangingObject = getOwnerChangingObject(form.owner, userData, body.owner);
+    if (!Object.keys(ownerChangingObject).length) {
+      return res.send(
+        new errors.UNAUTHORIZED(
+          `User cannot add the owner in POST/create formData handler, url: ${url}`
+        )
+      );
     }
   }
 
@@ -95,26 +145,46 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   for (let i = 0; i < formData.length; i++) {
     const elem = formElems.find((elem) => elem.elemId === formData[i].elemId);
     if (!elem || elem.doNotSave) continue;
+    const elemPrivs = convertFormDataPrivilegesForSave(formData[i].privileges);
     saveData.push({
       elemId: elem.elemId,
       value: formData[i].value,
-      ...(elem.privileges ? { privileges: elem.privileges } : {}),
+      ...(elemPrivs ? { privileges: elemPrivs } : {}),
     });
-    if (elem.privileges) hasElemPrivileges = true;
+    if (formData[i].privileges || elem.privileges) hasElemPrivileges = true;
   }
 
   if (!saveData.length) {
     return res.status(400).send({
       ok: false,
       error: {
-        errorId: 'saveDataEmpty',
+        errorId: 'createFormDataEmpty',
         message:
           'Form data had no data to save, either because of lacking privileges or no saveable data was sent.',
       },
     });
   }
 
+  // Convert privileges and canEditPrivileges to ObjectIds
+  const mainPrivs = {
+    ...(form.formDataDefaultPrivileges || {}),
+    ...convertFormDataPrivilegesForSave(body.privileges),
+  };
+  const canEditPrivs = convertPrivilegeIdStringsToObjectIds(body.canEditPrivileges);
+
   // Create formData object and save
+  let formDataOwner = null;
+  if (body.owner) {
+    const ownerObj = getOwnerChangingObject(form.owner, userData, body.owner);
+    if (Object.keys(ownerObj).length) {
+      formDataOwner = ownerObj.owner;
+    }
+  }
+  if (!formDataOwner) {
+    formDataOwner = form.fillerIsFormDataOwner
+      ? userData.userId || form.formDataOwner || null
+      : form.formDataOwner || null;
+  }
   const newFormData = new DBFormDataModel<DBFormData>({
     formId: form.simpleId,
     url,
@@ -123,10 +193,11 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
       date: new Date(),
     },
     edited: [],
-    owner: form.fillerIsFormDataOwner ? userData.userId || null : form.formDataOwner || null,
+    owner: formDataOwner,
     hasElemPrivileges,
-    privileges: form.formDataDefaultPrivileges,
     data: saveData,
+    ...(mainPrivs ? { privileges: mainPrivs } : {}),
+    ...(canEditPrivs ? { canEditPrivileges: canEditPrivs } : {}),
   });
   const savedFormData = await newFormData.save();
   if (!savedFormData) {
@@ -137,5 +208,19 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     );
   }
 
-  return res.send({ ok: true, dataId: savedFormData._id.toString() });
+  const newDataId = savedFormData._id.toString();
+  const returnResponse: FormDataPostReply = { ok: true, dataId: newDataId };
+
+  if (body.getData) {
+    let params;
+    if (body.getData === true) {
+      params = { dataId: [newDataId] };
+    } else {
+      params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
+    }
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    returnResponse.getData = getDataResult;
+  }
+
+  return res.send(returnResponse);
 };

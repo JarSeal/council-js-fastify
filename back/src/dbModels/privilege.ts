@@ -29,7 +29,8 @@ export interface DBPrivilege {
   name: string;
   description: string;
   created: Date;
-  edited: Edited;
+  edited: Edited[];
+  editedHistoryCount?: number;
   systemDocument?: boolean;
 
   // Who can view this privilege doc in the system (admin stuff)
@@ -59,6 +60,7 @@ const privilegeSchema = new Schema<DBPrivilege>({
       date: dateDBSchema,
     },
   ],
+  editedHistoryCount: { type: Number },
   systemDocument: { type: Boolean, default: false },
   privilegeViewAccess: basicPrivilegePropsSchema,
   privilegeEditAccess: basicPrivilegePropsSchema,
