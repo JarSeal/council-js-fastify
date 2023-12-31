@@ -45,8 +45,8 @@ export const getQuerystringSchema = Type.Object({
 });
 export type GetQuerystring = Static<typeof getQuerystringSchema>;
 export interface FormDataGetRoute extends RouteGenericInterface {
-  readonly Reply: FormDataGetReply | FastifyError;
   readonly Querystring: GetQuerystring;
+  readonly Reply: FormDataGetReply | FastifyError;
 }
 
 // POST
@@ -135,6 +135,7 @@ export const formDataPutAndDeleteBodyReplySchema = Type.Object({
   ),
   targetCount: Type.Optional(Type.Number()),
   modifiedCount: Type.Optional(Type.Number()),
+  deletedCount: Type.Optional(Type.Number()),
 });
 export type FormDataPutAndDeleteReply = Static<typeof formDataPutAndDeleteBodyReplySchema>;
 export interface FormDataPutRoute extends RouteGenericInterface {
@@ -143,13 +144,14 @@ export interface FormDataPutRoute extends RouteGenericInterface {
 }
 
 // DELETE
-export const deleteQuerystringSchema = Type.Object({
+export const formDataDeleteBodySchema = Type.Object({
   dataId: Type.Union([Type.Array(Type.String()), Type.String()]),
+  getData: Type.Optional(Type.Union([Type.Boolean(), getQuerystringSchema])),
 });
-export type DeleteQuerystring = Static<typeof deleteQuerystringSchema>;
+export type FormDataDeleteBody = Static<typeof formDataDeleteBodySchema>;
 export interface FormDataDeleteRoute extends RouteGenericInterface {
+  readonly Body: FormDataDeleteBody;
   readonly Reply: FormDataPutAndDeleteReply | FastifyError;
-  readonly Querystring: DeleteQuerystring;
 }
 
 const formDataRoute: FastifyPluginAsync = (instance) => {
@@ -158,8 +160,8 @@ const formDataRoute: FastifyPluginAsync = (instance) => {
     url: '/*',
     handler: formDataGet,
     schema: {
-      response: { 200: getReplySchema },
       querystring: getQuerystringSchema,
+      response: { 200: getReplySchema },
     },
   });
 
@@ -191,8 +193,8 @@ const formDataRoute: FastifyPluginAsync = (instance) => {
     url: '/*',
     handler: formDataDelete,
     schema: {
+      body: formDataDeleteBodySchema,
       response: { 200: formDataPutAndDeleteBodyReplySchema },
-      querystring: deleteQuerystringSchema,
     },
   });
 

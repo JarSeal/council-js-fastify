@@ -1,7 +1,7 @@
 import type { RouteHandler } from 'fastify';
 import { type Types, isObjectIdOrHexString } from 'mongoose';
 
-import type { FormDataDeleteRoute } from './routes';
+import type { FormDataDeleteRoute, FormDataPutAndDeleteReply } from './routes';
 import {
   combinePrivileges,
   dataPrivilegesQuery,
@@ -14,12 +14,14 @@ import { errors } from '../../core/errors';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
+import { getFormData } from './handlers.GET';
 
 // Delete (DELETE)
 export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res) => {
   const url = getApiPathFromReqUrl(req.url);
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);
+  const returnResponse: FormDataPutAndDeleteReply = { ok: false };
 
   // Get form
   const form = await DBFormModel.findOne<DBForm>({ url });
@@ -44,9 +46,23 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     );
   }
 
-  // Get dataId query param(s)
-  const { dataId } = req.query;
+  // Get dataId query param(s) and getData
+  const body = req.body;
+  const { dataId } = body;
   const dataIdAll = dataId === 'all';
+
+  // Get possible getData before the document(s) is/are deleted
+  if (body.getData) {
+    let params;
+    const dataIds = Array.isArray(dataId) ? dataId : [dataId];
+    if (body.getData === true) {
+      params = { dataId: dataIds };
+    } else {
+      params = { ...body.getData, ...(!body.getData.dataId ? { dataId: dataIds } : {}) };
+    }
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    returnResponse.getData = getDataResult;
+  }
 
   if ((Array.isArray(dataId) && dataId.length > 1) || dataIdAll) {
     // Multiple (M) dataSet deletion
@@ -57,7 +73,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
       $and: [
         { formId: form.simpleId },
         ...(dataIdAll ? [] : [{ _id: { $in: dataId } }]),
-        ...dataPrivilegesQuery('edit', userData, csrfIsGood),
+        ...dataPrivilegesQuery('delete', userData, csrfIsGood),
       ],
     });
     if (!dataSets?.length) {
@@ -110,18 +126,34 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
           new errors.UNAUTHORIZED(
             `User not privileged to delete formData in DELETE/delete (mass delete) formData handler, default and/or dataSet privileges (dataSet Id: ${dataSets[
               i
-            ]._id.toString()}, url: ${url}`
+            ]._id.toString()}, url: ${url}, no data was deleted`
           )
         );
       }
     }
     // (END LOOP)
+
+    // (M) Delete multiple dataSets
+    const updateResult = await DBFormDataModel.deleteMany({ _id: { $in: savedDataIds } });
+    if (updateResult.deletedCount !== savedDataIds.length) {
+      returnResponse.error = {
+        errorId: 'massDeleteCount',
+        message: `Mass delete tried to delete ${savedDataIds.length} dataSets but was able to update ${updateResult.deletedCount} dataSets.`,
+      };
+    }
+
+    // (M) Success
+    returnResponse.ok = true;
+    if (!dataIdAll) {
+      returnResponse.targetCount = savedDataIds.length;
+      returnResponse.deletedCount = updateResult.deletedCount;
+    }
+    returnResponse.dataId = savedDataIds.map((id) => id.toString());
   } else {
     // Single (S) dataSet delete
     // *************************
 
-    let id = dataId;
-    if (Array.isArray(dataId)) id = dataId[0];
+    const id = Array.isArray(dataId) ? dataId[0] : dataId;
 
     // (S) Get old saved formData
     const dataSet = await DBFormDataModel.findOne({
@@ -130,9 +162,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     if (!dataSet) {
       return res.send(
         new errors.NOT_FOUND(
-          `Could not find formData with dataId: '${id as string}' (formId: ${
-            form.simpleId
-          }), url: ${url}`
+          `Could not find formData with dataId: '${id}' (formId: ${form.simpleId}), url: ${url}`
         )
       );
     }
@@ -163,7 +193,19 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
         )
       );
     }
+
+    // (S) Delete the document from the DB
+    const deleteResult = await DBFormDataModel.findOneAndDelete({ _id: id });
+    if (!deleteResult) {
+      return res.send(
+        new errors.DB_GENERAL_ERROR(`Could not delete formData dataSet, url: ${url}, id: ${id}`)
+      );
+    }
+
+    // (S) Success
+    returnResponse.ok = true;
+    returnResponse.dataId = dataSet._id.toString();
   }
 
-  return res.send({ ok: true });
+  return res.send(returnResponse);
 };
