@@ -496,5 +496,5 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     returnResponse.getData = getDataResult;
   }
 
-  return returnResponse;
+  return res.send(returnResponse);
 };
