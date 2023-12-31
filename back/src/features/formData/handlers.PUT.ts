@@ -39,12 +39,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   // Check canUseForm privilege
   const privilegeId = `form__${form.simpleId}__canUseForm`;
   const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-  const canUseFormPrivError = isPrivBlocked(
-    privilege?.privilegeAccess,
-    userData,
-    csrfIsGood,
-    form.owner
-  );
+  const canUseFormPrivError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
   if (canUseFormPrivError) {
     return res.send(
       new errors.UNAUTHORIZED(

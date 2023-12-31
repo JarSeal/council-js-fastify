@@ -32,12 +32,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
   // Check canUseForm privilege
   const privilegeId = `form__${form.simpleId}__canUseForm`;
   const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
-  const canUseFormPrivError = isPrivBlocked(
-    privilege?.privilegeAccess,
-    userData,
-    csrfIsGood,
-    form.owner // @CONSIDER: this might not be good, the owner can bypass this base privilege
-  );
+  const canUseFormPrivError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
   if (canUseFormPrivError) {
     return res.send(
       new errors.UNAUTHORIZED(
@@ -97,8 +92,6 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
 
     // (M) Generate dataIdsA array
     const savedDataIds = dataSets.map((doc) => doc._id);
-    // @TODO: remove this
-    savedDataIds;
 
     // (START LOOP)
     for (let i = 0; i < dataSets.length; i++) {
