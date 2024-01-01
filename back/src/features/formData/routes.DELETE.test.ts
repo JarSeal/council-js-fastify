@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
+import { createForm } from '../../test/utils';
 
 describe('DELETE formData', () => {
   let app: FastifyInstance;
@@ -27,68 +28,68 @@ describe('DELETE formData', () => {
     expect(response.statusCode).toBe(404);
   });
 
-  // it('should fail when "body" and dataId are missing from the body', async () => {
-  //   await createForm(
-  //     'myform',
-  //     '/myform',
-  //     [
-  //       {
-  //         elemId: 'testElem0',
-  //         orderNr: 0,
-  //         elemType: 'inputText',
-  //         valueType: 'string',
-  //       },
-  //       {
-  //         elemId: 'testElem1',
-  //         orderNr: 1,
-  //         elemType: 'inputNumber',
-  //         valueType: 'number',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         priCategoryId: 'form',
-  //         priTargetId: 'myform',
-  //         priAccessId: 'canUseForm',
-  //         privilegeAccess: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     ],
-  //     {
-  //       formDataDefaultPrivileges: {
-  //         create: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     }
-  //   );
-  //   let response = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //   });
-  //   expect(response.statusCode).toBe(500);
-  //   response = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //     body: {},
-  //   });
-  //   expect(response.statusCode).toBe(500);
-  //   response = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //     body: { formData: [] },
-  //   });
-  //   expect(response.statusCode).toBe(500);
-  //   response = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //     body: { dataId: 'all', formData: [] },
-  //   });
-  //   expect(response.statusCode).toBe(404);
-  // });
+  it('should fail when "body" and dataId are missing from the body', async () => {
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      }
+    );
+    let response = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+    });
+    expect(response.statusCode).toBe(400);
+    response = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+      body: {},
+    });
+    expect(response.statusCode).toBe(400);
+    response = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+      body: { dataId: null },
+    });
+    expect(response.statusCode).toBe(500);
+    response = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+      body: { dataId: 'all' },
+    });
+    expect(response.statusCode).toBe(500);
+  });
 
   // it("should fail when user doesn't have privileges to delete", async () => {
   //   await createForm(
