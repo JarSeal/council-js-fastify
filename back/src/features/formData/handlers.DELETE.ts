@@ -68,7 +68,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
       $and: [
         { formId: form.simpleId },
         ...(dataIdAll ? [] : [{ _id: { $in: dataId } }]),
-        ...dataPrivilegesQuery('delete', userData, csrfIsGood),
+        ...dataPrivilegesQuery('delete', userData, csrfIsGood), // @TODO: fix this
       ],
     });
     if (!dataSets?.length) {
@@ -182,7 +182,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     if (formDataPrivError) {
       return res.send(
         new errors.UNAUTHORIZED(
-          `User not privileged to DELETE/delete formData dataSet (formId: ${form.simpleId}), url: ${url}`
+          `User not privileged to DELETE/delete formData dataSet (formId: ${form.simpleId}), url: ${url}, id: ${id}`
         )
       );
     }

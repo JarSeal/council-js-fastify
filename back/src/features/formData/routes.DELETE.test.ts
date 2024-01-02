@@ -1,8 +1,11 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyError, FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
-import { createForm } from '../../test/utils';
+import { createForm, createSysAdmin, csrfHeader, validAgentId } from '../../test/utils';
+import { type FormDataPostReply } from './routes';
+import { type PublicPrivilegeProp } from '../../dbModels/_modelTypePartials';
+import { SESSION_COOKIE_NAME } from '../../core/config';
 
 describe('DELETE formData', () => {
   let app: FastifyInstance;
@@ -91,288 +94,248 @@ describe('DELETE formData', () => {
     expect(response.statusCode).toBe(500);
   });
 
-  // it("should fail when user doesn't have privileges to delete", async () => {
-  //   await createForm(
-  //     'myform',
-  //     '/myform',
-  //     [
-  //       {
-  //         elemId: 'testElem0',
-  //         orderNr: 0,
-  //         elemType: 'inputText',
-  //         valueType: 'string',
-  //       },
-  //       {
-  //         elemId: 'testElem1',
-  //         orderNr: 1,
-  //         elemType: 'inputNumber',
-  //         valueType: 'number',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         priCategoryId: 'form',
-  //         priTargetId: 'myform',
-  //         priAccessId: 'canUseForm',
-  //         privilegeAccess: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     ],
-  //     {
-  //       formDataDefaultPrivileges: {
-  //         create: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //         edit: {
-  //           public: 'false',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     }
-  //   );
-  //   await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'old string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 0,
-  //         },
-  //       ],
-  //     },
-  //   });
-  //   const response = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       dataId: 'all',
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'some string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 12,
-  //         },
-  //       ],
-  //     },
-  //   });
-  //   expect(response.statusCode).toBe(404);
-  // });
+  it("should fail when user doesn't have privileges to delete", async () => {
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          delete: {
+            public: 'false',
+            requireCsrfHeader: false,
+          },
+        },
+      }
+    );
+    const createResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'old string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 0,
+          },
+        ],
+      },
+    });
+    const createBody = JSON.parse(createResponse.body) as FormDataPostReply;
 
-  // it('should fail when trying to delete a dataSet and the user does not have privileges to do so', async () => {
-  //   const elemPrivs = {
-  //     public: 'false' as PublicPrivilegeProp,
-  //     requireCsrfHeader: false,
-  //     users: [],
-  //     groups: [],
-  //     excludeUsers: [],
-  //     excludeGroups: [],
-  //   };
-  //   await createForm(
-  //     'myform',
-  //     '/myform',
-  //     [
-  //       {
-  //         elemId: 'testElem0',
-  //         orderNr: 0,
-  //         elemType: 'inputText',
-  //         valueType: 'string',
-  //         privileges: {
-  //           create: elemPrivs,
-  //           read: elemPrivs,
-  //           edit: elemPrivs,
-  //           delete: elemPrivs,
-  //         },
-  //       },
-  //       {
-  //         elemId: 'testElem1',
-  //         orderNr: 1,
-  //         elemType: 'inputNumber',
-  //         valueType: 'number',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         priCategoryId: 'form',
-  //         priTargetId: 'myform',
-  //         priAccessId: 'canUseForm',
-  //         privilegeAccess: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     ],
-  //     {
-  //       formDataDefaultPrivileges: {
-  //         create: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //         edit: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     }
-  //   );
+    const response = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+      body: {
+        dataId: createBody.dataId,
+      },
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(401);
+    expect(body.code).toBe('UNAUTHORIZED');
+  });
 
-  //   await createSysAdmin(true);
-  //   const loginResponse = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/login',
-  //     body: {
-  //       usernameOrEmail: 'superadmin',
-  //       pass: 'password',
-  //       loginMethod: 'username',
-  //       agentId: validAgentId,
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+  it('should fail when trying to delete a dataSet and the user does not have privileges to do so', async () => {
+    const elemPrivs = {
+      public: 'false' as PublicPrivilegeProp,
+      requireCsrfHeader: false,
+      users: [],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    };
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          privileges: {
+            read: elemPrivs,
+            edit: elemPrivs,
+          },
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          delete: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      }
+    );
 
-  //   const result1 = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'some string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 15,
-  //         },
-  //       ],
-  //     },
-  //     cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
-  //     ...csrfHeader,
-  //   });
-  //   const result2 = await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'some string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 15,
-  //         },
-  //       ],
-  //       privileges: {
-  //         edit: {
-  //           public: 'true',
-  //           requireCsrfHeader: false,
-  //         },
-  //       },
-  //     },
-  //     cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
-  //     ...csrfHeader,
-  //   });
-  //   const createBody1 = JSON.parse(result1.body) as FormDataPostReply;
-  //   const createBody2 = JSON.parse(result2.body) as FormDataPostReply;
+    await createSysAdmin(true);
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'superadmin',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
 
-  //   await app.inject({
-  //     method: 'POST',
-  //     path: '/api/v1/logout',
-  //     body: {},
-  //     cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
-  //     ...csrfHeader,
-  //   });
+    const result1 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 15,
+          },
+        ],
+        privileges: {
+          delete: {
+            public: 'false',
+            requireCsrfHeader: true,
+          },
+        },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const result2 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 15,
+          },
+        ],
+        privileges: {
+          delete: {
+            public: 'false',
+            requireCsrfHeader: true,
+          },
+        },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const createBody1 = JSON.parse(result1.body) as FormDataPostReply;
+    const createBody2 = JSON.parse(result2.body) as FormDataPostReply;
 
-  //   const response1 = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       dataId: createBody1.dataId,
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'new string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 151,
-  //         },
-  //       ],
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   expect(response1.statusCode).toBe(401);
+    await app.inject({
+      method: 'POST',
+      path: '/api/v1/logout',
+      body: {},
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
 
-  //   const response2 = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       dataId: createBody2.dataId,
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'new string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 151,
-  //         },
-  //       ],
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   expect(response2.statusCode).toBe(401);
+    const response1 = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+      body: {
+        dataId: createBody1.dataId,
+      },
+      ...csrfHeader,
+    });
+    expect(response1.statusCode).toBe(401);
 
-  //   const response3 = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       dataId: [createBody1.dataId, createBody2.dataId],
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'new string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 151,
-  //         },
-  //       ],
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   expect(response3.statusCode).toBe(401);
+    const response2 = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+      body: {
+        dataId: createBody2.dataId,
+      },
+      ...csrfHeader,
+    });
+    expect(response2.statusCode).toBe(401);
 
-  //   const response4 = await app.inject({
-  //     method: 'PUT',
-  //     path: '/api/v1/myform',
-  //     body: {
-  //       dataId: 'all',
-  //       formData: [
-  //         {
-  //           elemId: 'testElem0',
-  //           value: 'new string',
-  //         },
-  //         {
-  //           elemId: 'testElem1',
-  //           value: 151,
-  //         },
-  //       ],
-  //     },
-  //     ...csrfHeader,
-  //   });
-  //   expect(response4.statusCode).toBe(401);
-  // });
+    const response3 = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+      body: {
+        dataId: [createBody1.dataId, createBody2.dataId],
+      },
+      ...csrfHeader,
+    });
+    console.log('TADAA', response1.body, '2', response2.body, '3', response3.body);
+    console.log(createBody1.dataId, createBody2.dataId);
+    expect(response3.statusCode).toBe(404);
+
+    const response4 = await app.inject({
+      method: 'DELETE',
+      path: '/api/v1/myform',
+      body: {
+        dataId: 'all',
+      },
+      ...csrfHeader,
+    });
+    expect(response4.statusCode).toBe(500);
+  });
 
   // it('should delete one formData dataSet', async () => {
   //   await createForm(

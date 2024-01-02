@@ -206,10 +206,8 @@ describe('PUT formData', () => {
           elemType: 'inputText',
           valueType: 'string',
           privileges: {
-            create: elemPrivs,
             read: elemPrivs,
             edit: elemPrivs,
-            delete: elemPrivs,
           },
         },
         {
