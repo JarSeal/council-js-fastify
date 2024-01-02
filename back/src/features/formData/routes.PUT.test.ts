@@ -10,7 +10,7 @@ import type {
   UserId,
 } from '../../dbModels/_modelTypePartials';
 import { SESSION_COOKIE_NAME } from '../../core/config';
-import type { FormDataGetReply, FormDataPostReply, FormDataPutReply } from './routes';
+import type { FormDataGetReply, FormDataPostReply, FormDataPutAndDeleteReply } from './routes';
 
 describe('PUT formData', () => {
   let app: FastifyInstance;
@@ -206,10 +206,8 @@ describe('PUT formData', () => {
           elemType: 'inputText',
           valueType: 'string',
           privileges: {
-            create: elemPrivs,
             read: elemPrivs,
             edit: elemPrivs,
-            delete: elemPrivs,
           },
         },
         {
@@ -470,7 +468,7 @@ describe('PUT formData', () => {
         ],
       },
     });
-    const editBody1 = JSON.parse(editResponse1.body) as FormDataPutReply;
+    const editBody1 = JSON.parse(editResponse1.body) as FormDataPutAndDeleteReply;
     expect(editResponse1.statusCode).toBe(400);
     expect(editBody1.ok).toBeFalsy();
     expect(editBody1.error?.errorId).toBe('invalidValueType');
@@ -492,7 +490,7 @@ describe('PUT formData', () => {
         ],
       },
     });
-    const editBody2 = JSON.parse(editResponse2.body) as FormDataPutReply;
+    const editBody2 = JSON.parse(editResponse2.body) as FormDataPutAndDeleteReply;
     expect(editResponse2.statusCode).toBe(400);
     expect(editBody2.ok).toBeFalsy();
     expect(editBody2.error?.errorId).toBe('invalidValueType');
@@ -573,7 +571,7 @@ describe('PUT formData', () => {
         getData: true,
       },
     });
-    const body1 = JSON.parse(response1.body) as FormDataPutReply;
+    const body1 = JSON.parse(response1.body) as FormDataPutAndDeleteReply;
     expect(response1.statusCode).toBe(200);
     expect(body1.ok).toBeTruthy();
     expect(body1.dataId).toBe(createBody.dataId);
@@ -595,7 +593,7 @@ describe('PUT formData', () => {
         getData: true,
       },
     });
-    const body2 = JSON.parse(response2.body) as FormDataPutReply;
+    const body2 = JSON.parse(response2.body) as FormDataPutAndDeleteReply;
     expect(response2.statusCode).toBe(200);
     expect(body2.ok).toBeTruthy();
     expect(body2.dataId).toBe(createBody.dataId);
@@ -689,7 +687,7 @@ describe('PUT formData', () => {
         getData: true,
       },
     });
-    const editBody = JSON.parse(editResponse.body) as FormDataPutReply;
+    const editBody = JSON.parse(editResponse.body) as FormDataPutAndDeleteReply;
     expect(editResponse.statusCode).toBe(200);
     expect(editBody.ok).toBeTruthy();
     expect(editBody.dataId).toBe(createBody.dataId);
@@ -956,7 +954,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutAndDeleteReply;
     expect(responseSingle.statusCode).toBe(200);
     const privileges1 = bodySingle.getData?.$dataPrivileges as FormDataPrivileges;
     expect(privileges1.read?.public).toBe('true');
@@ -1036,7 +1034,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutAndDeleteReply;
     expect(responseMulti.statusCode).toBe(200);
     const privileges2 = bodyMulti.getData?.$dataPrivileges as FormDataPrivileges[];
     expect(privileges2[0].read?.public).toBe('true');
@@ -1205,7 +1203,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutAndDeleteReply;
     expect(responseSingle.statusCode).toBe(200);
     const privileges1 = bodySingle.getData?.$dataPrivileges as FormDataPrivileges;
     expect(privileges1.read?.public).toBe('true');
@@ -1285,7 +1283,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutAndDeleteReply;
     expect(responseMulti.statusCode).toBe(200);
     const privileges2 = bodyMulti.getData?.$dataPrivileges as FormDataPrivileges[];
     expect(privileges2[0].read?.public).toBe('true');
@@ -1637,7 +1635,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutAndDeleteReply;
     expect(responseSingle.statusCode).toBe(200);
     const privileges1 = bodySingle.getData?.$dataPrivileges as FormDataPrivileges;
     expect(privileges1.read?.public).toBe('true');
@@ -1718,7 +1716,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutAndDeleteReply;
     expect(responseMulti.statusCode).toBe(200);
     const privileges2 = bodyMulti.getData?.$dataPrivileges as FormDataPrivileges[];
     expect(privileges2[0].read?.public).toBe('true');
@@ -2013,7 +2011,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutAndDeleteReply;
     expect(responseSingle.statusCode).toBe(200);
     const privileges1 = bodySingle.getData?.$dataPrivileges as FormDataPrivileges & {
       canEditPrivileges: BasicPrivilegeProps;
@@ -2083,7 +2081,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutAndDeleteReply;
     expect(responseMulti.statusCode).toBe(200);
     const privileges2 = bodyMulti.getData?.$dataPrivileges as (FormDataPrivileges & {
       canEditPrivileges: BasicPrivilegeProps;
@@ -2242,7 +2240,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutAndDeleteReply;
     expect(responseSingle.statusCode).toBe(200);
     const privileges1 = bodySingle.getData?.$dataPrivileges as FormDataPrivileges & {
       canEditPrivileges: BasicPrivilegeProps;
@@ -2313,7 +2311,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutAndDeleteReply;
     expect(responseMulti.statusCode).toBe(200);
     const privileges2 = bodyMulti.getData?.$dataPrivileges as (FormDataPrivileges & {
       canEditPrivileges: BasicPrivilegeProps;
@@ -2617,7 +2615,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutReply;
+    const bodySingle = JSON.parse(responseSingle.body) as FormDataPutAndDeleteReply;
 
     expect(responseSingle.statusCode).toBe(200);
     const getData1 = bodySingle.getData as FormDataGetReply;
@@ -2689,7 +2687,7 @@ describe('PUT formData', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutReply;
+    const bodyMulti = JSON.parse(responseMulti.body) as FormDataPutAndDeleteReply;
 
     expect(responseMulti.statusCode).toBe(200);
     const getData2 = bodyMulti.getData as FormDataGetReply;
