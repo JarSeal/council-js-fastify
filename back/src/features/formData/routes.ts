@@ -145,7 +145,7 @@ export interface FormDataPutRoute extends RouteGenericInterface {
 
 // DELETE
 export const formDataDeleteBodySchema = Type.Object({
-  dataId: Type.Union([Type.Array(Type.String()), Type.String()]),
+  dataId: Type.Union([Type.String(), Type.Array(Type.String())]),
   getData: Type.Optional(Type.Union([Type.Boolean(), getQuerystringSchema])),
 });
 export type FormDataDeleteBody = Static<typeof formDataDeleteBodySchema>;
