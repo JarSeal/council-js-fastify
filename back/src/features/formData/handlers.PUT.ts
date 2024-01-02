@@ -122,7 +122,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
           new errors.UNAUTHORIZED(
             `User not privileged to edit formData in PUT/edit (mass edit) formData handler, default and/or dataSet privileges (dataSet Id: ${dataSets[
               i
-            ]._id.toString()}, url: ${url}`
+            ]._id.toString()}, url: ${url}, ids: ${dataId.toString()}`
           )
         );
       }
@@ -148,7 +148,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
               new errors.UNAUTHORIZED(
                 `User not privileged to edit formData in PUT/edit (mass edit) formData handler, elem privileges (dataSet Id: ${dataSets[
                   i
-                ]._id.toString()}, elemId: ${elem.elemId}), url: ${url}`
+                ]._id.toString()}, elemId: ${elem.elemId}), url: ${url}, ids: ${dataId.toString()}`
               )
             );
           }
@@ -164,7 +164,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
         if (!Object.keys(newOwnerObject).length) {
           return res.send(
             new errors.UNAUTHORIZED(
-              `User cannot change owners for some or all of the datasets in PUT/edit formData handler (mass edit), url: ${url}`
+              `User cannot change owners for some or all of the datasets in PUT/edit formData handler (mass edit), url: ${url}, ids: ${dataId.toString()}`
             )
           );
         }
@@ -189,7 +189,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
         if (formCanEditPrivilegesError) {
           return res.send(
             new errors.UNAUTHORIZED(
-              `User not privileged to set privileges in PUT/edit formData handler (mass edit), canEditPrivileges, url: ${url}`
+              `User not privileged to set privileges in PUT/edit formData handler (mass edit), canEditPrivileges, url: ${url}, ids: ${dataId.toString()}`
             )
           );
         }
@@ -328,7 +328,9 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     if (formDataPrivError) {
       return res.send(
         new errors.UNAUTHORIZED(
-          `User not privileged to PUT/edit formData dataSet (formId: ${form.simpleId}), url: ${url}`
+          `User not privileged to PUT/edit formData dataSet (formId: ${
+            form.simpleId
+          }), url: ${url}, id: ${id.toString()}`
         )
       );
     }
@@ -353,7 +355,9 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
         if (elemFormDataPrivError) {
           return res.send(
             new errors.UNAUTHORIZED(
-              `User not privileged to edit formData in PUT/edit formData handler, elem privileges (elemId: ${elem.elemId}), url: ${url}`
+              `User not privileged to edit formData in PUT/edit formData handler, elem privileges (elemId: ${
+                elem.elemId
+              }), url: ${url}, id: ${id.toString()}`
             )
           );
         }
@@ -377,7 +381,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       if (formCanEditPrivilegesError) {
         return res.send(
           new errors.UNAUTHORIZED(
-            `User not privileged to set privileges in PUT/edit formData handler, canEditPrivileges, url: ${url}`
+            `User not privileged to set privileges in PUT/edit formData handler, canEditPrivileges, url: ${url}, id: ${id.toString()}`
           )
         );
       }
@@ -427,7 +431,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       if (!Object.keys(ownerChangingObject).length) {
         return res.send(
           new errors.UNAUTHORIZED(
-            `User cannot change the owner in PUT/edit formData handler, url: ${url}`
+            `User cannot change the owner in PUT/edit formData handler, url: ${url}, id: ${id.toString()}`
           )
         );
       }
@@ -470,7 +474,9 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     );
     if (updateResult.modifiedCount !== 1) {
       return res.send(
-        new errors.DB_GENERAL_ERROR(`Could not update formData dataSet, url: ${url}`)
+        new errors.DB_GENERAL_ERROR(
+          `Could not update formData dataSet, url: ${url}, id: ${id.toString()}`
+        )
       );
     }
 
