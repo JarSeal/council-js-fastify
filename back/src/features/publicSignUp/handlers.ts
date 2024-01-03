@@ -68,7 +68,5 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
     return res.send(createUserError);
   }
 
-  // @TODO: Create UserData
-
   return res.status(200).send({ ok: true });
 };

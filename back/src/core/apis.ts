@@ -1,10 +1,10 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import healthCheckRoute from '../features/healthCheck/routes';
+import healthCheckRoutes from '../features/healthCheck/routes';
 import publicSignUpRoute from '../features/publicSignUp/routes';
-import loginRoute from '../features/login/routes';
+import loginRoutes from '../features/login/routes';
 import logoutRoute from '../features/logout/routes';
-import customRoute from '../features/formData/routes';
+import formDataRoutes from '../features/formData/routes';
 import { notSignedInHook } from '../hooks/notSignedIn';
 import { signedInHook } from '../hooks/signedIn';
 import { csrfHook } from '../hooks/csrf';
@@ -21,8 +21,8 @@ const apis: FastifyPluginAsync = async (instance) => {
 
 // Public system API routes:
 const publicRoutes: FastifyPluginAsync = async (instance) => {
-  await instance.register(customRoute); // WIP
-  await instance.register(healthCheckRoute, sysPrefixObj);
+  await instance.register(formDataRoutes);
+  await instance.register(healthCheckRoutes, sysPrefixObj);
 };
 
 // All state altering system API routes (check CSRF header)
@@ -36,15 +36,14 @@ const stateAlteringSystemRoutes: FastifyPluginAsync = async (instance) => {
 const notSignedInSystemRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', notSignedInHook);
   await instance.register(publicSignUpRoute, vPrefixObj);
-  await instance.register(loginRoute, vPrefixObj);
+  await instance.register(loginRoutes, vPrefixObj);
 };
 
 // Signed in system API routes:
 // *****************
 const signedInSystemRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', signedInHook);
-  // @TODO: add here the authorization check hook
-  await instance.register(logoutRoute, vPrefixObj); // @CONSIDER: maybe move this to public and return false if not signed in
+  await instance.register(logoutRoute, vPrefixObj);
 };
 
 export default apis;

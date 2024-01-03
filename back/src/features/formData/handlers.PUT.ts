@@ -274,6 +274,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     if (updateResult.modifiedCount !== savedDataIds.length) {
       returnResponse.error = {
         errorId: 'massEditUpdateCount',
+        status: 200,
         message: `Mass edit tried to modify ${savedDataIds.length} dataSets but was able to update ${updateResult.modifiedCount} dataSets.`,
       };
     }

@@ -52,6 +52,12 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
     }
   }
 
+  // @TODO: check 2-factor authentication need
+  // @TODO (also add to basic login and 2-factor response):
+  // 1. Check email verification need
+  // 2. Check mandatory pass change need
+  // 3. Check mandatory UserData need
+
   // Reset login attempts and log login
   const logAndResetLoginAttemptsError = await logAndResetLoginAttempts(user, agentId);
   if (logAndResetLoginAttemptsError) {

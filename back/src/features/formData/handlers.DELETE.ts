@@ -131,6 +131,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     if (updateResult.deletedCount !== savedDataIds.length) {
       returnResponse.error = {
         errorId: 'massDeleteCount',
+        status: 200,
         message: `Mass delete tried to delete ${savedDataIds.length} dataSets but was able to update ${updateResult.deletedCount} dataSets.`,
       };
     }

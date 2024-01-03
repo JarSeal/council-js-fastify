@@ -134,6 +134,7 @@ export const validateFormDataInput = (
         );
         return {
           errorId: 'required',
+          status: 400,
           message: defaultError,
           elemId: elem.elemId,
           ...(customError?.message ? { customError: customError.message } : {}),
@@ -154,6 +155,7 @@ export const validateFormDataInput = (
         );
         return {
           errorId: 'invalidValueType',
+          status: 400,
           message: defaultError,
           elemId: elem.elemId,
           ...(customError?.message ? { customError: customError.message } : {}),
@@ -174,6 +176,7 @@ export const validateFormDataInput = (
           );
           return {
             errorId: 'mustMatchValue',
+            status: 400,
             message: defaultError,
             elemId: elem.elemId,
             ...(customError?.message ? { customError: customError.message } : {}),
@@ -195,6 +198,7 @@ export const validateFormDataInput = (
             );
             return {
               errorId: 'validationFn',
+              status: 400,
               message: defaultError,
               elemId: elem.elemId,
               ...(customError?.message ? { customError: customError.message } : {}),
@@ -220,6 +224,7 @@ export const validateFormDataInput = (
           );
           return {
             errorId: 'validationRegExp',
+            status: 400,
             message: defaultError,
             elemId: elem.elemId,
             ...(customError?.message ? { customError: customError.message } : {}),
@@ -261,6 +266,7 @@ const elemDataValidation = (
       );
       return {
         errorId: 'minLength',
+        status: 400,
         message: defaultError,
         elemId: elem.elemId,
         ...(customError?.message ? { customError: customError.message } : {}),
@@ -281,6 +287,7 @@ const elemDataValidation = (
       );
       return {
         errorId: 'maxLength',
+        status: 400,
         message: defaultError,
         elemId: elem.elemId,
         ...(customError?.message ? { customError: customError.message } : {}),
@@ -302,6 +309,7 @@ const elemDataValidation = (
       );
       return {
         errorId: 'minValue',
+        status: 400,
         message: defaultError,
         elemId: elem.elemId,
         ...(customError?.message ? { customError: customError.message } : {}),
@@ -319,6 +327,7 @@ const elemDataValidation = (
       );
       return {
         errorId: 'maxValue',
+        status: 400,
         message: defaultError,
         elemId: elem.elemId,
         ...(customError?.message ? { customError: customError.message } : {}),

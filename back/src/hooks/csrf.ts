@@ -16,9 +16,7 @@ export const isCsrfGood = (req: FastifyRequest) =>
 
 export const csrfCheck = (req: FastifyRequest): null | FastifyError => {
   if (!isCsrfGood(req)) {
-    req.log.warn(
-      `Request with a missing or invalid CSRF-header or ("${CSRF_HEADER_NAME}") was made`
-    );
+    req.log.warn(`Request with a missing or invalid CSRF-header ("${CSRF_HEADER_NAME}") was made`);
     return new errors.UNAUTHORIZED('CSRF-header is invalid or missing');
   }
   return null;

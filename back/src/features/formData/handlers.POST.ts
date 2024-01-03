@@ -1,12 +1,17 @@
 import type { RouteHandler } from 'fastify';
 
-import type { FormDataPostReply, FormDataPostRoute } from './routes';
+import type { FormDataPostBody, FormDataPostReply, FormDataPostRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
-import { getUserData, isPrivBlocked, combinePrivileges } from '../../utils/userAndPrivilegeChecks';
+import {
+  getUserData,
+  isPrivBlocked,
+  combinePrivileges,
+  type UserData,
+} from '../../utils/userAndPrivilegeChecks';
 import {
   convertFormDataPrivilegesForSave,
   convertPrivilegeIdStringsToObjectIds,
@@ -30,15 +35,26 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     return res.send(new errors.NOT_FOUND(`Could not find form with url: ${url}`));
   }
 
+  const response = await postFormData(body, form, userData, csrfIsGood);
+  if ('error' in response && response.error?.status) {
+    return res.status(response.error.status).send(response);
+  }
+  return res.send(response);
+};
+
+export const postFormData = async (
+  body: FormDataPostBody,
+  form: DBForm,
+  userData: UserData,
+  csrfIsGood: boolean
+) => {
   // Check canUseForm privilege and formDataDefaultPrivileges (create)
   const privilegeId = `form__${form.simpleId}__canUseForm`;
   const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });
   let createFormDataPrivError = isPrivBlocked(privilege?.privilegeAccess, userData, csrfIsGood);
   if (createFormDataPrivError) {
-    return res.send(
-      new errors.UNAUTHORIZED(
-        `User not privileged to create formData in POST/create formData handler, privilegeId: '${privilegeId}', url: ${url}`
-      )
+    return new errors.UNAUTHORIZED(
+      `User not privileged to create formData in POST/create formData handler, privilegeId: '${privilegeId}', url: ${form.url}`
     );
   }
   const formDataDefaultCreatePrivs = form.formDataDefaultPrivileges?.create;
@@ -49,10 +65,8 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     form.owner
   );
   if (createFormDataPrivError) {
-    return res.send(
-      new errors.UNAUTHORIZED(
-        `User not privileged to create formData in POST/create formData handler, formDataDefaultPrivileges.create, url: ${url}`
-      )
+    return new errors.UNAUTHORIZED(
+      `User not privileged to create formData in POST/create formData handler, formDataDefaultPrivileges.create, url: ${form.url}`
     );
   }
 
@@ -65,10 +79,8 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
       form.owner
     );
     if (formCanEditPrivilegesError) {
-      return res.send(
-        new errors.UNAUTHORIZED(
-          `User not privileged to set privileges in POST/create formData handler, canEditPrivileges, url: ${url}`
-        )
+      return new errors.UNAUTHORIZED(
+        `User not privileged to set privileges in POST/create formData handler, canEditPrivileges, url: ${form.url}`
       );
     }
   }
@@ -83,10 +95,10 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     });
     if (count >= form.maxDataCreatorDocs) {
       const message = `Max formData documents per creator reached, formId: ${form.simpleId}`;
-      return res.status(403).send({
+      return {
         ok: false,
-        error: { errorId: 'maxDataCreatorDocs', message },
-      });
+        error: { errorId: 'maxDataCreatorDocs', status: 403, message },
+      };
     }
   }
 
@@ -106,10 +118,8 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
         form.owner
       );
       if (elemFormDataPrivError) {
-        return res.send(
-          new errors.UNAUTHORIZED(
-            `User not privileged to create formData in POST/create formData handler, elem privileges (elemId: ${elem.elemId}), url: ${url}`
-          )
+        return new errors.UNAUTHORIZED(
+          `User not privileged to create formData in POST/create formData handler, elem privileges (elemId: ${elem.elemId}), url: ${form.url}`
         );
       }
     }
@@ -120,10 +130,8 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   if (body.owner) {
     ownerChangingObject = getOwnerChangingObject(form.owner, userData, body.owner);
     if (!Object.keys(ownerChangingObject).length) {
-      return res.send(
-        new errors.UNAUTHORIZED(
-          `User cannot add the owner in POST/create formData handler, url: ${url}`
-        )
+      return new errors.UNAUTHORIZED(
+        `User cannot add the owner in POST/create formData handler, url: ${form.url}`
       );
     }
   }
@@ -131,7 +139,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   // Validate formData values against form elems
   const validatorError = validateFormDataInput(formElems, formData);
   if (validatorError) {
-    return res.status(400).send({ ok: false, error: validatorError });
+    return { ok: false, error: validatorError };
   }
 
   // Create formData.data
@@ -150,14 +158,15 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   }
 
   if (!saveData.length) {
-    return res.status(400).send({
+    return {
       ok: false,
       error: {
         errorId: 'createFormDataEmpty',
+        status: 400,
         message:
           'Form data had no data to save, either because of lacking privileges or no saveable data was sent.',
       },
-    });
+    };
   }
 
   // Convert privileges and canEditPrivileges to ObjectIds
@@ -182,7 +191,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   }
   const newFormData = new DBFormDataModel<DBFormData>({
     formId: form.simpleId,
-    url,
+    url: form.url,
     created: {
       user: userData.userId || null,
       date: new Date(),
@@ -196,10 +205,8 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
   });
   const savedFormData = await newFormData.save();
   if (!savedFormData) {
-    return res.send(
-      new errors.DB_GENERAL_ERROR(
-        `could not create/POST new formData for formId: '${form.simpleId}', url: ${url}`
-      )
+    return new errors.DB_GENERAL_ERROR(
+      `could not create/POST new formData for formId: '${form.simpleId}', url: ${form.url}`
     );
   }
 
@@ -217,5 +224,5 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     returnResponse.getData = getDataResult;
   }
 
-  return res.send(returnResponse);
+  return returnResponse;
 };
