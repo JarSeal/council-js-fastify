@@ -31,12 +31,16 @@ module.exports = {
         privileges[i].edited = [];
         privileges[i].systemDocument = true;
         privileges[i].privilegeViewAccess = {
+          public: 'false',
+          requireCsrfHeader: true,
           users: [],
           groups: [],
           excludeUsers: [],
           excludeGroups: [],
         };
         privileges[i].privilegeEditAccess = {
+          public: 'false',
+          requireCsrfHeader: true,
           users: [],
           groups: [],
           excludeUsers: [],

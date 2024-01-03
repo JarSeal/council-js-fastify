@@ -265,4 +265,104 @@ module.exports = [
       },
     ],
   },
+
+  // UserData
+  {
+    simpleId: 'userData',
+    name: 'User data',
+    description: 'Council user data.',
+    created: {
+      user: null,
+      date: timeNow,
+    },
+    edited: [],
+    systemDocument: true,
+    owner: null,
+    url: '/api/v1/userdata',
+    form: {
+      formElems: [
+        {
+          elemId: 'userId',
+          orderNr: 0,
+          elemType: 'hidden',
+          privileges: {
+            read: {
+              public: 'false',
+              requireCsrfHeader: true,
+              users: [],
+              groups: [],
+              excludeUsers: [],
+              excludeGroups: [],
+            },
+            edit: {
+              public: 'false',
+              requireCsrfHeader: true,
+              users: [],
+              groups: [],
+              excludeUsers: [],
+              excludeGroups: [],
+            },
+          },
+        },
+        {
+          elemId: 'Full name',
+          orderNr: 1,
+          elemType: 'inputText',
+        },
+      ],
+    },
+    formDataDefaultPrivileges: {
+      read: {
+        public: 'false',
+        requireCsrfHeader: true,
+        users: [],
+        groups: [],
+        excludeUsers: [],
+        excludeGroups: [],
+      },
+      edit: {
+        public: 'false',
+        requireCsrfHeader: true,
+        users: [],
+        groups: [],
+        excludeUsers: [],
+        excludeGroups: [],
+      },
+      create: {
+        public: 'false',
+        requireCsrfHeader: true,
+        users: [],
+        groups: [],
+        excludeUsers: [],
+        excludeGroups: [],
+      },
+      delete: {
+        public: 'false',
+        requireCsrfHeader: true,
+        users: [],
+        groups: [],
+        excludeUsers: [],
+        excludeGroups: [],
+      },
+    },
+    privileges: [
+      {
+        simpleId: 'form__userData__canUseForm',
+        priCategoryId: 'form',
+        priTargetId: 'userData',
+        priAccessId: 'canUseForm',
+        name: 'Use form: Council User data',
+        description: 'Who can use the "Council User data" form.',
+        created: timeNow,
+        privilegeAccess: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+    ],
+  },
 ];
