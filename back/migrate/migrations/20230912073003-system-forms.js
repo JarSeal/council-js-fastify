@@ -54,6 +54,7 @@ module.exports = {
 
   async down(db) {
     let privileges = [];
+    const systemForms = await getSystemForms(db);
     for (let i = 0; i < systemForms.length; i++) {
       privileges = [...privileges, ...systemForms[i].privileges];
       await db.collection('forms').deleteOne({ simpleId: systemForms[i].simpleId });
