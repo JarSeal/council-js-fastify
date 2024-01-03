@@ -1,4 +1,4 @@
-const systemForms = require('../data/system-forms');
+const getSystemForms = require('../data/system-forms');
 const { getSuperAdminUsername } = require('../data/utils');
 
 module.exports = {
@@ -8,10 +8,11 @@ module.exports = {
     let privileges = [];
 
     // Create system forms
+    const systemForms = await getSystemForms(db);
     for (let i = 0; i < systemForms.length; i++) {
       const foundForm = await db.collection('forms').findOne({ simpleId: systemForms[i].simpleId });
       if (!foundForm) {
-        // Add super user as the creator and owner (owner is important)
+        // Add super user as the creator and owner
         systemForms[i].created.user = superUser._id;
         systemForms[i].owner = superUser._id;
 
