@@ -156,7 +156,7 @@ describe('validation util', () => {
     const result5 = validateSimpleId('Wrong$');
     const result6 = validateSimpleId('Wrong@');
 
-    expect(result1).toBeFalsy();
+    expect(result1).toBeTruthy();
     expect(result2).toBeFalsy();
     expect(result3).toBeTruthy();
     expect(result4).toBeTruthy();
@@ -173,7 +173,7 @@ describe('validation util', () => {
     const result6 = validateEmail('@x.x');
     const result7 = validateEmail('x@x.');
 
-    expect(result1).toBeFalsy();
+    expect(result1).toBeTruthy();
     expect(result2).toBeFalsy();
     expect(result3).toBeFalsy();
     expect(result4).toBeTruthy();
@@ -193,7 +193,7 @@ describe('validation util', () => {
     const result8 = validatePhoneWithExtraChars('+31-(40)-123 3455');
     const result9 = validatePhoneWithExtraChars('+31 40 123 3455');
 
-    expect(result1).toBeFalsy();
+    expect(result1).toBeTruthy();
     expect(result2).toBeFalsy();
     expect(result3).toBeFalsy();
     expect(result4).toBeTruthy();

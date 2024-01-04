@@ -68,6 +68,7 @@ export const formElemDbSchema = {
   orderNr: { type: Number, required: true },
   elemType: { type: String, required: true },
   valueType: { type: String, required: true, default: 'unknown' },
+  defaultValue: { type: String },
   classes: [{ _id: false, type: String }],
   elemData: { type: Object },
   label: transTextDbSchema,

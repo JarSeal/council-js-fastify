@@ -272,22 +272,24 @@ const getForms = async (db) => {
     // UserData
     {
       simpleId: 'userData',
-      name: 'User data',
-      description: 'Council user data.',
+      name: 'User Data',
+      description: 'Council User Data.',
       created: {
         user: null,
         date: timeNow,
       },
       edited: [],
       systemDocument: true,
+      maxDataCreatorDocs: 1,
       owner: null,
-      url: '/api/v1/userdata',
+      url: '/api/v1/sys/userdata',
       form: {
         formElems: [
           {
             elemId: 'userId',
             orderNr: 0,
             elemType: 'hidden',
+            valueType: 'string',
             privileges: {
               read: {
                 public: 'false',
@@ -308,9 +310,34 @@ const getForms = async (db) => {
             },
           },
           {
-            elemId: 'Full name',
+            elemId: 'fullName',
             orderNr: 1,
             elemType: 'inputText',
+            valueType: 'string',
+            elemData: { maxLength: 200, category: { langKey: 'General' } },
+            label: { langKey: 'Full name' },
+          },
+          {
+            elemId: 'description',
+            orderNr: 2,
+            elemType: 'inputText',
+            valueType: 'string',
+            elemData: {
+              multiline: true,
+              maxLength: 1000,
+              hasCharCounter: true,
+              category: { langKey: 'General' },
+            },
+            label: { langKey: 'Profile description' },
+          },
+          {
+            elemId: 'phonenumber',
+            orderNr: 3,
+            elemType: 'inputText',
+            valueType: 'string',
+            elemData: { maxLength: 20, category: { langKey: 'General' } },
+            label: { langKey: 'Phone number' },
+            validationFn: 'phoneWithExtra',
           },
         ],
       },
@@ -354,14 +381,212 @@ const getForms = async (db) => {
           priCategoryId: 'form',
           priTargetId: 'userData',
           priAccessId: 'canUseForm',
-          name: 'Use form: Council User data',
-          description: 'Who can use the "Council User data" form.',
+          name: 'Use form: Council User Data',
+          description: 'Who can use the "Council User Data" form.',
           created: timeNow,
           privilegeAccess: {
             public: 'false',
             requireCsrfHeader: true,
             users: [],
             groups: [basicUsersId],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
+    // UserSettings
+    {
+      simpleId: 'userSettings',
+      name: 'User Settings',
+      description: 'Council User Settings.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      maxDataCreatorDocs: 1,
+      owner: null,
+      url: '/api/v1/sys/usersettings',
+      form: {
+        formElems: [
+          {
+            elemId: 'userId',
+            orderNr: 0,
+            elemType: 'hidden',
+            valueType: 'string',
+            privileges: {
+              read: {
+                public: 'false',
+                requireCsrfHeader: true,
+                users: [],
+                groups: [],
+                excludeUsers: [],
+                excludeGroups: [],
+              },
+              edit: {
+                public: 'false',
+                requireCsrfHeader: true,
+                users: [],
+                groups: [],
+                excludeUsers: [],
+                excludeGroups: [],
+              },
+            },
+          },
+          {
+            elemId: 'use2FA',
+            orderNr: 1,
+            elemType: 'inputDropDown',
+            valueType: 'boolean',
+            elemData: {
+              defaultValue: false,
+              options: [
+                { label: { langKey: 'Disabled' }, value: false },
+                { label: { langKey: 'Enabled' }, value: true },
+              ],
+              category: { langKey: 'Security' },
+            },
+            label: { langKey: 'Use 2-factor authentication' },
+          },
+        ],
+      },
+      formDataDefaultPrivileges: {
+        read: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+        edit: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+        create: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+        delete: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+      privileges: [
+        {
+          simpleId: 'form__userSettings__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'userSettings',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Council User Settings',
+          description: 'Who can use the "Council User Settings" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [basicUsersId],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
+    // SystemSettings
+    {
+      simpleId: 'systemSettings',
+      name: 'System Settings',
+      description: 'Council System Settings.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/systemsettings',
+      form: {
+        formElems: [
+          {
+            elemId: 'forceEmailVerification',
+            orderNr: 0,
+            elemType: 'inputDropDown',
+            valueType: 'string',
+            elemData: {
+              defaultValue: 'disabled',
+              options: [
+                { label: { langKey: 'Disabled' }, value: 'disabled' },
+                { label: { langKey: 'Enabled' }, value: 'enabled' },
+              ],
+              category: { langKey: 'Security' },
+              description: {
+                langKey:
+                  "Whether users' must verify their E-mail before being able to use the service or not.",
+              },
+            },
+            label: { langKey: 'Force E-mail verification' },
+          },
+          {
+            elemId: 'use2FA',
+            orderNr: 1,
+            elemType: 'inputDropDown',
+            valueType: 'string',
+            elemData: {
+              defaultValue: 'disabled',
+              options: [
+                { label: { langKey: 'Disabled' }, value: 'disabled' },
+                { label: { langKey: 'Enabled' }, value: 'enabled' },
+                { label: { langKey: 'User chooses' }, value: 'user_chooses' },
+                {
+                  label: { langKey: 'User chooses, set to disabled for all' },
+                  value: 'user_chooses_and_set_to_disabled_for_all',
+                },
+                {
+                  label: { langKey: 'User chooses, set to enabled for all' },
+                  value: 'user_chooses_and_set_to_enabled_for_all',
+                },
+              ],
+              category: { langKey: 'Security' },
+              publicSetting: true,
+              description: {
+                langKey:
+                  'Whether to enable 2-factor authentication for all users or not, or whether users can choose to enable 2FA for themselves.',
+              },
+            },
+            label: { langKey: 'Use 2-factor authentication' },
+          },
+        ],
+      },
+      privileges: [
+        {
+          simpleId: 'form__systemSettings__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'systemSettins',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Council System Settings',
+          description: 'Who can use the "Council System Settings" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
             excludeUsers: [],
             excludeGroups: [],
           },

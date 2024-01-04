@@ -62,21 +62,26 @@ export const validatePublicSignup = (
 
 export const simpleIdRegExp = ['^[a-zA-Z0-9-_]+$', 'gm'];
 export const validateSimpleId = (simpleId: unknown) => {
-  if (typeof simpleId !== 'string' || !simpleId) return false;
+  if (typeof simpleId !== 'string') return false;
+  if (!simpleId) return true; // The check for empty is handled with 'required' param
   const regex = new RegExp(simpleIdRegExp[0], simpleIdRegExp[1]);
   return regex.test(simpleId);
 };
 
-export const validateEmail = (value: unknown) =>
+export const validateEmail = (value: unknown) => {
   // case insensitive
-  new RegExp(
+  if (typeof value !== 'string') return false;
+  if (!value) return true; // The check for empty is handled with 'required' param
+  return new RegExp(
     "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
   ).test(String(value));
+};
 
 export const validatePhoneWithExtraChars = (value: unknown) => {
   // phone number validation, with extra characters allowed:
   // +[space]-()
-  if (!value) return false;
+  if (typeof value !== 'string' && typeof value !== 'number') return false;
+  if (!value) return true; // The check for empty is handled with 'required' param
   const strippedNumber = String(value)
     .replace('+', '')
     .replaceAll(' ', '')

@@ -93,6 +93,9 @@ export type FormElem = {
   // Value type
   valueType: FormDataValueType;
 
+  // Default value (will be converted from string to appropriate value)
+  defaultValue?: string;
+
   // CSS classes
   classes?: string[];
 
