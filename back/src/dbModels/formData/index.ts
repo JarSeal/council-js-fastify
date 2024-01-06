@@ -6,7 +6,7 @@ import DBFormDataModel, { type DBFormData, formDataSchema } from '../formData';
 // ********************************
 
 // UserData
-const DBUserDataModel = model<DBFormData, PaginateModel<DBFormData>>(
+export const DBUserDataModel = model<DBFormData, PaginateModel<DBFormData>>(
   'UserData',
   formDataSchema,
   'userData'
