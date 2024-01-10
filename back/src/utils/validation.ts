@@ -5,7 +5,7 @@ import { errors } from '../core/errors';
 import type { DBUser } from '../dbModels/user';
 import { getConfig, type ConfigFile } from '../core/config';
 import type { FormElem } from '../dbModels/_modelTypePartials';
-import { customValidators } from './customValidations';
+import { customValidators } from '../customFunctions/validation';
 
 export type ValidationError = FastifyError | null;
 

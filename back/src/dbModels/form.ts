@@ -79,6 +79,14 @@ export interface DBForm {
   // Who or what group(s) can and cannot edit privileges
   // These will only affect formData forms
   canEditPrivileges?: BasicPrivilegeProps;
+
+  // The afterFns are ways to modify the formData after create, edit, and delete
+  // these are custom functions defined in the customFunctions/afterFn
+  // These will only affect formData forms
+  afterReadFn?: string[];
+  afterCreateFn?: string[];
+  afterEditFn?: string[];
+  afterDeleteFn?: string[];
 }
 
 const formSchema = new Schema<DBForm>({
@@ -118,6 +126,10 @@ const formSchema = new Schema<DBForm>({
   ],
   formDataDefaultPrivileges: formDataPrivilegesSchema,
   canEditPrivileges: basicPrivilegePropsSchema,
+  afterReadFn: [{ _id: false, type: String }],
+  afterCreateFn: [{ _id: false, type: String }],
+  afterEditFn: [{ _id: false, type: String }],
+  afterDeleteFn: [{ _id: false, type: String }],
 });
 
 formSchema.set('toJSON', {
