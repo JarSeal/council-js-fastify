@@ -149,6 +149,7 @@ export const postFormData = async (
     const elem = formElems.find((elem) => elem.elemId === formData[i].elemId);
     if (!elem || elem.doNotSave) continue;
     const elemPrivs = convertFormDataPrivilegesForSave(formData[i].privileges);
+    // @TODO: addPossibleFillerToElemPrivs
     saveData.push({
       elemId: elem.elemId,
       value: formData[i].value,
@@ -174,9 +175,10 @@ export const postFormData = async (
     ...(form.formDataDefaultPrivileges || {}),
     ...convertFormDataPrivilegesForSave(body.privileges),
   };
+  // @TODO: addPossibleFillerToMainPrivs
   const canEditPrivs = convertPrivilegeIdStringsToObjectIds(body.canEditPrivileges);
 
-  // Create formData object and save
+  // Owner
   let formDataOwner = null;
   if (body.owner) {
     const ownerObj = getOwnerChangingObject(form.owner, userData, body.owner);
@@ -189,6 +191,8 @@ export const postFormData = async (
       ? userData.userId || form.formDataOwner || null
       : form.formDataOwner || null;
   }
+
+  // Create formData object and save
   const newFormData = new DBFormDataModel<DBFormData>({
     formId: form.simpleId,
     url: form.url,
