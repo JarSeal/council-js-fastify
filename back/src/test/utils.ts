@@ -171,6 +171,7 @@ export const createForm = async (
     maxDataCreatorDocs?: number;
     formDataOwner?: Types.ObjectId;
     fillerIsFormDataOwner?: boolean;
+    addFillerToPrivileges?: string[];
     formDataDefaultPrivileges?: {
       read?: Partial<AllPrivilegeProps>;
       create?: Partial<AllPrivilegeProps>;
@@ -205,6 +206,7 @@ export const createForm = async (
   if (opts?.maxDataCreatorDocs) form.maxDataCreatorDocs = opts.maxDataCreatorDocs;
   if (opts?.formDataOwner) form.formDataOwner = opts.formDataOwner;
   if (opts?.fillerIsFormDataOwner) form.fillerIsFormDataOwner = opts.fillerIsFormDataOwner;
+  if (opts?.addFillerToPrivileges) form.addFillerToPrivileges = opts.addFillerToPrivileges;
   if (opts?.canEditPrivileges) form.canEditPrivileges = opts.canEditPrivileges;
 
   form.formDataDefaultPrivileges = {

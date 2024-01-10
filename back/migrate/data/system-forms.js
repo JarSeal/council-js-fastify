@@ -282,6 +282,7 @@ const getForms = async (db) => {
       systemDocument: true,
       maxDataCreatorDocs: 1,
       owner: null,
+      addFillerToPrivileges: ['$read.users', '$edit.users', '$delete.users'],
       url: '/api/v1/sys/userdata',
       form: {
         formElems: [
@@ -409,6 +410,7 @@ const getForms = async (db) => {
       systemDocument: true,
       maxDataCreatorDocs: 1,
       owner: null,
+      addFillerToPrivileges: ['$read.users', '$edit.users', '$delete.users'],
       url: '/api/v1/sys/usersettings',
       form: {
         formElems: [

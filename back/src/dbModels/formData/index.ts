@@ -15,7 +15,7 @@ export const DBUserDataModel = model<DBFormData, PaginateModel<DBFormData>>(
 // getFormDataModel
 const getFormDataModel = (url: string) => {
   switch (url) {
-    case 'userdata':
+    case '/api/v1/sys/userdata':
       return DBUserDataModel;
     default:
       return DBFormDataModel;

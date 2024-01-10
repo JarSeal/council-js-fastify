@@ -67,6 +67,11 @@ export interface DBForm {
   // This will only affect formData forms
   fillerIsFormDataOwner?: boolean;
 
+  // Whether the user's ID who fills the form is added to the formData dataSet privileges
+  // eg. ['$read.users'] would give the dataSet creator the right to read the dataSet
+  // eg. ['elemId.read.users'] would give the dataSet creator the right to read the 'elemId' data
+  addFillerToPrivileges?: string[];
+
   // Default privileges to be passed to the formData document
   // These will only affect formData forms
   formDataDefaultPrivileges?: FormDataPrivileges;
@@ -105,6 +110,12 @@ const formSchema = new Schema<DBForm>({
   maxDataCreatorDocs: { type: Number },
   formDataOwner: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   fillerIsFormDataOwner: { type: Boolean },
+  addFillerToPrivileges: [
+    {
+      _id: false,
+      type: String,
+    },
+  ],
   formDataDefaultPrivileges: formDataPrivilegesSchema,
   canEditPrivileges: basicPrivilegePropsSchema,
 });
