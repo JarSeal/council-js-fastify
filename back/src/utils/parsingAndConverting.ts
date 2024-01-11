@@ -396,7 +396,7 @@ export const convertPrivilegeIdStringsToObjectIds = (privilege?: AllPrivilegePro
 // @TODO: add tests
 export const addPossibleFillerToMainPrivs = (
   fillerRules: string[],
-  mainPrivs: FormDataPrivilegesAsStringIds,
+  mainPrivs: Partial<FormDataPrivileges>,
   userData: UserData
 ) => {
   // Adds filler to mainPrivileges
@@ -411,10 +411,8 @@ export const addPossibleFillerToMainPrivs = (
     if (splitRule[0] === '$delete') action = 'delete';
     if (action && splitRule.length === 2) {
       const privSlot: 'users' | 'excludeUsers' | null =
-        splitRule[1] === 'users' || splitRule[1] === 'excludeUsers'
-          ? (splitRule[2] as 'users' | 'excludeUsers')
-          : null;
-      const userId = userData.userId.toString();
+        splitRule[1] === 'users' || splitRule[1] === 'excludeUsers' ? splitRule[1] : null;
+      const userId = userData.userId;
       if (privSlot && mainPrivs[action]) {
         const curPrivilegeAction = mainPrivs[action];
         // @NOTE: Typescript cannot see for some reason that
@@ -450,11 +448,9 @@ export const addPossibleFillerToElemPrivs = (
     let action: 'read' | 'edit' | null = null;
     if (splitRule[1] === 'read') action = 'read';
     if (splitRule[1] === 'edit') action = 'edit';
-    if (action && splitRule.length === 2) {
+    if (action && splitRule.length === 3) {
       const privSlot: 'users' | 'excludeUsers' | null =
-        splitRule[1] === 'users' || splitRule[1] === 'excludeUsers'
-          ? (splitRule[2] as 'users' | 'excludeUsers')
-          : null;
+        splitRule[2] === 'users' || splitRule[2] === 'excludeUsers' ? splitRule[2] : null;
       const userId = userData.userId;
       if (privSlot && elemPrivs && elemPrivs[action]) {
         const curPrivilegeAction = elemPrivs[action];

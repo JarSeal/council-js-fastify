@@ -1285,4 +1285,143 @@ describe('POST formData', () => {
     expect(Object.keys(metaData)).toHaveLength(5);
     expect(metaData.owner).toBe('myusername');
   });
+
+  it('should be able to add form filler to privileges successfully', async () => {
+    const userId = await createUser('myusername');
+    await createForm(
+      'myform',
+      '/myform',
+      [
+        {
+          elemId: 'testElem0',
+          orderNr: 0,
+          elemType: 'inputText',
+          valueType: 'string',
+          required: true,
+        },
+        {
+          elemId: 'testElem1',
+          orderNr: 1,
+          elemType: 'inputNumber',
+          valueType: 'number',
+        },
+      ],
+      [
+        {
+          priCategoryId: 'form',
+          priTargetId: 'myform',
+          priAccessId: 'canUseForm',
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+      ],
+      {
+        formDataDefaultPrivileges: {
+          read: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+          create: {
+            public: 'true',
+            requireCsrfHeader: false,
+          },
+        },
+        owner: userId,
+        addFillerToPrivileges: ['$read.users', '$delete.excludeUsers', 'testElem1.edit.users'],
+      }
+    );
+
+    const loginResponse = await app.inject({
+      method: 'POST',
+      path: '/api/v1/login',
+      body: {
+        usernameOrEmail: 'myusername',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = loginResponse.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/myform',
+      body: {
+        formData: [
+          {
+            elemId: 'testElem0',
+            value: 'some string',
+          },
+          {
+            elemId: 'testElem1',
+            value: 12,
+          },
+        ],
+        getData: { includePrivileges: true },
+      },
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FormDataPostReply;
+    expect(response.statusCode).toBe(200);
+    const getData = body.getData as FormDataGetReply;
+    expect(getData?.data).toStrictEqual([
+      {
+        elemId: 'testElem0',
+        value: 'some string',
+        orderNr: 0,
+        valueType: 'string',
+      },
+      {
+        elemId: 'testElem1',
+        value: 12,
+        orderNr: 1,
+        valueType: 'number',
+        privileges: {
+          edit: {
+            users: [{ id: userId.toString(), simpleId: 'myusername' }],
+          },
+        },
+      },
+    ]);
+    const dataPrivileges = getData.$dataPrivileges;
+    expect(dataPrivileges).toStrictEqual({
+      read: {
+        public: 'true',
+        requireCsrfHeader: false,
+        users: [{ id: userId.toString(), simpleId: 'myusername' }],
+        groups: [],
+        excludeUsers: [],
+        excludeGroups: [],
+      },
+      create: {
+        public: 'true',
+        requireCsrfHeader: false,
+        users: [],
+        groups: [],
+        excludeUsers: [],
+        excludeGroups: [],
+      },
+      edit: {
+        public: 'false',
+        requireCsrfHeader: true,
+        users: [],
+        groups: [],
+        excludeUsers: [],
+        excludeGroups: [],
+      },
+      delete: {
+        public: 'false',
+        requireCsrfHeader: true,
+        users: [],
+        groups: [],
+        excludeUsers: [{ id: userId.toString(), simpleId: 'myusername' }],
+        excludeGroups: [],
+      },
+      canEditPrivileges: { users: [], groups: [], excludeUsers: [], excludeGroups: [] },
+    });
+  });
 });

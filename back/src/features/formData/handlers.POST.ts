@@ -13,6 +13,8 @@ import {
   type UserData,
 } from '../../utils/userAndPrivilegeChecks';
 import {
+  addPossibleFillerToElemPrivs,
+  addPossibleFillerToMainPrivs,
   convertFormDataPrivilegesForSave,
   convertPrivilegeIdStringsToObjectIds,
   getApiPathFromReqUrl,
@@ -148,8 +150,13 @@ export const postFormData = async (
   for (let i = 0; i < formData.length; i++) {
     const elem = formElems.find((elem) => elem.elemId === formData[i].elemId);
     if (!elem || elem.doNotSave) continue;
-    const elemPrivs = convertFormDataPrivilegesForSave(formData[i].privileges);
-    // @TODO: addPossibleFillerToElemPrivs
+    let elemPrivs = convertFormDataPrivilegesForSave(formData[i].privileges);
+    elemPrivs = addPossibleFillerToElemPrivs(
+      form.addFillerToPrivileges || [],
+      elemPrivs,
+      userData,
+      elem.elemId
+    );
     saveData.push({
       elemId: elem.elemId,
       value: formData[i].value,
@@ -171,11 +178,11 @@ export const postFormData = async (
   }
 
   // Convert privileges and canEditPrivileges to ObjectIds
-  const mainPrivs = {
+  let mainPrivs = {
     ...(form.formDataDefaultPrivileges || {}),
     ...convertFormDataPrivilegesForSave(body.privileges),
   };
-  // @TODO: addPossibleFillerToMainPrivs
+  mainPrivs = addPossibleFillerToMainPrivs(form.addFillerToPrivileges || [], mainPrivs, userData);
   const canEditPrivs = convertPrivilegeIdStringsToObjectIds(body.canEditPrivileges);
 
   // Owner
