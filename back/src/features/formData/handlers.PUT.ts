@@ -21,6 +21,7 @@ import {
 } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
+import { afterFns } from '../../customFunctions/afterFn';
 
 // Edit (PUT)
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
@@ -496,6 +497,15 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     }
     const getDataResult = await getFormData(params, form, userData, csrfIsGood);
     returnResponse.getData = getDataResult;
+  }
+
+  if (form.afterEditFn?.length) {
+    for (let i = 0; i < form.afterEditFn.length; i++) {
+      const afterFn = afterFns[form.afterEditFn[i]];
+      if (afterFn) {
+        afterFn.afterFn(dataId, form, userData);
+      }
+    }
   }
 
   return res.send(returnResponse);

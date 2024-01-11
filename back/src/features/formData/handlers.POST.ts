@@ -22,6 +22,7 @@ import {
 } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
+import { afterFns } from '../../customFunctions/afterFn';
 
 // Create (POST)
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -233,6 +234,15 @@ export const postFormData = async (
     }
     const getDataResult = await getFormData(params, form, userData, csrfIsGood);
     returnResponse.getData = getDataResult;
+  }
+
+  if (form.afterCreateFn?.length) {
+    for (let i = 0; i < form.afterCreateFn.length; i++) {
+      const afterFn = afterFns[form.afterCreateFn[i]];
+      if (afterFn) {
+        afterFn.afterFn(newDataId, form, userData);
+      }
+    }
   }
 
   return returnResponse;

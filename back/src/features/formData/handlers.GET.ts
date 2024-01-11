@@ -25,6 +25,7 @@ import {
 } from '../../utils/parsingAndConverting';
 import { getConfig } from '../../core/config';
 import type { TransText } from '../../@types/form';
+import { afterFns } from '../../customFunctions/afterFn';
 
 export type Data = {
   elemId: string;
@@ -165,6 +166,7 @@ export const getFormData = async (
     meAsOwner,
     meAsEditor,
   } = params;
+  let dataIdsForAfterFn;
 
   // Create possible labels (for embedding them into data)
   const labels: { [key: string]: TransText } = {};
@@ -411,6 +413,7 @@ export const getFormData = async (
       if (includePrivileges && privs?.length) {
         returnObject['$dataPrivileges'] = privs;
       }
+      dataIdsForAfterFn = dataIds;
     } else {
       // Check single dataSet's privileges
       const mainPrivileges = {
@@ -509,6 +512,7 @@ export const getFormData = async (
           ),
         };
       }
+      dataIdsForAfterFn = formDataId || undefined;
     }
 
     if (includeLabels === 'true' && data[0]?.length) {
@@ -532,6 +536,15 @@ export const getFormData = async (
       returnObject['data'] = data[0] || [];
     } else {
       returnObject['data'] = data;
+    }
+  }
+
+  if (form.afterReadFn?.length && dataId) {
+    for (let i = 0; i < form.afterReadFn.length; i++) {
+      const afterFn = afterFns[form.afterReadFn[i]];
+      if (afterFn) {
+        afterFn.afterFn(dataIdsForAfterFn, form, userData);
+      }
     }
   }
 

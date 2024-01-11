@@ -15,6 +15,7 @@ import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { getFormData } from './handlers.GET';
+import { afterFns } from '../../customFunctions/afterFn';
 
 // Delete (DELETE)
 export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res) => {
@@ -22,6 +23,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);
   const returnResponse: FormDataPutAndDeleteReply = { ok: false };
+  let dataIdsForAfterFn;
 
   // Get form
   const form = await DBFormModel.findOne<DBForm>({ url });
@@ -92,6 +94,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
 
     // (M) Generate dataIdsA array
     const savedDataIds = dataSets.map((doc) => doc._id);
+    dataIdsForAfterFn = savedDataIds.map((id) => id.toString());
 
     // (START LOOP)
     for (let i = 0; i < dataSets.length; i++) {
@@ -148,6 +151,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     // *************************
 
     const id = Array.isArray(dataId) ? dataId[0] : dataId;
+    dataIdsForAfterFn = id;
 
     // (S) Get old saved formData
     const dataSet = await DBFormDataModel.findOne({
@@ -199,6 +203,15 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     // (S) Success
     returnResponse.ok = true;
     returnResponse.dataId = dataSet._id.toString();
+  }
+
+  if (form.afterDeleteFn?.length) {
+    for (let i = 0; i < form.afterDeleteFn.length; i++) {
+      const afterFn = afterFns[form.afterDeleteFn[i]];
+      if (afterFn) {
+        afterFn.afterFn(dataIdsForAfterFn, form, userData);
+      }
+    }
   }
 
   return res.send(returnResponse);
