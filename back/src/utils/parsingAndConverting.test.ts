@@ -3,6 +3,8 @@ import type { FastifyInstance } from 'fastify';
 
 import type { DBForm } from '../dbModels/form';
 import {
+  addPossibleFillerToElemPrivs,
+  addPossibleFillerToMainPrivs,
   convertFormDataPrivilegesForSave,
   convertPrivilegeIdStringsToObjectIds,
   createNewEditedArray,
@@ -875,6 +877,115 @@ describe('parsingAndConverting', () => {
       groups: [userId1, userId2],
       excludeGroups: [userId3],
     });
+  });
+
+  it('addPossibleFillerToMainPrivs', () => {
+    const userId = new Types.ObjectId();
+    const userData = { userId, isSignedIn: true } as UserData;
+
+    const privs1 = { read: { users: [] } };
+    const updatedPrivs1 = addPossibleFillerToMainPrivs(['$read.users'], privs1, userData);
+    expect(updatedPrivs1).toStrictEqual({ read: { users: [userId] } });
+    const privs2 = { read: { excludeUsers: [] } };
+    const updatedPrivs2 = addPossibleFillerToMainPrivs(['$read.users'], privs2, userData);
+    expect(updatedPrivs2).toStrictEqual({ read: { users: [userId], excludeUsers: [] } });
+    const privs3 = { read: { users: [] } };
+    const updatedPrivs3 = addPossibleFillerToMainPrivs(
+      ['$delete.excludeUsers', '$edit.users'],
+      privs3,
+      userData
+    );
+    expect(updatedPrivs3).toStrictEqual({
+      read: { users: [] },
+      edit: { users: [userId] },
+      delete: { excludeUsers: [userId] },
+    });
+    const privs4 = { read: { users: [] } };
+    const updatedPrivs4 = addPossibleFillerToMainPrivs(
+      ['notgood.users', 'elemId.read.users'],
+      privs4,
+      userData
+    );
+    expect(updatedPrivs4).toStrictEqual({ read: { users: [] } });
+    const privs5 = { read: { users: [] } };
+    const updatedPrivs5 = addPossibleFillerToMainPrivs(['$read.users'], privs5, {
+      userId: null,
+    } as UserData);
+    expect(updatedPrivs5).toStrictEqual({ read: { users: [] } });
+    const privs6 = { read: { users: [] } };
+    const updatedPrivs6 = addPossibleFillerToMainPrivs(['$read.users'], privs6, {
+      userId,
+      isSignedIn: false,
+    } as UserData);
+    expect(updatedPrivs6).toStrictEqual({ read: { users: [] } });
+    const privs7 = { read: { users: [] } };
+    const updatedPrivs7 = addPossibleFillerToMainPrivs([], privs7, userData);
+    expect(updatedPrivs7).toStrictEqual({ read: { users: [] } });
+  });
+
+  it('addPossibleFillerToElemPrivs', () => {
+    const userId = new Types.ObjectId();
+    const userData = { userId, isSignedIn: true } as UserData;
+
+    const privs1 = null;
+    const updatedPrivs1 = addPossibleFillerToElemPrivs(
+      ['myElem.read.users'],
+      privs1,
+      userData,
+      'myElem'
+    );
+    expect(updatedPrivs1).toStrictEqual({ read: { users: [userId] } });
+    const privs2 = { read: { excludeUsers: [] } };
+    const updatedPrivs2 = addPossibleFillerToElemPrivs(
+      ['myElem.read.users'],
+      privs2,
+      userData,
+      'myElem'
+    );
+    expect(updatedPrivs2).toStrictEqual({ read: { users: [userId], excludeUsers: [] } });
+    const privs3 = { read: { users: [] } };
+    const updatedPrivs3 = addPossibleFillerToElemPrivs(
+      ['myElem.delete.excludeUsers', 'myElem.edit.users', 'myOtherElem.users'],
+      privs3,
+      userData,
+      'myElem'
+    );
+    expect(updatedPrivs3).toStrictEqual({
+      read: { users: [] },
+      edit: { users: [userId] },
+    });
+    const privs4 = { read: { users: [] } };
+    const updatedPrivs4 = addPossibleFillerToElemPrivs(
+      ['myElem.notgood.users', '$read.users'],
+      privs4,
+      userData,
+      'myElem'
+    );
+    expect(updatedPrivs4).toStrictEqual({ read: { users: [] } });
+    const privs5 = { read: { users: [] } };
+    const updatedPrivs5 = addPossibleFillerToElemPrivs(
+      ['myElem.read.users'],
+      privs5,
+      {
+        userId: null,
+      } as UserData,
+      'myElem'
+    );
+    expect(updatedPrivs5).toStrictEqual({ read: { users: [] } });
+    const privs6 = { read: { users: [] } };
+    const updatedPrivs6 = addPossibleFillerToElemPrivs(
+      ['myElem.read.users'],
+      privs6,
+      {
+        userId,
+        isSignedIn: false,
+      } as UserData,
+      'myElem'
+    );
+    expect(updatedPrivs6).toStrictEqual({ read: { users: [] } });
+    const privs7 = { read: { users: [] } };
+    const updatedPrivs7 = addPossibleFillerToElemPrivs([], privs7, userData, 'myElem');
+    expect(updatedPrivs7).toStrictEqual({ read: { users: [] } });
   });
 
   it('createNewEditedArray', () => {

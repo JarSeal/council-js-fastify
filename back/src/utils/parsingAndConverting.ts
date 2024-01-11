@@ -393,7 +393,6 @@ export const convertPrivilegeIdStringsToObjectIds = (privilege?: AllPrivilegePro
   return Object.keys(convertedPrivilege).length ? convertedPrivilege : null;
 };
 
-// @TODO: add tests
 export const addPossibleFillerToMainPrivs = (
   fillerRules: string[],
   mainPrivs: Partial<FormDataPrivileges>,
@@ -431,7 +430,6 @@ export const addPossibleFillerToMainPrivs = (
   return mainPrivs;
 };
 
-// @TODO: add tests
 export const addPossibleFillerToElemPrivs = (
   fillerRules: string[],
   elemPrivs: Partial<FormDataPrivileges> | null,
