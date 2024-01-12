@@ -2,7 +2,8 @@ import type { RouteHandler } from 'fastify';
 
 import type { FormDataPostBody, FormDataPostReply, FormDataPostRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
-import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
+import { type DBFormData } from '../../dbModels/formData';
+import getFormDataModel from '../../dbModels/formData/';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
@@ -51,6 +52,8 @@ export const postFormData = async (
   userData: UserData,
   csrfIsGood: boolean
 ) => {
+  const DBFormDataModel = getFormDataModel(form.url);
+
   // Check canUseForm privilege and formDataDefaultPrivileges (create)
   const privilegeId = `form__${form.simpleId}__canUseForm`;
   const privilege = await DBPrivilegeModel.findOne<DBPrivilege>({ simpleId: privilegeId });

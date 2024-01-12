@@ -9,7 +9,7 @@ import {
   isPrivBlocked,
 } from '../../utils/userAndPrivilegeChecks';
 import { isCsrfGood } from '../../hooks/csrf';
-import DBFormDataModel from '../../dbModels/formData';
+import getFormDataModel from '../../dbModels/formData/';
 import { errors } from '../../core/errors';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
@@ -20,6 +20,7 @@ import { afterFns } from '../../customFunctions/afterFn';
 // Delete (DELETE)
 export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res) => {
   const url = getApiPathFromReqUrl(req.url);
+  const DBFormDataModel = getFormDataModel(url);
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);
   const returnResponse: FormDataPutAndDeleteReply = { ok: false };

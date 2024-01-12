@@ -3,7 +3,7 @@ import { type Types, isObjectIdOrHexString } from 'mongoose';
 
 import type { FormDataPutAndDeleteReply, FormDataPutRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
-import DBFormDataModel from '../../dbModels/formData';
+import getFormDataModel from '../../dbModels/formData/';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
@@ -27,6 +27,7 @@ import { afterFns } from '../../customFunctions/afterFn';
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   const body = req.body;
   const url = getApiPathFromReqUrl(req.url);
+  const DBFormDataModel = getFormDataModel(url);
 
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);

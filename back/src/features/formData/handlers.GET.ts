@@ -3,7 +3,8 @@ import { Types } from 'mongoose';
 
 import type { FormDataGetRoute, FormDataGetReply, GetQuerystring } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
-import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
+import { type DBFormData } from '../../dbModels/formData';
+import getFormDataModel from '../../dbModels/formData/';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import type { AllPrivilegeProps, FormElem, UserId } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';
@@ -147,6 +148,7 @@ export const getFormData = async (
   userData: UserData,
   csrfIsGood: boolean
 ) => {
+  const DBFormDataModel = getFormDataModel(form.url);
   const {
     getForm,
     dataId,
