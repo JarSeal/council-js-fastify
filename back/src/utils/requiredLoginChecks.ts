@@ -16,7 +16,7 @@ export const getRequiredActionsFromUser = async (userData: UserData) => {
     primaryEmailIsUnverified?: boolean;
   } = {};
 
-  // Validate UserData
+  // Validate User(Form)Data
   const userDataForm = await DBFormModel.findOne<DBForm>({ simpleId: 'userData' });
   const curData = await DBUserDataModel.findOne<DBFormData>({ 'created.user': userData.userId });
   const error = validateFormDataInput(userDataForm?.form.formElems || [], curData?.data || []);

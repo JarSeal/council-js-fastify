@@ -42,6 +42,8 @@ export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
     isSysAdmin: false,
   };
   if (isSignedIn) {
+    // @TODO: create a cache in the session object to get the groups
+    // (create a system setting for it, default to about 5 minutes)
     let userGroups = await DBGroupModel.find<{ _id: Types.ObjectId; simpleId: string }>({
       members: req.session.userId,
     }).select('_id simpleId');
