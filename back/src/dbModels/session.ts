@@ -2,7 +2,7 @@ import mongoose, { Schema, type Types } from 'mongoose';
 
 import { simpleIdDBSchema } from './_schemaPartials';
 import { getConfig } from '../core/config';
-import type { RequiredActions } from '../features/login/schemas';
+import { requiredActionsDBSchema, type RequiredActions } from '../features/login/schemas';
 
 export interface Session {
   // Whether the current user is signed in or not
@@ -47,6 +47,7 @@ const sessionSchema = new Schema<DBSession>({
     username: String,
     userId: Schema.Types.ObjectId,
     agentId: String,
+    requiredActions: requiredActionsDBSchema,
     cookie: {
       path: { type: String, default: '/' },
       secure: { type: Boolean, default: true },

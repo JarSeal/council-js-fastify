@@ -8,6 +8,7 @@ import type {
   UserId,
 } from '../dbModels/_modelTypePartials';
 import { errors } from '../core/errors';
+import type { RequiredActions } from '../features/login/schemas';
 
 export const emptyPrivilege: AllPrivilegeProps = {
   public: 'false',
@@ -30,6 +31,7 @@ export type UserData = {
   userId: Types.ObjectId | null;
   userGroups: Types.ObjectId[];
   isSysAdmin: boolean;
+  requiredActions: RequiredActions;
 };
 
 export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
@@ -40,6 +42,7 @@ export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
     userId: isSignedIn ? userId : null,
     userGroups: [],
     isSysAdmin: false,
+    requiredActions: null,
   };
   if (isSignedIn) {
     // @TODO: create a cache in the session object to get the groups
@@ -52,6 +55,10 @@ export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
       userData.isSysAdmin = true;
     }
     userGroups = [];
+
+    if (req.session.requiredActions) {
+      userData.requiredActions = req.session.requiredActions;
+    }
   }
   return userData;
 };

@@ -9,6 +9,11 @@ export const bodySchema = Type.Object({
   agentId: Type.String({ minLength: 32, maxLength: 32 }),
 });
 
+export const requiredActionsDBSchema = {
+  userDataMissingOrInvalid: { type: Boolean },
+  forcePassChange: { type: Boolean },
+  primaryEmailIsUnverified: { type: Boolean },
+};
 export const requiredActionsSchema = Type.Union([
   Type.Object({
     userDataMissingOrInvalid: Type.Optional(Type.Boolean()),

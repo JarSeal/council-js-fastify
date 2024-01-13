@@ -130,6 +130,7 @@ describe('parsingAndConverting', () => {
       userId: null,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     const csrfIsGood = true;
     let sCase = false;
@@ -586,6 +587,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, true);
     expect(query).toStrictEqual([
@@ -616,6 +618,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, undefined, true);
     expect(query).toStrictEqual([
@@ -646,6 +649,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(
       s,
@@ -688,6 +692,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([{ 'created.user': userId }]);
@@ -703,6 +708,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([{ 'created.user': userId }]);
@@ -718,6 +724,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([{ owner: userId }]);
@@ -733,6 +740,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([{ owner: userId }]);
@@ -748,6 +756,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([{ 'edited.0.user': userId }]);
@@ -763,6 +772,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
     expect(query).toStrictEqual([{ 'edited.0.user': userId }]);

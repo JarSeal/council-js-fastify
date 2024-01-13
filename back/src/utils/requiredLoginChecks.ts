@@ -7,7 +7,7 @@ import DBUserModel, { type DBUser } from '../dbModels/user';
 
 export const getRequiredActionsFromUser = async (userData: UserData) => {
   if (!userData.isSignedIn || !userData.userId) return null;
-  const user = await DBUserModel.findOne<DBUser>({ simpleId: userData.userId });
+  const user = await DBUserModel.findById<DBUser>(userData.userId);
   if (!user) return null;
 
   const returnObject: {

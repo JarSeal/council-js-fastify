@@ -31,6 +31,7 @@ describe('userAndPrivilegeChecks', () => {
       userId: null,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     });
 
     req = {
@@ -42,6 +43,7 @@ describe('userAndPrivilegeChecks', () => {
       userId: dummyUserId,
       userGroups: [],
       isSysAdmin: false,
+      requiredActions: null,
     });
 
     const adminId = await createSysAdmin();
@@ -55,6 +57,7 @@ describe('userAndPrivilegeChecks', () => {
       userId: adminId,
       userGroups: [adminGroupId],
       isSysAdmin: true,
+      requiredActions: null,
     });
 
     const basicUsersGroupId = await createGroup('basicUsers');
@@ -68,6 +71,7 @@ describe('userAndPrivilegeChecks', () => {
       userId: userId,
       userGroups: [basicUsersGroupId],
       isSysAdmin: false,
+      requiredActions: null,
     });
   });
 

@@ -53,17 +53,23 @@ export const createSysAdmin = async (asNew?: boolean) => {
 
 export const createUser = async (
   simpleId: string,
-  opts?: { verified?: boolean; groupIds?: Types.ObjectId[]; groupSimpleIds?: string[] }
+  opts?: {
+    verified?: boolean;
+    groupIds?: Types.ObjectId[];
+    groupSimpleIds?: string[];
+    password?: string;
+    email?: string;
+  }
 ) => {
   const foundUser = await DBUserModel.findOne({ simpleId });
   if (foundUser) return foundUser._id;
-  const passwordHash = await hash('password', 10);
+  const passwordHash = await hash(opts?.password || 'password', 10);
   const dateNow = new Date();
   const newUser = new DBUserModel({
     simpleId,
     emails: [
       {
-        email: simpleId + '@council.fastify',
+        email: opts?.email || simpleId + '@council.fastify',
         verified: opts?.verified || false,
         token: null,
         added: dateNow,
