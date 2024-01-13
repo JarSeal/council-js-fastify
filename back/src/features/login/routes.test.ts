@@ -231,7 +231,7 @@ describe('login', () => {
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
     let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
     expect(response?.statusCode).toBe(200);
-    expect(body).toStrictEqual({ ok: true });
+    expect(body).toStrictEqual({ ok: true, requiredActions: null });
 
     response = await app.inject({
       method: 'POST',
@@ -267,7 +267,7 @@ describe('login', () => {
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
     let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
     expect(response?.statusCode).toBe(200);
-    expect(body).toStrictEqual({ ok: true });
+    expect(body).toStrictEqual({ ok: true, requiredActions: null });
 
     response = await app.inject({
       method: 'POST',

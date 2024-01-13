@@ -31,6 +31,7 @@ describe('sessionStore', () => {
       username,
       userId,
       agentId: validAgentId,
+      requiredActions: null,
       cookie: {
         path: '/',
         secure: false,

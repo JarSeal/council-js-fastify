@@ -7,6 +7,8 @@ import type { DBUser } from '../../dbModels/user';
 import { errors } from '../../core/errors';
 import { getConfig } from '../../core/config';
 import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
+import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
+import { getUserData } from '../../utils/userAndPrivilegeChecks';
 
 export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const body = req.body;
@@ -53,10 +55,6 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   }
 
   // @TODO: check 2-factor authentication need
-  // @TODO (also add to basic login and 2-factor response):
-  // 1. Check email verification need
-  // 2. Check mandatory pass change need
-  // 3. Check mandatory UserData need
 
   // Reset login attempts and log login
   const logAndResetLoginAttemptsError = await logAndResetLoginAttempts(user, agentId);
@@ -70,7 +68,12 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   req.session.userId = user._id;
   req.session.agentId = agentId;
 
-  return res.status(200).send({ ok: true });
+  // Check user action requirements
+  const userData = await getUserData(req);
+  const requiredActions = await getRequiredActionsFromUser(userData);
+  req.session.requiredActions = requiredActions;
+
+  return res.status(200).send({ ok: true, requiredActions });
 };
 
 // Check cool down

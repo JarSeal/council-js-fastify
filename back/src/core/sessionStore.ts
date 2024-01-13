@@ -26,6 +26,7 @@ export const sessionStore = {
         userId: session.userId,
         agentId: session.agentId,
         cookie: session.cookie,
+        requiredActions: session.requiredActions,
       },
     });
     try {

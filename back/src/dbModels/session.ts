@@ -2,6 +2,7 @@ import mongoose, { Schema, type Types } from 'mongoose';
 
 import { simpleIdDBSchema } from './_schemaPartials';
 import { getConfig } from '../core/config';
+import type { RequiredActions } from '../features/login/schemas';
 
 export interface Session {
   // Whether the current user is signed in or not
@@ -11,6 +12,9 @@ export interface Session {
   username: string;
   userId: Types.ObjectId;
   agentId: string;
+
+  // required actions from user
+  requiredActions: RequiredActions;
 
   // Cookie
   cookie: {
