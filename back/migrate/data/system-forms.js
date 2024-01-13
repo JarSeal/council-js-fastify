@@ -284,6 +284,9 @@ const getForms = async (db) => {
       owner: null,
       addFillerToPrivileges: ['$read.users', '$edit.users', '$delete.users'],
       url: '/api/v1/sys/userdata',
+      afterCreateFn: ['checkAndSetRequiredActions'],
+      afterEditFn: ['checkAndSetRequiredActions'],
+      afterDeleteFn: ['checkAndSetRequiredActions'],
       form: {
         formElems: [
           {

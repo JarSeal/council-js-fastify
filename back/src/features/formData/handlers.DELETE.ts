@@ -58,7 +58,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     } else {
       params = { ...body.getData, ...(!body.getData.dataId ? { dataId: dataIds } : {}) };
     }
-    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood, req);
     returnResponse.getData = getDataResult;
   }
 
@@ -210,7 +210,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     for (let i = 0; i < form.afterDeleteFn.length; i++) {
       const afterFn = afterFns[form.afterDeleteFn[i]];
       if (afterFn) {
-        afterFn.afterFn(dataIdsForAfterFn, form, userData);
+        afterFn.afterFn(dataIdsForAfterFn, form, userData, req);
       }
     }
   }

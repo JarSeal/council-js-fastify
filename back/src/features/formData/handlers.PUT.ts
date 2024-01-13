@@ -496,7 +496,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     } else {
       params = { ...body.getData, ...(!body.getData.dataId ? { dataId: dataIds } : {}) };
     }
-    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood, req);
     returnResponse.getData = getDataResult;
   }
 
@@ -504,7 +504,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     for (let i = 0; i < form.afterEditFn.length; i++) {
       const afterFn = afterFns[form.afterEditFn[i]];
       if (afterFn) {
-        afterFn.afterFn(dataId, form, userData);
+        afterFn.afterFn(dataId, form, userData, req);
       }
     }
   }

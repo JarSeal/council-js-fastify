@@ -1,4 +1,4 @@
-import type { RouteHandler } from 'fastify';
+import type { FastifyRequest, RouteHandler } from 'fastify';
 
 import type { FormDataPostBody, FormDataPostReply, FormDataPostRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
@@ -39,7 +39,7 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
     return res.send(new errors.NOT_FOUND(`Could not find form with url: ${url}`));
   }
 
-  const response = await postFormData(body, form, userData, csrfIsGood);
+  const response = await postFormData(body, form, userData, csrfIsGood, req);
   if ('error' in response && response.error?.status) {
     return res.status(response.error.status).send(response);
   }
@@ -50,7 +50,8 @@ export const postFormData = async (
   body: FormDataPostBody,
   form: DBForm,
   userData: UserData,
-  csrfIsGood: boolean
+  csrfIsGood: boolean,
+  req: FastifyRequest
 ) => {
   const DBFormDataModel = getFormDataModel(form.url);
 
@@ -235,7 +236,7 @@ export const postFormData = async (
     } else {
       params = { ...body.getData, ...(!body.getData.dataId ? { dataId: [newDataId] } : {}) };
     }
-    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood, req);
     returnResponse.getData = getDataResult;
   }
 
@@ -243,7 +244,7 @@ export const postFormData = async (
     for (let i = 0; i < form.afterCreateFn.length; i++) {
       const afterFn = afterFns[form.afterCreateFn[i]];
       if (afterFn) {
-        afterFn.afterFn(newDataId, form, userData);
+        afterFn.afterFn(newDataId, form, userData, req);
       }
     }
   }

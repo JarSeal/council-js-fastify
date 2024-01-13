@@ -1,4 +1,4 @@
-import type { RouteHandler } from 'fastify';
+import type { FastifyRequest, RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
 
 import type { FormDataGetRoute, FormDataGetReply, GetQuerystring } from './routes';
@@ -71,7 +71,7 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   const userData = await getUserData(req);
 
   // Get form and/or formData and possible metadata
-  const returnObject = await getFormData(req.query, form, userData, csrfIsGood);
+  const returnObject = await getFormData(req.query, form, userData, csrfIsGood, req);
 
   return res.send(returnObject);
 };
@@ -146,7 +146,8 @@ export const getFormData = async (
   params: GetQuerystring,
   form: DBForm,
   userData: UserData,
-  csrfIsGood: boolean
+  csrfIsGood: boolean,
+  req: FastifyRequest
 ) => {
   const DBFormDataModel = getFormDataModel(form.url);
   const {
@@ -545,7 +546,7 @@ export const getFormData = async (
     for (let i = 0; i < form.afterReadFn.length; i++) {
       const afterFn = afterFns[form.afterReadFn[i]];
       if (afterFn) {
-        afterFn.afterFn(dataIdsForAfterFn, form, userData);
+        afterFn.afterFn(dataIdsForAfterFn, form, userData, req);
       }
     }
   }
