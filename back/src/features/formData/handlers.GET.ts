@@ -27,6 +27,7 @@ import {
 import { getConfig } from '../../core/config';
 import type { TransText } from '../../@types/form';
 import { afterFns } from '../../customFunctions/afterFn';
+import { getRequiredActions } from '../../utils/requiredLoginChecks';
 
 export type Data = {
   elemId: string;
@@ -50,6 +51,19 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   const { getForm, dataId } = req.query;
   const url = getApiPathFromReqUrl(req.url);
 
+  // Get user data
+  const userData = await getUserData(req);
+
+  // Check required actions
+  const requiredActions = await getRequiredActions(req, userData);
+  if (requiredActions !== null) {
+    return res.send(
+      new errors.REQUIRED_ACTIONS_ERR(
+        `required actions: ${JSON.stringify(requiredActions)}, formData GET url "${req.url}"`
+      )
+    );
+  }
+
   // Get form and check that form exists
   const form = await DBFormModel.findOne<DBForm>({ url });
   if (!form) {
@@ -66,9 +80,6 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
 
   // Get CSRF result
   const csrfIsGood = isCsrfGood(req);
-
-  // Get user data
-  const userData = await getUserData(req);
 
   // Get form and/or formData and possible metadata
   const returnObject = await getFormData(req.query, form, userData, csrfIsGood, req);
@@ -549,7 +560,7 @@ export const getFormData = async (
         const result = await afterFn.afterFn({ req, dataId: dataIdsForAfterFn, userData, form });
         if (!result.ok) {
           returnObject['$afterFnError'] =
-            result.error || new errors.AFTER_FN_ERROR("Form's afterEditFn error");
+            result.error || new errors.AFTER_FN_ERR("Form's afterEditFn error");
         }
       }
     }

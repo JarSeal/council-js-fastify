@@ -287,7 +287,7 @@ describe('login', () => {
   });
 
   it('should successfully logout', async () => {
-    await createUser('myusername4', { email: 'dd@dd.dd' });
+    await createUser('myusername4', { email: 'dd@dd.dd', verified: true });
     let response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',

@@ -838,7 +838,7 @@ describe('PUT formData', () => {
   });
 
   it('should be able to edit privileges successfully when user in canEditPrivileges', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -1089,7 +1089,7 @@ describe('PUT formData', () => {
   });
 
   it('should be able to edit privileges successfully when user is the owner', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -1338,7 +1338,7 @@ describe('PUT formData', () => {
   });
 
   it('should fail when trying to edit canEditPrivileges and the user does not have privileges to do so', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -1518,7 +1518,7 @@ describe('PUT formData', () => {
   });
 
   it("should be able to edit canEditPrivileges successfully when user in form's canEditPrivileges", async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -1904,7 +1904,7 @@ describe('PUT formData', () => {
   });
 
   it("should be able to edit canEditPrivileges successfully when user in form's canEditPrivileges", async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -2136,7 +2136,7 @@ describe('PUT formData', () => {
   });
 
   it('should be able to edit canEditPrivileges successfully when user is the owner', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -2358,7 +2358,7 @@ describe('PUT formData', () => {
   });
 
   it('should fail to edit owner', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -2510,7 +2510,7 @@ describe('PUT formData', () => {
   });
 
   it('should be able to edit owner successfully', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',

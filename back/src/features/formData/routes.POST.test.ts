@@ -576,7 +576,7 @@ describe('POST formData', () => {
   });
 
   it('should be able to add privileges successfully when user in canEditPrivileges', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -694,7 +694,7 @@ describe('POST formData', () => {
   });
 
   it('should be able to add privileges successfully when user is the owner', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -875,7 +875,7 @@ describe('POST formData', () => {
   });
 
   it("should be able to add canEditPrivileges successfully when user in form's canEditPrivileges", async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -987,7 +987,7 @@ describe('POST formData', () => {
   });
 
   it('should be able to add canEditPrivileges successfully when user is the owner', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -1096,7 +1096,7 @@ describe('POST formData', () => {
   });
 
   it('should not be able to change owner and should fail only by not adding the owner (silently)', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -1179,7 +1179,7 @@ describe('POST formData', () => {
   });
 
   it('should be able to add owner successfully', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -1287,7 +1287,7 @@ describe('POST formData', () => {
   });
 
   it('should be able to add form filler to privileges successfully', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',

@@ -1,5 +1,9 @@
 describe('requiredLoginChecks', () => {
-  it('should check requiredLoginChecks for user', () => {
+  it('getRequiredActionsFromUser', () => {
+    // @TODO: create tests
+  });
+
+  it('getRequiredActions', () => {
     // @TODO: create tests
   });
 });

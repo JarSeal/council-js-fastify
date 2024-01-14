@@ -24,6 +24,7 @@ import {
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
 import { afterFns } from '../../customFunctions/afterFn';
+import { getRequiredActions } from '../../utils/requiredLoginChecks';
 
 // Create (POST)
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -32,6 +33,16 @@ export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) =>
 
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);
+
+  // Check required actions
+  const requiredActions = await getRequiredActions(req, userData);
+  if (requiredActions !== null) {
+    return res.send(
+      new errors.REQUIRED_ACTIONS_ERR(
+        `required actions: ${JSON.stringify(requiredActions)}, formData POST url "${req.url}"`
+      )
+    );
+  }
 
   // Get form
   const form = await DBFormModel.findOne<DBForm>({ url });
@@ -246,7 +257,7 @@ export const postFormData = async (
       if (afterFn) {
         const result = await afterFn.afterFn({ req, dataId: newDataId, userData, form });
         if (!result.ok) {
-          return result.error || new errors.AFTER_FN_ERROR("Form's afterEditFn error");
+          return result.error || new errors.AFTER_FN_ERR("Form's afterEditFn error");
         }
       }
     }

@@ -16,6 +16,7 @@ import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { getFormData } from './handlers.GET';
 import { afterFns } from '../../customFunctions/afterFn';
+import { getRequiredActions } from '../../utils/requiredLoginChecks';
 
 // Delete (DELETE)
 export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res) => {
@@ -23,6 +24,17 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
   const DBFormDataModel = getFormDataModel(url);
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);
+
+  // Check required actions
+  const requiredActions = await getRequiredActions(req, userData);
+  if (requiredActions !== null) {
+    return res.send(
+      new errors.REQUIRED_ACTIONS_ERR(
+        `required actions: ${JSON.stringify(requiredActions)}, formData DELETE url "${req.url}"`
+      )
+    );
+  }
+
   const returnResponse: FormDataPutAndDeleteReply = { ok: false };
   let dataIdsForAfterFn;
 
@@ -212,7 +224,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
       if (afterFn) {
         const result = await afterFn.afterFn({ req, dataId: dataIdsForAfterFn, userData, form });
         if (!result.ok) {
-          return res.send(result.error || new errors.AFTER_FN_ERROR("Form's afterEditFn error"));
+          return res.send(result.error || new errors.AFTER_FN_ERR("Form's afterEditFn error"));
         }
       }
     }

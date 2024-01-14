@@ -22,6 +22,7 @@ import {
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
 import { afterFns } from '../../customFunctions/afterFn';
+import { getRequiredActions } from '../../utils/requiredLoginChecks';
 
 // Edit (PUT)
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
@@ -31,6 +32,16 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
 
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);
+
+  // Check required actions
+  const requiredActions = await getRequiredActions(req, userData);
+  if (requiredActions !== null) {
+    return res.send(
+      new errors.REQUIRED_ACTIONS_ERR(
+        `required actions: ${JSON.stringify(requiredActions)}, formData PUT url "${req.url}"`
+      )
+    );
+  }
 
   // Get form
   const form = await DBFormModel.findOne<DBForm>({ url });
@@ -506,7 +517,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       if (afterFn) {
         const result = await afterFn.afterFn({ req, dataId, userData, form });
         if (!result.ok) {
-          return res.send(result.error || new errors.AFTER_FN_ERROR("Form's afterEditFn error"));
+          return res.send(result.error || new errors.AFTER_FN_ERR("Form's afterEditFn error"));
         }
       }
     }
