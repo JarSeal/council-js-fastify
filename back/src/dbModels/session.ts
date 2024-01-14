@@ -5,6 +5,8 @@ import { getConfig } from '../core/config';
 import { requiredActionsDBSchema, type RequiredActions } from '../features/login/schemas';
 
 export interface Session {
+  cacheSetData?: Date;
+
   // Whether the current user is signed in or not
   isSignedIn: boolean;
 
@@ -12,6 +14,8 @@ export interface Session {
   username: string;
   userId: Types.ObjectId;
   agentId: string;
+  userGroups?: Types.ObjectId[];
+  isSysAdmin?: boolean;
 
   // required actions from user
   requiredActions: RequiredActions;
@@ -43,10 +47,13 @@ const sessionSchema = new Schema<DBSession>({
   expires: { type: Date, required: true },
   systemDocument: { type: Boolean, default: true },
   session: {
+    cacheSetData: Date,
     isSignedIn: Boolean,
     username: String,
     userId: Schema.Types.ObjectId,
     agentId: String,
+    userGroups: [Schema.Types.ObjectId],
+    isSysAdmin: Boolean,
     requiredActions: requiredActionsDBSchema,
     cookie: {
       path: { type: String, default: '/' },

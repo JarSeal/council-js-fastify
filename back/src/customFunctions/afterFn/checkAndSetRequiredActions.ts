@@ -1,4 +1,6 @@
+import { getUserData } from '../../utils/userAndPrivilegeChecks';
 import type { CustomAfterFn } from '.';
+import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
 
 export const checkAndSetRequiredActions: CustomAfterFn = {
   name: { langKey: 'Check and set required actions to session' },
@@ -6,13 +8,14 @@ export const checkAndSetRequiredActions: CustomAfterFn = {
     langKey:
       "Checks user's required actions and sets them to session. This should be run after user data alternating changes.",
   },
-  afterFn: (dataId, form, userData, req) => {
-    dataId;
-    form;
-    userData;
-    req;
-    // @TODO: do a clean get of the user data from DB
-    // @TODO: check all required actions again
-    // @TODO: write to req.session.requiredActions and save to sessionStore
+  afterFn: async ({ req }) => {
+    // Do a clean get of the user data from DB
+    const updatedUserData = await getUserData(req, true);
+    // Check all required actions again
+    const requiredActions = await getRequiredActionsFromUser(updatedUserData);
+    // Write to req.session.requiredActions and save to sessionStore
+    req.session.requiredActions = requiredActions;
+
+    return { ok: true };
   },
 };

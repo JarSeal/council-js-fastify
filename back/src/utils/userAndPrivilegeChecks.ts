@@ -32,9 +32,13 @@ export type UserData = {
   userGroups: Types.ObjectId[];
   isSysAdmin: boolean;
   requiredActions: RequiredActions;
+  cacheSetData?: Date;
 };
 
-export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
+export const getUserData = async (
+  req: FastifyRequest,
+  bypassCache?: boolean
+): Promise<UserData> => {
   const isSignedIn = req.session?.isSignedIn;
   const userId = req.session?.userId;
   const userData: UserData = {
@@ -45,16 +49,39 @@ export const getUserData = async (req: FastifyRequest): Promise<UserData> => {
     requiredActions: null,
   };
   if (isSignedIn) {
-    // @TODO: create a cache in the session object to get the groups
-    // (create a system setting for it, default to about 5 minutes)
-    let userGroups = await DBGroupModel.find<{ _id: Types.ObjectId; simpleId: string }>({
-      members: req.session.userId,
-    }).select('_id simpleId');
-    userData.userGroups = userGroups.map((ug) => ug._id);
-    if (userGroups.find((ug) => ug.simpleId === 'sysAdmins')) {
-      userData.isSysAdmin = true;
+    // Check cache
+    const timeNow = new Date();
+    let cacheBusted = bypassCache;
+    if (!bypassCache && req.session?.cacheSetData) {
+      const CACHE_TIME = 60000 * 3; // 3 minutes
+      const cachedTimeLimit = new Date(req.session.cacheSetData.getTime() + CACHE_TIME);
+      if (cachedTimeLimit > timeNow) {
+        cacheBusted = false;
+      } else {
+        cacheBusted = true;
+      }
     }
-    userGroups = [];
+
+    if (cacheBusted || !req.session.userGroups || !req.session.cacheSetData) {
+      // Get groups from DB
+      let userGroups = await DBGroupModel.find<{ _id: Types.ObjectId; simpleId: string }>({
+        members: req.session.userId,
+      }).select('_id simpleId');
+      userData.userGroups = userGroups.map((ug) => ug._id);
+      if (userGroups.find((ug) => ug.simpleId === 'sysAdmins')) {
+        userData.isSysAdmin = true;
+        req.session.isSysAdmin = true;
+      } else {
+        req.session.isSysAdmin = false;
+      }
+      req.session.cacheSetData = timeNow;
+      req.session.userGroups = userData.userGroups;
+      userGroups = [];
+    } else {
+      // Use cached groups
+      userData.userGroups = req.session.userGroups;
+      userData.isSysAdmin = req.session?.isSysAdmin || false;
+    }
 
     if (req.session.requiredActions) {
       userData.requiredActions = req.session.requiredActions;

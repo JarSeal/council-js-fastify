@@ -504,7 +504,10 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     for (let i = 0; i < form.afterEditFn.length; i++) {
       const afterFn = afterFns[form.afterEditFn[i]];
       if (afterFn) {
-        afterFn.afterFn(dataId, form, userData, req);
+        const result = await afterFn.afterFn({ req, dataId, userData, form });
+        if (!result.ok) {
+          return res.send(result.error || new errors.AFTER_FN_ERROR("Form's afterEditFn error"));
+        }
       }
     }
   }

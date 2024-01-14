@@ -210,7 +210,10 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
     for (let i = 0; i < form.afterDeleteFn.length; i++) {
       const afterFn = afterFns[form.afterDeleteFn[i]];
       if (afterFn) {
-        afterFn.afterFn(dataIdsForAfterFn, form, userData, req);
+        const result = await afterFn.afterFn({ req, dataId: dataIdsForAfterFn, userData, form });
+        if (!result.ok) {
+          return res.send(result.error || new errors.AFTER_FN_ERROR("Form's afterEditFn error"));
+        }
       }
     }
   }

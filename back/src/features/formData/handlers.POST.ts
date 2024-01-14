@@ -244,7 +244,10 @@ export const postFormData = async (
     for (let i = 0; i < form.afterCreateFn.length; i++) {
       const afterFn = afterFns[form.afterCreateFn[i]];
       if (afterFn) {
-        afterFn.afterFn(newDataId, form, userData, req);
+        const result = await afterFn.afterFn({ req, dataId: newDataId, userData, form });
+        if (!result.ok) {
+          return result.error || new errors.AFTER_FN_ERROR("Form's afterEditFn error");
+        }
       }
     }
   }
