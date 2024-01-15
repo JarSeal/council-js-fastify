@@ -278,6 +278,7 @@ describe('login', () => {
     const response = await app.inject({
       method: 'POST',
       path: '/api/v1/logout',
+      body: {},
       ...csrfHeader,
     });
     const body = JSON.parse(response?.body || '') as FastifyError;
