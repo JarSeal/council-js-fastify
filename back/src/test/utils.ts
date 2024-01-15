@@ -59,6 +59,7 @@ export const createUser = async (
     groupSimpleIds?: string[];
     password?: string;
     email?: string;
+    forcePassChange?: boolean;
   }
 ) => {
   const foundUser = await DBUserModel.findOne({ simpleId });
@@ -83,7 +84,11 @@ export const createUser = async (
     },
     systemDocument: false,
     edited: [],
-    security: { lastLogins: [], lastLoginAttempts: [] },
+    security: {
+      lastLogins: [],
+      lastLoginAttempts: [],
+      forcePassChange: opts?.forcePassChange || false,
+    },
   });
   const savedUser = await newUser.save();
   if (opts?.groupIds) {
