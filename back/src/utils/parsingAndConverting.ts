@@ -393,6 +393,82 @@ export const convertPrivilegeIdStringsToObjectIds = (privilege?: AllPrivilegePro
   return Object.keys(convertedPrivilege).length ? convertedPrivilege : null;
 };
 
+export const addPossibleFillerToMainPrivs = (
+  fillerRules: string[],
+  mainPrivs: Partial<FormDataPrivileges>,
+  userData: UserData
+) => {
+  // Adds filler to mainPrivileges
+  if (!fillerRules.length || !userData.isSignedIn || !userData.userId) {
+    return mainPrivs;
+  }
+  for (let i = 0; i < fillerRules.length; i++) {
+    const splitRule = fillerRules[i].split('.');
+    let action: 'read' | 'edit' | 'delete' | null = null;
+    if (splitRule[0] === '$read') action = 'read';
+    if (splitRule[0] === '$edit') action = 'edit';
+    if (splitRule[0] === '$delete') action = 'delete';
+    if (action && splitRule.length === 2) {
+      const privSlot: 'users' | 'excludeUsers' | null =
+        splitRule[1] === 'users' || splitRule[1] === 'excludeUsers' ? splitRule[1] : null;
+      const userId = userData.userId;
+      if (privSlot && mainPrivs[action]) {
+        const curPrivilegeAction = mainPrivs[action];
+        // @NOTE: Typescript cannot see for some reason that
+        // 'curPrivilegeAction' nor 'array' cannot be undefined!! (hence the checks)
+        if (curPrivilegeAction && Array.isArray(curPrivilegeAction[privSlot])) {
+          const array = curPrivilegeAction[privSlot];
+          if (array && !array.includes(userId)) array.push(userId);
+        } else if (curPrivilegeAction) {
+          curPrivilegeAction[privSlot] = [userId];
+        }
+      } else if (privSlot) {
+        mainPrivs[action] = { [privSlot]: [userId] };
+      }
+    }
+  }
+  return mainPrivs;
+};
+
+export const addPossibleFillerToElemPrivs = (
+  fillerRules: string[],
+  elemPrivs: Partial<FormDataPrivileges> | null,
+  userData: UserData,
+  elemId: string
+) => {
+  // Adds filler to mainPrivileges
+  if (!fillerRules.length || !userData.isSignedIn || !userData.userId) {
+    return elemPrivs;
+  }
+  for (let i = 0; i < fillerRules.length; i++) {
+    const splitRule = fillerRules[i].split('.');
+    if (splitRule[0] !== elemId) continue;
+    let action: 'read' | 'edit' | null = null;
+    if (splitRule[1] === 'read') action = 'read';
+    if (splitRule[1] === 'edit') action = 'edit';
+    if (action && splitRule.length === 3) {
+      const privSlot: 'users' | 'excludeUsers' | null =
+        splitRule[2] === 'users' || splitRule[2] === 'excludeUsers' ? splitRule[2] : null;
+      const userId = userData.userId;
+      if (privSlot && elemPrivs && elemPrivs[action]) {
+        const curPrivilegeAction = elemPrivs[action];
+        // @NOTE: Typescript cannot see for some reason that
+        // 'curPrivilegeAction' nor 'array' cannot be undefined!! (hence the checks)
+        if (curPrivilegeAction && Array.isArray(curPrivilegeAction[privSlot])) {
+          const array = curPrivilegeAction[privSlot];
+          if (array && !array.includes(userId)) array.push(userId);
+        } else if (curPrivilegeAction) {
+          curPrivilegeAction[privSlot] = [userId];
+        }
+      } else if (privSlot) {
+        if (!elemPrivs) elemPrivs = {};
+        elemPrivs[action] = { [privSlot]: [userId] };
+      }
+    }
+  }
+  return elemPrivs;
+};
+
 export const createNewEditedArray = (
   oldArray: Edited[],
   userId: MongooseTypes.ObjectId | null,

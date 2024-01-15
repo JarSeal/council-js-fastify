@@ -1,9 +1,10 @@
-import type { RouteHandler } from 'fastify';
+import type { FastifyRequest, RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
 
 import type { FormDataGetRoute, FormDataGetReply, GetQuerystring } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
-import DBFormDataModel, { type DBFormData } from '../../dbModels/formData';
+import { type DBFormData } from '../../dbModels/formData';
+import getFormDataModel from '../../dbModels/formData/';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import type { AllPrivilegeProps, FormElem, UserId } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';
@@ -25,6 +26,8 @@ import {
 } from '../../utils/parsingAndConverting';
 import { getConfig } from '../../core/config';
 import type { TransText } from '../../@types/form';
+import { afterFns } from '../../customFunctions/afterFn';
+import { getRequiredActions } from '../../utils/requiredLoginChecks';
 
 export type Data = {
   elemId: string;
@@ -48,6 +51,19 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   const { getForm, dataId } = req.query;
   const url = getApiPathFromReqUrl(req.url);
 
+  // Get user data
+  const userData = await getUserData(req);
+
+  // Check required actions
+  const requiredActions = await getRequiredActions(req, userData);
+  if (requiredActions !== null) {
+    return res.send(
+      new errors.REQUIRED_ACTIONS_ERR(
+        `required actions: ${JSON.stringify(requiredActions)}, formData GET url "${req.url}"`
+      )
+    );
+  }
+
   // Get form and check that form exists
   const form = await DBFormModel.findOne<DBForm>({ url });
   if (!form) {
@@ -65,11 +81,8 @@ export const formDataGet: RouteHandler<FormDataGetRoute> = async (req, res) => {
   // Get CSRF result
   const csrfIsGood = isCsrfGood(req);
 
-  // Get user data
-  const userData = await getUserData(req);
-
   // Get form and/or formData and possible metadata
-  const returnObject = await getFormData(req.query, form, userData, csrfIsGood);
+  const returnObject = await getFormData(req.query, form, userData, csrfIsGood, req);
 
   return res.send(returnObject);
 };
@@ -144,8 +157,10 @@ export const getFormData = async (
   params: GetQuerystring,
   form: DBForm,
   userData: UserData,
-  csrfIsGood: boolean
+  csrfIsGood: boolean,
+  req: FastifyRequest
 ) => {
+  const DBFormDataModel = getFormDataModel(form.url);
   const {
     getForm,
     dataId,
@@ -165,6 +180,7 @@ export const getFormData = async (
     meAsOwner,
     meAsEditor,
   } = params;
+  let dataIdsForAfterFn;
 
   // Create possible labels (for embedding them into data)
   const labels: { [key: string]: TransText } = {};
@@ -411,6 +427,7 @@ export const getFormData = async (
       if (includePrivileges && privs?.length) {
         returnObject['$dataPrivileges'] = privs;
       }
+      dataIdsForAfterFn = dataIds;
     } else {
       // Check single dataSet's privileges
       const mainPrivileges = {
@@ -509,6 +526,7 @@ export const getFormData = async (
           ),
         };
       }
+      dataIdsForAfterFn = formDataId || undefined;
     }
 
     if (includeLabels === 'true' && data[0]?.length) {
@@ -532,6 +550,19 @@ export const getFormData = async (
       returnObject['data'] = data[0] || [];
     } else {
       returnObject['data'] = data;
+    }
+  }
+
+  if (form.afterReadFn?.length && dataId) {
+    for (let i = 0; i < form.afterReadFn.length; i++) {
+      const afterFn = afterFns[form.afterReadFn[i]];
+      if (afterFn) {
+        const result = await afterFn.afterFn({ req, dataId: dataIdsForAfterFn, userData, form });
+        if (!result.ok) {
+          returnObject['$afterFnError'] =
+            result.error || new errors.AFTER_FN_ERR("Form's afterEditFn error");
+        }
+      }
     }
   }
 

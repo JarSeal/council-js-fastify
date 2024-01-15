@@ -82,6 +82,7 @@ export const formDataPostBodyReplySchema = Type.Object({
   error: Type.Optional(
     Type.Object({
       errorId: Type.String(),
+      status: Type.Number(),
       message: Type.String(),
       elemId: Type.Optional(Type.String()),
       customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
@@ -128,6 +129,7 @@ export const formDataPutAndDeleteBodyReplySchema = Type.Object({
   error: Type.Optional(
     Type.Object({
       errorId: Type.String(),
+      status: Type.Number(),
       message: Type.String(),
       elemId: Type.Optional(Type.String()),
       customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)

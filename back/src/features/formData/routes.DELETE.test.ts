@@ -714,7 +714,7 @@ describe('DELETE formData', () => {
   });
 
   it('should be able to delete as the owner of the form', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',
@@ -827,7 +827,7 @@ describe('DELETE formData', () => {
   });
 
   it('should be able to delete as the owner of the formData dataSet', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     await createForm(
       'myform',
       '/myform',

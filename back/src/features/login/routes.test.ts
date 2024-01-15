@@ -5,7 +5,7 @@ import initApp from '../../core/app';
 import { SESSION_COOKIE_NAME, getConfig } from '../../core/config';
 import type { LoginRoute } from './schemas';
 import type { LogoutRoute } from '../logout/schemas';
-import { csrfHeader, validAgentId } from '../../test/utils';
+import { createUser, csrfHeader, validAgentId } from '../../test/utils';
 
 describe('login', () => {
   let app: FastifyInstance;
@@ -20,27 +20,14 @@ describe('login', () => {
     await mongoose.connection.close();
   });
 
-  const createUser = async (username?: string, email?: string, pass?: string) => {
-    if (!username) username = 'myusername';
-    if (!email) email = 'aa@aa.com';
-    if (!pass) pass = 'myPa$$word1';
-    await app.inject({
-      method: 'POST',
-      path: '/api/v1/publicsignup',
-      body: { username, pass, email },
-      ...csrfHeader,
-    });
-    return { username, pass, email };
-  };
-
   it('should fail without the CSRF header', async () => {
-    const user = await createUser('csrfUser', 'csrfPassword');
+    await createUser('csrfUser', { password: 'csrfPassword' });
     const response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
       body: {
-        usernameOrEmail: user.username,
-        pass: user.pass,
+        usernameOrEmail: 'csrfUser',
+        pass: 'csrfPassword',
         loginMethod: 'username',
         agentId: validAgentId,
       },
@@ -192,14 +179,14 @@ describe('login', () => {
   });
 
   it('should set the user to a cooldown period when giving wrong password too many times', async () => {
-    const user = await createUser('cooldownuser', 'aa@aa.aa');
+    await createUser('cooldownuser');
     let response;
     for (let i = 0; i < getConfig<number>('user.maxLoginAttempts'); i++) {
       response = await app.inject({
         method: 'POST',
         path: '/api/v1/login',
         body: {
-          usernameOrEmail: user.username,
+          usernameOrEmail: 'cooldownuser',
           pass: 'wrongpassword',
           loginMethod: 'username',
           agentId: validAgentId,
@@ -216,13 +203,13 @@ describe('login', () => {
   });
 
   it('should successfully login with a username and fail if tried again without logging out', async () => {
-    const user = await createUser('myusername2', 'bb@bb.bb');
+    await createUser('myusername2', { verified: true });
     let response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
       body: {
-        usernameOrEmail: user.username,
-        pass: user.pass,
+        usernameOrEmail: 'myusername2',
+        pass: 'password',
         loginMethod: 'username',
         agentId: validAgentId,
       },
@@ -231,14 +218,14 @@ describe('login', () => {
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
     let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
     expect(response?.statusCode).toBe(200);
-    expect(body).toStrictEqual({ ok: true });
+    expect(body).toStrictEqual({ ok: true, requiredActions: null });
 
     response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
       body: {
-        usernameOrEmail: user.username,
-        pass: user.pass,
+        usernameOrEmail: 'myusername2',
+        pass: 'password',
         loginMethod: 'username',
         agentId: validAgentId,
       },
@@ -252,13 +239,13 @@ describe('login', () => {
   });
 
   it('should successfully login with an email and fail if tried again without logging out', async () => {
-    const user = await createUser('myusername3', 'cc@cc.cc');
+    await createUser('myusername3', { email: 'cc@cc.cc', verified: true });
     let response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
       body: {
-        usernameOrEmail: user.email,
-        pass: user.pass,
+        usernameOrEmail: 'cc@cc.cc',
+        pass: 'password',
         loginMethod: 'email',
         agentId: validAgentId,
       },
@@ -267,14 +254,14 @@ describe('login', () => {
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
     let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
     expect(response?.statusCode).toBe(200);
-    expect(body).toStrictEqual({ ok: true });
+    expect(body).toStrictEqual({ ok: true, requiredActions: null });
 
     response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
       body: {
-        usernameOrEmail: user.email,
-        pass: user.pass,
+        usernameOrEmail: 'cc@cc.cc',
+        pass: 'password',
         loginMethod: 'email',
         agentId: validAgentId,
       },
@@ -291,6 +278,7 @@ describe('login', () => {
     const response = await app.inject({
       method: 'POST',
       path: '/api/v1/logout',
+      body: {},
       ...csrfHeader,
     });
     const body = JSON.parse(response?.body || '') as FastifyError;
@@ -300,13 +288,13 @@ describe('login', () => {
   });
 
   it('should successfully logout', async () => {
-    const user = await createUser('myusername4', 'dd@dd.dd');
+    await createUser('myusername4', { email: 'dd@dd.dd', verified: true });
     let response = await app.inject({
       method: 'POST',
       path: '/api/v1/login',
       body: {
-        usernameOrEmail: user.email,
-        pass: user.pass,
+        usernameOrEmail: 'dd@dd.dd',
+        pass: 'password',
         loginMethod: 'email',
         agentId: validAgentId,
       },

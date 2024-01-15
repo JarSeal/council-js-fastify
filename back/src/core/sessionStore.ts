@@ -21,11 +21,15 @@ export const sessionStore = {
       username: session.username,
       expires: session.cookie.expires || new Date(),
       session: {
+        cacheSetData: session.cacheSetData,
         isSignedIn: session.isSignedIn,
         username: session.username,
         userId: session.userId,
         agentId: session.agentId,
+        userGroups: session.userGroups,
+        isSysAdmin: session.isSysAdmin,
         cookie: session.cookie,
+        requiredActions: session.requiredActions,
       },
     });
     try {

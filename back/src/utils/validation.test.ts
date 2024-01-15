@@ -156,7 +156,7 @@ describe('validation util', () => {
     const result5 = validateSimpleId('Wrong$');
     const result6 = validateSimpleId('Wrong@');
 
-    expect(result1).toBeFalsy();
+    expect(result1).toBeTruthy();
     expect(result2).toBeFalsy();
     expect(result3).toBeTruthy();
     expect(result4).toBeTruthy();
@@ -173,7 +173,7 @@ describe('validation util', () => {
     const result6 = validateEmail('@x.x');
     const result7 = validateEmail('x@x.');
 
-    expect(result1).toBeFalsy();
+    expect(result1).toBeTruthy();
     expect(result2).toBeFalsy();
     expect(result3).toBeFalsy();
     expect(result4).toBeTruthy();
@@ -193,7 +193,7 @@ describe('validation util', () => {
     const result8 = validatePhoneWithExtraChars('+31-(40)-123 3455');
     const result9 = validatePhoneWithExtraChars('+31 40 123 3455');
 
-    expect(result1).toBeFalsy();
+    expect(result1).toBeTruthy();
     expect(result2).toBeFalsy();
     expect(result3).toBeFalsy();
     expect(result4).toBeTruthy();
@@ -369,6 +369,7 @@ describe('validation util', () => {
     let result = validateFormDataInput(formElems1, formData1);
     expect(result).toStrictEqual({
       errorId: 'minLength',
+      status: 400,
       message: "ElemId 'myElem1' value is too short (minLength: 3).",
       elemId: 'myElem1',
       customError: { langKey: 'Too short' },
@@ -387,6 +388,7 @@ describe('validation util', () => {
     result = validateFormDataInput(formElems1, formData2);
     expect(result).toStrictEqual({
       errorId: 'maxLength',
+      status: 400,
       message: "ElemId 'myElem1' value is too long (maxLength: 10).",
       elemId: 'myElem1',
     });
@@ -404,6 +406,7 @@ describe('validation util', () => {
     result = validateFormDataInput(formElems1, formData3);
     expect(result).toStrictEqual({
       errorId: 'validationRegExp',
+      status: 400,
       message: "ElemId 'myElem1' failed to validate for regExp.",
       elemId: 'myElem1',
     });
@@ -421,6 +424,7 @@ describe('validation util', () => {
     result = validateFormDataInput(formElems1, formData4);
     expect(result).toStrictEqual({
       errorId: 'invalidValueType',
+      status: 400,
       message: "ElemId 'myElem1' value is not of required valueType ('string').",
       elemId: 'myElem1',
     });
@@ -434,6 +438,7 @@ describe('validation util', () => {
     result = validateFormDataInput(formElems1, formData5);
     expect(result).toStrictEqual({
       errorId: 'required',
+      status: 400,
       message: "ElemId 'myElem1' value is required.",
       elemId: 'myElem1',
     });
@@ -482,6 +487,7 @@ describe('validation util', () => {
     result = validateFormDataInput(formElems2, formData7);
     expect(result).toStrictEqual({
       errorId: 'mustMatchValue',
+      status: 400,
       message: "ElemId 'myElem1' must match elemId 'myElem2' value.",
       elemId: 'myElem1',
     });
@@ -499,6 +505,7 @@ describe('validation util', () => {
     result = validateFormDataInput(formElems2, formData8);
     expect(result).toStrictEqual({
       errorId: 'minValue',
+      status: 400,
       message: "ElemId 'myElem1' value is too small (minValue: 3).",
       elemId: 'myElem1',
     });
@@ -516,6 +523,7 @@ describe('validation util', () => {
     result = validateFormDataInput(formElems2, formData9);
     expect(result).toStrictEqual({
       errorId: 'maxValue',
+      status: 400,
       message: "ElemId 'myElem1' value is too large (maxValue: 10).",
       elemId: 'myElem1',
     });
@@ -539,6 +547,7 @@ describe('validation util', () => {
     result = validateFormDataInput(formElems3, formData10);
     expect(result).toStrictEqual({
       errorId: 'validationFn',
+      status: 400,
       message: "ElemId 'myElem1' value failed validation with 'email' validator.",
       elemId: 'myElem1',
     });

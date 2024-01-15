@@ -253,7 +253,7 @@ describe('GET formData', () => {
   });
 
   it('should succesfully GET a non-public form and nothing else', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -489,7 +489,7 @@ describe('GET formData', () => {
   });
 
   it('should succesfully GET non-public formData (dataId=all) and form when in privilege users', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -604,7 +604,7 @@ describe('GET formData', () => {
   });
 
   it('should succesfully GET non-public formData (dataId=all) only when in privilege groups (and user is in that group)', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const groupId = await createGroup('mygroup', undefined, [userId]);
     const url = '/myform';
     const formId = 'myForm';
@@ -919,7 +919,7 @@ describe('GET formData', () => {
   });
 
   it('should GET nothing when signed in form and formData (dataId=all) when privilege check fails: onlyPublic (and is signed in)', async () => {
-    await createUser('myusername');
+    await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -993,7 +993,7 @@ describe('GET formData', () => {
   });
 
   it('should GET nothing when user is signed in but not in users nor groups list', async () => {
-    await createUser('myusername');
+    await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -1069,7 +1069,7 @@ describe('GET formData', () => {
   });
 
   it('should GET nothing when user is signed in but is in excluded users', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -1154,7 +1154,7 @@ describe('GET formData', () => {
   });
 
   it('should GET nothing when user is signed in but is in excluded groups (and user is in that group)', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const groupId = await createGroup('mygroup', userId, [userId], true);
     const url = '/myform';
     const formId = 'myForm';
@@ -1240,7 +1240,7 @@ describe('GET formData', () => {
   });
 
   it('should succesfully GET two public formData items only as a signed in user', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -1525,7 +1525,7 @@ describe('GET formData', () => {
   });
 
   it('should succesfully GET one non-public formData item only when in privilege users', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -1603,7 +1603,7 @@ describe('GET formData', () => {
   });
 
   it('should succesfully GET one non-public formData item only as flat object when in privilege users', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -1672,7 +1672,7 @@ describe('GET formData', () => {
   });
 
   it('should succesfully GET one non-public formData item only when in privilege groups (and user is in that group)', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const groupId = await createGroup('mygroup', undefined, [userId]);
     const url = '/myform';
     const formId = 'myForm';
@@ -1750,7 +1750,7 @@ describe('GET formData', () => {
   });
 
   it('should succesfully GET one non-public formData item only as flat object when in privilege groups (and user is in that group)', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const groupId = await createGroup('mygroup', undefined, [userId]);
     const url = '/myform';
     const formId = 'myForm';
@@ -1967,7 +1967,7 @@ describe('GET formData', () => {
   });
 
   it('should GET nothing when trying to get a non-public formData item and when user not in formData users nor groups privileges', async () => {
-    await createUser('myusername');
+    await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -2035,7 +2035,7 @@ describe('GET formData', () => {
   });
 
   it('should GET nothing when trying to get a non-public formData item and when user in excluded formData users privileges', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -2108,7 +2108,7 @@ describe('GET formData', () => {
   });
 
   it('should GET nothing when trying to get a non-public formData item and when user in excluded formData groups privileges', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const groupId = await createGroup('mygroup', undefined, [userId]);
     const url = '/myform';
     const formId = 'myForm';
@@ -2182,7 +2182,7 @@ describe('GET formData', () => {
   });
 
   it('should GET nothing when trying to get a onlyPublic formData item and when user is signed in', async () => {
-    await createUser('myusername');
+    await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {
@@ -2396,7 +2396,7 @@ describe('GET formData', () => {
   });
 
   it('should return the data, $dataIds, $dataLabels, $dataMetaData, and $dataPrivileges, and also sort the data accordingly', async () => {
-    const userId = await createUser('myusername');
+    const userId = await createUser('myusername', { verified: true });
     const url = '/myform';
     const formId = 'myForm';
     const privilege = {

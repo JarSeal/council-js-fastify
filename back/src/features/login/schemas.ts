@@ -9,10 +9,24 @@ export const bodySchema = Type.Object({
   agentId: Type.String({ minLength: 32, maxLength: 32 }),
 });
 
+export const requiredActionsDBSchema = {
+  userDataMissingOrInvalid: { type: Boolean },
+  forcePassChange: { type: Boolean },
+  primaryEmailIsUnverified: { type: Boolean },
+};
+export const requiredActionsSchema = Type.Union([
+  Type.Object({
+    userDataMissingOrInvalid: Type.Optional(Type.Boolean()),
+    forcePassChange: Type.Optional(Type.Boolean()),
+    primaryEmailIsUnverified: Type.Optional(Type.Boolean()),
+  }),
+  Type.Null(),
+]);
+export type RequiredActions = Static<typeof requiredActionsSchema>;
+
 export const replySchema = Type.Object({
   ok: Type.Boolean(),
-  forcePassChange: Type.Optional(Type.Boolean()),
-  twoFactor: Type.Optional(Type.Boolean()),
+  requiredActions: requiredActionsSchema,
 });
 
 export interface LoginRoute extends RouteGenericInterface {

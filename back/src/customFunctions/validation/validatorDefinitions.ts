@@ -1,4 +1,8 @@
-import { validateEmail, validatePhoneWithExtraChars, validateSimpleId } from '../validation';
+import {
+  validateEmail,
+  validatePhoneWithExtraChars,
+  validateSimpleId,
+} from '../../utils/validation';
 
 export const emailValidator = {
   name: { langKey: 'Email' },

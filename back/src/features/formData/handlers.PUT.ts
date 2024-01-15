@@ -3,7 +3,7 @@ import { type Types, isObjectIdOrHexString } from 'mongoose';
 
 import type { FormDataPutAndDeleteReply, FormDataPutRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
-import DBFormDataModel from '../../dbModels/formData';
+import getFormDataModel from '../../dbModels/formData/';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';
@@ -21,14 +21,27 @@ import {
 } from '../../utils/parsingAndConverting';
 import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
+import { afterFns } from '../../customFunctions/afterFn';
+import { getRequiredActions } from '../../utils/requiredLoginChecks';
 
 // Edit (PUT)
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
   const body = req.body;
   const url = getApiPathFromReqUrl(req.url);
+  const DBFormDataModel = getFormDataModel(url);
 
   const csrfIsGood = isCsrfGood(req);
   const userData = await getUserData(req);
+
+  // Check required actions
+  const requiredActions = await getRequiredActions(req, userData);
+  if (requiredActions !== null) {
+    return res.send(
+      new errors.REQUIRED_ACTIONS_ERR(
+        `required actions: ${JSON.stringify(requiredActions)}, formData PUT url "${req.url}"`
+      )
+    );
+  }
 
   // Get form
   const form = await DBFormModel.findOne<DBForm>({ url });
@@ -274,6 +287,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     if (updateResult.modifiedCount !== savedDataIds.length) {
       returnResponse.error = {
         errorId: 'massEditUpdateCount',
+        status: 200,
         message: `Mass edit tried to modify ${savedDataIds.length} dataSets but was able to update ${updateResult.modifiedCount} dataSets.`,
       };
     }
@@ -493,8 +507,20 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
     } else {
       params = { ...body.getData, ...(!body.getData.dataId ? { dataId: dataIds } : {}) };
     }
-    const getDataResult = await getFormData(params, form, userData, csrfIsGood);
+    const getDataResult = await getFormData(params, form, userData, csrfIsGood, req);
     returnResponse.getData = getDataResult;
+  }
+
+  if (form.afterEditFn?.length) {
+    for (let i = 0; i < form.afterEditFn.length; i++) {
+      const afterFn = afterFns[form.afterEditFn[i]];
+      if (afterFn) {
+        const result = await afterFn.afterFn({ req, dataId, userData, form });
+        if (!result.ok) {
+          return res.send(result.error || new errors.AFTER_FN_ERR("Form's afterEditFn error"));
+        }
+      }
+    }
   }
 
   return res.send(returnResponse);

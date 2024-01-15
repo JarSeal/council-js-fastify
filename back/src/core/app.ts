@@ -65,7 +65,7 @@ const initApp = async (): Promise<FastifyInstance> => {
   // Database
   await initDB(app);
 
-  // Cookies
+  // Cookies and session
   const cookieSharedConfig = {
     httpOnly: IS_PRODUCTION,
     secure: IS_PRODUCTION,

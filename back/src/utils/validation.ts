@@ -5,7 +5,7 @@ import { errors } from '../core/errors';
 import type { DBUser } from '../dbModels/user';
 import { getConfig, type ConfigFile } from '../core/config';
 import type { FormElem } from '../dbModels/_modelTypePartials';
-import { customValidators } from './customValidations';
+import { customValidators } from '../customFunctions/validation';
 
 export type ValidationError = FastifyError | null;
 
@@ -62,21 +62,26 @@ export const validatePublicSignup = (
 
 export const simpleIdRegExp = ['^[a-zA-Z0-9-_]+$', 'gm'];
 export const validateSimpleId = (simpleId: unknown) => {
-  if (typeof simpleId !== 'string' || !simpleId) return false;
+  if (typeof simpleId !== 'string') return false;
+  if (!simpleId) return true; // The check for empty is handled with 'required' param
   const regex = new RegExp(simpleIdRegExp[0], simpleIdRegExp[1]);
   return regex.test(simpleId);
 };
 
-export const validateEmail = (value: unknown) =>
+export const validateEmail = (value: unknown) => {
   // case insensitive
-  new RegExp(
+  if (typeof value !== 'string') return false;
+  if (!value) return true; // The check for empty is handled with 'required' param
+  return new RegExp(
     "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
   ).test(String(value));
+};
 
 export const validatePhoneWithExtraChars = (value: unknown) => {
   // phone number validation, with extra characters allowed:
   // +[space]-()
-  if (!value) return false;
+  if (typeof value !== 'string' && typeof value !== 'number') return false;
+  if (!value) return true; // The check for empty is handled with 'required' param
   const strippedNumber = String(value)
     .replace('+', '')
     .replaceAll(' ', '')
@@ -134,6 +139,7 @@ export const validateFormDataInput = (
         );
         return {
           errorId: 'required',
+          status: 400,
           message: defaultError,
           elemId: elem.elemId,
           ...(customError?.message ? { customError: customError.message } : {}),
@@ -154,6 +160,7 @@ export const validateFormDataInput = (
         );
         return {
           errorId: 'invalidValueType',
+          status: 400,
           message: defaultError,
           elemId: elem.elemId,
           ...(customError?.message ? { customError: customError.message } : {}),
@@ -174,6 +181,7 @@ export const validateFormDataInput = (
           );
           return {
             errorId: 'mustMatchValue',
+            status: 400,
             message: defaultError,
             elemId: elem.elemId,
             ...(customError?.message ? { customError: customError.message } : {}),
@@ -195,6 +203,7 @@ export const validateFormDataInput = (
             );
             return {
               errorId: 'validationFn',
+              status: 400,
               message: defaultError,
               elemId: elem.elemId,
               ...(customError?.message ? { customError: customError.message } : {}),
@@ -220,6 +229,7 @@ export const validateFormDataInput = (
           );
           return {
             errorId: 'validationRegExp',
+            status: 400,
             message: defaultError,
             elemId: elem.elemId,
             ...(customError?.message ? { customError: customError.message } : {}),
@@ -261,6 +271,7 @@ const elemDataValidation = (
       );
       return {
         errorId: 'minLength',
+        status: 400,
         message: defaultError,
         elemId: elem.elemId,
         ...(customError?.message ? { customError: customError.message } : {}),
@@ -281,6 +292,7 @@ const elemDataValidation = (
       );
       return {
         errorId: 'maxLength',
+        status: 400,
         message: defaultError,
         elemId: elem.elemId,
         ...(customError?.message ? { customError: customError.message } : {}),
@@ -302,6 +314,7 @@ const elemDataValidation = (
       );
       return {
         errorId: 'minValue',
+        status: 400,
         message: defaultError,
         elemId: elem.elemId,
         ...(customError?.message ? { customError: customError.message } : {}),
@@ -319,6 +332,7 @@ const elemDataValidation = (
       );
       return {
         errorId: 'maxValue',
+        status: 400,
         message: defaultError,
         elemId: elem.elemId,
         ...(customError?.message ? { customError: customError.message } : {}),

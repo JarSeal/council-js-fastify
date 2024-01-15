@@ -22,6 +22,8 @@ export enum ErrorCodes {
   SESSION_GET_FROM_STORE_ERR = 'SESSION_GET_FROM_STORE_ERR',
   SESSION_DEL_ERROR = 'SESSION_DEL_ERROR',
   FORM_DATA_BAD_REQUEST = 'FORM_DATA_BAD_REQUEST',
+  AFTER_FN_ERR = 'AFTER_FN_ERR',
+  REQUIRED_ACTIONS_ERR = 'REQUIRED_ACTIONS_ERR',
 }
 
 const createError = (code: ErrorCodes, message: string, statusCode?: number) =>
@@ -77,6 +79,12 @@ const errors = {
   ),
   SESSION_DEL_ERR: createError(ErrorCodes.SESSION_DEL_ERROR, '%s', 500),
   FORM_DATA_BAD_REQUEST: createError(ErrorCodes.FORM_DATA_BAD_REQUEST, '%s', 400),
+  AFTER_FN_ERR: createError(ErrorCodes.AFTER_FN_ERR, '%s', 500),
+  REQUIRED_ACTIONS_ERR: createError(
+    ErrorCodes.REQUIRED_ACTIONS_ERR,
+    'User has required actions that need to be fullfilled, %s',
+    403
+  ),
 };
 
 export { errors };

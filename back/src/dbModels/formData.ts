@@ -50,7 +50,7 @@ export interface DBFormData {
   }[];
 }
 
-const formDataSchema = new Schema<DBFormData>({
+export const formDataSchema = new Schema<DBFormData>({
   formId: { type: String, required: true, index: true },
   url: { type: String, required: true },
   created: {
@@ -97,9 +97,5 @@ const DBFormDataModel = model<DBFormData, PaginateModel<DBFormData>>(
   formDataSchema,
   'formData'
 );
-
-// @TODO: add model for special UserData formData model and collection (userData)
-// and do a named export or export formDataSchema and use it to create new special
-// models outside of this (default is the one below)
 
 export default DBFormDataModel;
