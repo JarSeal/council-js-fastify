@@ -26,7 +26,7 @@ const getForms = async (db) => {
       edited: [],
       systemDocument: true,
       owner: null,
-      url: '/api/v1/login',
+      url: '/api/v1/sys/login',
       form: {
         formTitle: { langKey: 'Login' },
         formElems: [
@@ -107,7 +107,7 @@ const getForms = async (db) => {
       edited: [],
       systemDocument: true,
       owner: null,
-      url: '/api/v1/publicsignup',
+      url: '/api/v1/sys/public-signup',
       form: {
         formTitle: { langKey: 'Sign up' },
         formElems: [
@@ -237,7 +237,7 @@ const getForms = async (db) => {
       edited: [],
       systemDocument: true,
       owner: null,
-      url: '/api/v1/logout',
+      url: '/api/v1/sys/logout',
       form: {
         formElems: [
           {
@@ -283,7 +283,7 @@ const getForms = async (db) => {
       maxDataCreatorDocs: 1,
       owner: null,
       addFillerToPrivileges: ['$read.users', '$edit.users', '$delete.users'],
-      url: '/api/v1/sys/userdata',
+      url: '/api/v1/sys/user-data',
       afterCreateFn: ['checkAndSetRequiredActions'],
       afterEditFn: ['checkAndSetRequiredActions'],
       afterDeleteFn: ['checkAndSetRequiredActions'],
@@ -414,7 +414,7 @@ const getForms = async (db) => {
       maxDataCreatorDocs: 1,
       owner: null,
       addFillerToPrivileges: ['$read.users', '$edit.users', '$delete.users'],
-      url: '/api/v1/sys/usersettings',
+      url: '/api/v1/sys/user-settings',
       form: {
         formElems: [
           {
@@ -525,7 +525,7 @@ const getForms = async (db) => {
       edited: [],
       systemDocument: true,
       owner: null,
-      url: '/api/v1/sys/systemsettings',
+      url: '/api/v1/sys/system-settings',
       form: {
         formElems: [
           {
@@ -586,6 +586,40 @@ const getForms = async (db) => {
           priAccessId: 'canUseForm',
           name: 'Use form: Council System Settings',
           description: 'Who can use the "Council System Settings" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+        {
+          simpleId: 'form__systemSettings__canReadData',
+          priCategoryId: 'form',
+          priTargetId: 'systemSettins',
+          priAccessId: 'canViewData',
+          name: 'Read data: Council System Settings',
+          description: 'Who can use read "Council System Settings" data.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+        {
+          simpleId: 'form__systemSettings__canEditData',
+          priCategoryId: 'form',
+          priTargetId: 'systemSettins',
+          priAccessId: 'canEditData',
+          name: 'Edit data: Council System Settings',
+          description: 'Who can use edit "Council System Settings" data.',
           created: timeNow,
           privilegeAccess: {
             public: 'false',
