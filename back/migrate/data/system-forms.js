@@ -452,7 +452,7 @@ const getForms = async (db) => {
                 { label: { langKey: 'Disabled' }, value: false },
                 { label: { langKey: 'Enabled' }, value: true },
               ],
-              category: { langKey: 'Security' },
+              category: 'security',
             },
             label: { langKey: 'Use 2-factor authentication' },
           },
@@ -539,7 +539,7 @@ const getForms = async (db) => {
                 { label: { langKey: 'Disabled' }, value: 'disabled' },
                 { label: { langKey: 'Enabled' }, value: 'enabled' },
               ],
-              category: { langKey: 'Security' },
+              category: 'security',
               description: {
                 langKey:
                   "Whether users' must verify their E-mail before being able to use the service or not.",
@@ -567,7 +567,7 @@ const getForms = async (db) => {
                   value: 'user_chooses_and_set_to_enabled_for_all',
                 },
               ],
-              category: { langKey: 'Security' },
+              category: 'security',
               publicSetting: true,
               description: {
                 langKey:

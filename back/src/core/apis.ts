@@ -5,9 +5,9 @@ import publicSignUpRoute from '../features/publicSignUp/routes';
 import loginRoutes from '../features/login/routes';
 import logoutRoute from '../features/logout/routes';
 import formDataRoutes from '../features/formData/routes';
-import systemSettingsRoute from '../features/systemSettings/routes';
-import { notSignedInHook } from '../hooks/notSignedIn';
+import systemSettingsRoutes from '../features/systemSettings/routes';
 import { signedInHook } from '../hooks/signedIn';
+import { notSignedInHook } from '../hooks/notSignedIn';
 import { csrfHook } from '../hooks/csrf';
 
 export const apiVersion = '/v1';
@@ -44,7 +44,7 @@ const notSignedInSystemRoutes: FastifyPluginAsync = async (instance) => {
 // *****************
 const signedInSystemRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', signedInHook);
-  await instance.register(systemSettingsRoute, sysPrefixObj);
+  await instance.register(systemSettingsRoutes, sysPrefixObj);
 };
 
 export default apis;
