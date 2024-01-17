@@ -70,6 +70,7 @@ export const validateSimpleId = (simpleId: unknown) => {
 
 export const validateEmail = (value: unknown) => {
   // case insensitive
+  if (value === undefined) return true;
   if (typeof value !== 'string') return false;
   if (!value) return true; // The check for empty is handled with 'required' param
   return new RegExp(
@@ -80,6 +81,7 @@ export const validateEmail = (value: unknown) => {
 export const validatePhoneWithExtraChars = (value: unknown) => {
   // phone number validation, with extra characters allowed:
   // +[space]-()
+  if (value === undefined) return true;
   if (typeof value !== 'string' && typeof value !== 'number') return false;
   if (!value) return true; // The check for empty is handled with 'required' param
   const strippedNumber = String(value)
