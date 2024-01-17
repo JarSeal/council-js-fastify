@@ -7,7 +7,7 @@ export interface LoginRoute extends RouteGenericInterface {
   readonly Reply: Static<typeof systemSettingsGetReplySchema> | FastifyError;
 }
 
-const loginRoute: FastifyPluginAsync = (instance) => {
+const systemSettingsRoute: FastifyPluginAsync = (instance) => {
   instance.route<LoginRoute>({
     method: 'GET',
     url: '/system-settings',
@@ -20,4 +20,4 @@ const loginRoute: FastifyPluginAsync = (instance) => {
   return Promise.resolve();
 };
 
-export default loginRoute;
+export default systemSettingsRoute;
