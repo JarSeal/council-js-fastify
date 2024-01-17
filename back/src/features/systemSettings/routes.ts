@@ -2,24 +2,26 @@ import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fa
 import { type Static, Type } from '@sinclair/typebox';
 
 import { systemSettingsGetRoute } from './handlers';
-
-export const systemSettingsGetReplySchema = Type.Array(
-  Type.Object({
-    elemId: Type.String(),
-    value: Type.Union([Type.String(), Type.Undefined()]),
-    valueType: Type.String(),
-    category: Type.String(),
-  })
-);
+// import { editedSchema } from '../../@types/form';
 
 export const systemSettingsGetQuerystringSchema = Type.Object({
   settingId: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
   category: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
 });
 export type SystemSettingsGetQuerystring = Static<typeof systemSettingsGetQuerystringSchema>;
+export const systemSettingsGetReplySchema = Type.Array(
+  Type.Object({
+    elemId: Type.String(),
+    value: Type.Unknown(),
+    valueType: Type.String(),
+    category: Type.String(),
+    // edited: editedSchema,
+  })
+);
+export type SystemSettingsGetReply = Static<typeof systemSettingsGetReplySchema>;
 export interface SystemSettingsGetRoute extends RouteGenericInterface {
-  readonly Reply: Static<typeof systemSettingsGetReplySchema> | FastifyError;
   readonly Querystring: SystemSettingsGetQuerystring;
+  readonly Reply: SystemSettingsGetReply | FastifyError;
 }
 
 const systemSettingsRoutes: FastifyPluginAsync = (instance) => {

@@ -62,11 +62,16 @@ export const systemSettingsGetRoute: RouteHandler<SystemSettingsGetRoute> = asyn
         continue;
       }
       const setting = settings.find((s) => s.simpleId === elem.elemId);
+      let value = setting?.value as unknown;
+      if (value === undefined) {
+        value = elem.elemData?.defaultValue === undefined ? undefined : elem.elemData?.defaultValue;
+      }
       returnData.push({
         elemId: elem.elemId,
-        value: setting?.value !== undefined ? setting.value : elem.defaultValue,
-        valueType: elem.valueType as string,
-        category: elem.elemData?.category as string,
+        value,
+        valueType: elem.valueType,
+        category: setting?.category || String(elem.elemData?.category),
+        edited: setting?.edited || [],
       });
     }
   }

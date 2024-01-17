@@ -1,4 +1,4 @@
-import { Schema, type Types, model } from 'mongoose';
+import { Schema, type Types, model, SchemaTypes } from 'mongoose';
 
 import { simpleIdDBSchema, dateDBSchema } from './_schemaPartials';
 import type { Edited } from './_modelTypePartials';
@@ -28,7 +28,7 @@ export interface DBSystemSetting {
 
 const systemSettingSchema = new Schema<DBSystemSetting>({
   simpleId: simpleIdDBSchema,
-  value: { type: String },
+  value: { type: SchemaTypes.Mixed },
   category: { type: String },
   edited: [
     {

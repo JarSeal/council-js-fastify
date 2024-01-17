@@ -86,3 +86,17 @@ export const formFormSchema = Type.Object({
   formElems: Type.Array(formElemSchema),
 });
 export type FormForm = Static<typeof formFormSchema>;
+
+export const editedSchema = Type.Array(
+  Type.Object({
+    user: Type.Union([
+      Type.String(),
+      Type.Null(),
+      Type.Object({
+        simpleId: Type.String(),
+        _id: Type.String(),
+      }),
+    ]),
+    date: Type.Date(),
+  })
+);
