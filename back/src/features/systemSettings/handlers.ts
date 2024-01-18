@@ -55,7 +55,7 @@ export const systemSettingsGetRoute: RouteHandler<SystemSettingsGetRoute> = asyn
 export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = async (req, res) => {
   const { data, getData } = req.body;
 
-  // @TODO: Return BAD_REQUEST if data array is empty
+  // Check if data to be saved is empty
   if (!data?.length) {
     return res.send(new errors.BAD_REQUEST('No system settings data to update'));
   }
@@ -145,7 +145,7 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
       error = {
         errorId: 'sysSettingsUpdateCount',
         status: 200,
-        message: `Mass edit tried to modify ${data.length} system settings but was able to update ${updateResult.modifiedCount} system settings.`,
+        message: `systemSettingsPutRoute tried to modify ${data.length} system settings but was able to update ${updateResult.modifiedCount} system settings.`,
       };
     } else {
       ok = true;
