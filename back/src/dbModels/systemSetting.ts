@@ -18,7 +18,7 @@ export interface DBSystemSetting {
   category: string;
 
   // Edited history
-  edited: Edited;
+  edited: Edited[];
 
   // Edited history count
   editedHistoryCount: number;

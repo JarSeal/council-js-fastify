@@ -66,12 +66,23 @@ export const systemSettingsGetRoute: RouteHandler<SystemSettingsGetRoute> = asyn
       if (value === undefined) {
         value = elem.elemData?.defaultValue === undefined ? undefined : elem.elemData?.defaultValue;
       }
+      const edited = setting?.edited
+        ? setting.edited.map((edit) => {
+            if (edit.user?._id && 'simpleId' in edit.user) {
+              return {
+                user: { _id: edit.user._id.toString(), simpleId: edit.user.simpleId },
+                date: edit.date,
+              };
+            }
+            return { user: edit.user ? edit.user.toString() : null, date: edit.date };
+          })
+        : [];
       returnData.push({
         elemId: elem.elemId,
         value,
         valueType: elem.valueType,
         category: setting?.category || String(elem.elemData?.category),
-        edited: setting?.edited || [],
+        edited,
       });
     }
   }

@@ -1,4 +1,7 @@
-import { Type, type Static } from '@sinclair/typebox';
+import { Type, Kind, type Static } from '@sinclair/typebox';
+import { TypeSystem } from '@sinclair/typebox/system';
+
+TypeSystem.Format('ObjectId', (value) => /^[0-9a-fA-F]{24}$/.test(value));
 
 export const valueTypeSchema = Type.Union([
   Type.Literal('string'),
@@ -87,16 +90,24 @@ export const formFormSchema = Type.Object({
 });
 export type FormForm = Static<typeof formFormSchema>;
 
+export const dateSchema = Type.Unsafe<Date>({
+  type: 'string',
+  format: 'date-time',
+  [Kind]: 'Date',
+});
+
+export const userIdSchema = Type.Union([
+  Type.String({ format: 'ObjectId' }),
+  Type.Null(),
+  Type.Object({
+    simpleId: Type.String({ format: 'ObjectId' }),
+    _id: Type.String(),
+  }),
+]);
+
 export const editedSchema = Type.Array(
   Type.Object({
-    user: Type.Union([
-      Type.String(),
-      Type.Null(),
-      Type.Object({
-        simpleId: Type.String(),
-        _id: Type.String(),
-      }),
-    ]),
-    date: Type.Date(),
+    user: userIdSchema,
+    date: dateSchema,
   })
 );

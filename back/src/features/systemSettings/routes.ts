@@ -2,7 +2,7 @@ import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fa
 import { type Static, Type } from '@sinclair/typebox';
 
 import { systemSettingsGetRoute } from './handlers';
-// import { editedSchema } from '../../@types/form';
+import { editedSchema } from '../../@types/form';
 
 export const systemSettingsGetQuerystringSchema = Type.Object({
   settingId: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
@@ -15,7 +15,7 @@ export const systemSettingsGetReplySchema = Type.Array(
     value: Type.Unknown(),
     valueType: Type.String(),
     category: Type.String(),
-    // edited: editedSchema,
+    edited: editedSchema,
   })
 );
 export type SystemSettingsGetReply = Static<typeof systemSettingsGetReplySchema>;
