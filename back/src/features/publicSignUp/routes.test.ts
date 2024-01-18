@@ -26,7 +26,7 @@ describe('publicSignUp', () => {
     const email = 'myusername@somedomain.nl';
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { username, pass, email },
     });
     const body = JSON.parse(response.body) as FastifyError;
@@ -38,7 +38,7 @@ describe('publicSignUp', () => {
   it('should fail the publicSignUp without proper payload', async () => {
     let response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       ...csrfHeader,
     });
     let body = JSON.parse(response.body) as FastifyError;
@@ -48,7 +48,7 @@ describe('publicSignUp', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { username: 'myusername' },
       ...csrfHeader,
     });
@@ -59,7 +59,7 @@ describe('publicSignUp', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { email: 'my.email@server.com' },
       ...csrfHeader,
     });
@@ -70,7 +70,7 @@ describe('publicSignUp', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { email: 'my.email@server.com', username: 'myusername' },
       ...csrfHeader,
     });
@@ -83,7 +83,7 @@ describe('publicSignUp', () => {
   it('should fail the publicSignUp with invalid email', async () => {
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { username: 'myusername', pass: 'somepass', email: 'not_email' },
       ...csrfHeader,
     });
@@ -96,7 +96,7 @@ describe('publicSignUp', () => {
   it('should fail the publicSignUp with too short username', async () => {
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { username: '', pass: 'somepass', email: 'aa@aa.aa' },
       ...csrfHeader,
     });
@@ -111,7 +111,7 @@ describe('publicSignUp', () => {
   it('should fail the publicSignUp with too short password', async () => {
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { username: 'myusername', pass: '', email: 'aa@aa.aa' },
       ...csrfHeader,
     });
@@ -129,7 +129,7 @@ describe('publicSignUp', () => {
     const email = 'myusername@somedomain.nl';
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { username, pass, email },
       ...csrfHeader,
     });

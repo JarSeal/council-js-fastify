@@ -24,7 +24,7 @@ describe('login', () => {
     await createUser('csrfUser', { password: 'csrfPassword' });
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'csrfUser',
         pass: 'csrfPassword',
@@ -41,7 +41,7 @@ describe('login', () => {
   it('should fail the login without proper payload', async () => {
     let response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       ...csrfHeader,
     });
     let body = JSON.parse(response.body) as FastifyError;
@@ -51,7 +51,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: { usernameOrEmail: 'myusername' },
       ...csrfHeader,
     });
@@ -62,7 +62,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: { pass: 'myPa$$word1' },
       ...csrfHeader,
     });
@@ -73,7 +73,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: { usernameOrEmail: 'myusername', pass: 'myPa$$word1' },
       ...csrfHeader,
     });
@@ -84,7 +84,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: { usernameOrEmail: 'myusername', pass: 'myPa$$word1', loginMethod: 'username' },
       ...csrfHeader,
     });
@@ -97,7 +97,7 @@ describe('login', () => {
   it('should fail the login with invalid payload values', async () => {
     let response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'myPa$$word1',
@@ -113,7 +113,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'myPa$$word1',
@@ -129,7 +129,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'myPa$$word1',
@@ -147,7 +147,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'myPa$$word1',
@@ -163,7 +163,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'myPa$$word1',
@@ -184,7 +184,7 @@ describe('login', () => {
     for (let i = 0; i < getConfig<number>('user.maxLoginAttempts'); i++) {
       response = await app.inject({
         method: 'POST',
-        path: '/api/v1/login',
+        path: '/api/v1/sys/login',
         body: {
           usernameOrEmail: 'cooldownuser',
           pass: 'wrongpassword',
@@ -206,7 +206,7 @@ describe('login', () => {
     await createUser('myusername2', { verified: true });
     let response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername2',
         pass: 'password',
@@ -222,7 +222,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername2',
         pass: 'password',
@@ -242,7 +242,7 @@ describe('login', () => {
     await createUser('myusername3', { email: 'cc@cc.cc', verified: true });
     let response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'cc@cc.cc',
         pass: 'password',
@@ -258,7 +258,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'cc@cc.cc',
         pass: 'password',
@@ -277,7 +277,7 @@ describe('login', () => {
   it('should fail a logout if not signed in', async () => {
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/logout',
+      path: '/api/v1/sys/logout',
       body: {},
       ...csrfHeader,
     });
@@ -291,7 +291,7 @@ describe('login', () => {
     await createUser('myusername4', { email: 'dd@dd.dd', verified: true });
     let response = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'dd@dd.dd',
         pass: 'password',
@@ -304,7 +304,7 @@ describe('login', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/logout',
+      path: '/api/v1/sys/logout',
       body: {},
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,

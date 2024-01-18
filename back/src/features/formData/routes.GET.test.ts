@@ -280,7 +280,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -345,7 +345,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'superadmin',
         pass: 'password',
@@ -545,7 +545,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -661,7 +661,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -777,7 +777,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'superadmin',
         pass: 'password',
@@ -965,7 +965,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1041,7 +1041,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1126,7 +1126,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1212,7 +1212,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1288,7 +1288,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1569,7 +1569,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1647,7 +1647,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1717,7 +1717,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1795,7 +1795,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1864,7 +1864,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'superadmin',
         pass: 'password',
@@ -1942,7 +1942,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'superadmin',
         pass: 'password',
@@ -2011,7 +2011,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -2084,7 +2084,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -2158,7 +2158,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -2226,7 +2226,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -2656,7 +2656,7 @@ describe('GET formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
