@@ -4,7 +4,7 @@ import type { Body } from '../features/publicSignUp/schemas';
 import { errors } from '../core/errors';
 import type { DBUser } from '../dbModels/user';
 import { getConfig, type ConfigFile } from '../core/config';
-import type { FormElem } from '../dbModels/_modelTypePartials';
+import type { FormElem, TransText } from '../dbModels/_modelTypePartials';
 import { customValidators } from '../customFunctions/validation';
 
 export type ValidationError = FastifyError | null;
@@ -334,6 +334,28 @@ const elemDataValidation = (
       );
       return {
         errorId: 'maxValue',
+        status: 400,
+        message: defaultError,
+        elemId: elem.elemId,
+        ...(customError?.message ? { customError: customError.message } : {}),
+      };
+    }
+  }
+
+  if (elem.elemData?.options && sentElem) {
+    // Validate options
+    const options = elem.elemData.options as { langKey: TransText; value: unknown }[];
+    if (!options.find((opt) => opt.value === sentElem?.value)) {
+      const defaultError = `ElemId '${elem.elemId}' value is not one of the options: ${options
+        .map((opt) => opt.value)
+        .toString()}).`;
+      const customError =
+        elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'invalidOption');
+      new errors.FORM_DATA_BAD_REQUEST(
+        `${defaultError}${customError ? ' customError: ' + JSON.stringify(customError) : ''}`
+      );
+      return {
+        errorId: 'invalidOption',
         status: 400,
         message: defaultError,
         elemId: elem.elemId,

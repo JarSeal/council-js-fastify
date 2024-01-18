@@ -582,7 +582,7 @@ const getForms = async (db) => {
         {
           simpleId: 'form__systemSettings__canUseForm',
           priCategoryId: 'form',
-          priTargetId: 'systemSettins',
+          priTargetId: 'systemSettings',
           priAccessId: 'canUseForm',
           name: 'Use form: Council System Settings',
           description: 'Who can use the "Council System Settings" form.',
@@ -599,8 +599,8 @@ const getForms = async (db) => {
         {
           simpleId: 'form__systemSettings__canReadData',
           priCategoryId: 'form',
-          priTargetId: 'systemSettins',
-          priAccessId: 'canViewData',
+          priTargetId: 'systemSettings',
+          priAccessId: 'canReadData',
           name: 'Read data: Council System Settings',
           description: 'Who can use read "Council System Settings" data.',
           created: timeNow,
@@ -616,7 +616,7 @@ const getForms = async (db) => {
         {
           simpleId: 'form__systemSettings__canEditData',
           priCategoryId: 'form',
-          priTargetId: 'systemSettins',
+          priTargetId: 'systemSettings',
           priAccessId: 'canEditData',
           name: 'Edit data: Council System Settings',
           description: 'Who can use edit "Council System Settings" data.',
