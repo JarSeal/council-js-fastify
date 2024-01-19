@@ -125,6 +125,8 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
           upsert: true,
           update: {
             $set: {
+              // @TODO: fix this, returns only one edited object
+              // even if it has several edits
               edited: createNewEditedArray(
                 existingItem?.edited || [],
                 userData?.userId,
