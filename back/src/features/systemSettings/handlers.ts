@@ -106,14 +106,14 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
   } else {
     // Get existing data
     const existingData = await DBSystemSettingModel.find<DBSystemSetting>({
-      simpleId: data.map((d) => d.elemId),
+      simpleId: { $in: data.map((d) => d.elemId) },
     });
 
     // Prepare save data
     const bulkWrite = [];
     for (let i = 0; i < data.length; i++) {
       let existingItem = null;
-      if ('data' in existingData) {
+      if (existingData) {
         existingItem = existingData.find((d) => d.simpleId === data[i].elemId);
       }
       const formElem = sysSettingsForm.form.formElems.find(
@@ -125,8 +125,6 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
           upsert: true,
           update: {
             $set: {
-              // @TODO: fix this, returns only one edited object
-              // even if it has several edits
               edited: createNewEditedArray(
                 existingItem?.edited || [],
                 userData?.userId,
