@@ -193,6 +193,7 @@ export const createForm = async (
     formText?: string;
     lockOrder?: boolean;
     canEditPrivileges?: BasicPrivilegeProps;
+    systemDocument?: boolean;
   }
 ) => {
   const adminId = await createSysAdmin();
@@ -219,6 +220,7 @@ export const createForm = async (
   if (opts?.fillerIsFormDataOwner) form.fillerIsFormDataOwner = opts.fillerIsFormDataOwner;
   if (opts?.addFillerToPrivileges) form.addFillerToPrivileges = opts.addFillerToPrivileges;
   if (opts?.canEditPrivileges) form.canEditPrivileges = opts.canEditPrivileges;
+  if (opts?.systemDocument) form.systemDocument = opts.systemDocument;
 
   form.formDataDefaultPrivileges = {
     read: {
@@ -330,4 +332,113 @@ export const createPrivilege = async (
   const createdPrivilege = await privilege.save();
 
   return createdPrivilege._id;
+};
+
+export const createSysSettings = async () => {
+  const timeNow = new Date();
+  return await createForm(
+    'systemSettings',
+    '/api/v1/sys/system-settings',
+    [
+      {
+        elemId: 'forceEmailVerification',
+        orderNr: 0,
+        elemType: 'inputDropDown',
+        valueType: 'string',
+        elemData: {
+          defaultValue: 'disabled',
+          options: [
+            { label: { langKey: 'Disabled' }, value: 'disabled' },
+            { label: { langKey: 'Enabled' }, value: 'enabled' },
+          ],
+          category: 'security',
+          description: {
+            langKey:
+              "Whether users' must verify their E-mail before being able to use the service or not.",
+          },
+        },
+        label: { langKey: 'Force E-mail verification' },
+      },
+      {
+        elemId: 'use2FA',
+        orderNr: 1,
+        elemType: 'inputDropDown',
+        valueType: 'string',
+        elemData: {
+          defaultValue: 'disabled',
+          options: [
+            { label: { langKey: 'Disabled' }, value: 'disabled' },
+            { label: { langKey: 'Enabled' }, value: 'enabled' },
+            { label: { langKey: 'User chooses' }, value: 'user_chooses' },
+            {
+              label: { langKey: 'User chooses, set to disabled for all' },
+              value: 'user_chooses_and_set_to_disabled_for_all',
+            },
+            {
+              label: { langKey: 'User chooses, set to enabled for all' },
+              value: 'user_chooses_and_set_to_enabled_for_all',
+            },
+          ],
+          category: 'security',
+          publicSetting: true,
+          description: {
+            langKey:
+              'Whether to enable 2-factor authentication for all users or not, or whether users can choose to enable 2FA for themselves.',
+          },
+        },
+        label: { langKey: 'Use 2-factor authentication' },
+      },
+    ],
+    [
+      {
+        priCategoryId: 'form',
+        priTargetId: 'systemSettings',
+        priAccessId: 'canUseForm',
+        name: 'Use form: Council System Settings',
+        description: 'Who can use the "Council System Settings" form.',
+        created: timeNow,
+        privilegeAccess: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+      {
+        priCategoryId: 'form',
+        priTargetId: 'systemSettings',
+        priAccessId: 'canReadData',
+        name: 'Read data: Council System Settings',
+        description: 'Who can use read "Council System Settings" data.',
+        created: timeNow,
+        privilegeAccess: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+      {
+        priCategoryId: 'form',
+        priTargetId: 'systemSettings',
+        priAccessId: 'canEditData',
+        name: 'Edit data: Council System Settings',
+        description: 'Who can use edit "Council System Settings" data.',
+        created: timeNow,
+        privilegeAccess: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+    ],
+    { systemDocument: true }
+  );
 };
