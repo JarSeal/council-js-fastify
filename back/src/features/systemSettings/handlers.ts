@@ -112,6 +112,19 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
     // Prepare save data
     const bulkWrite = [];
     for (let i = 0; i < data.length; i++) {
+      // Check that formElem is found in form
+      const foundElem = sysSettingsForm.form.formElems.find(
+        (elem) => elem.elemId === data[i].elemId
+      );
+      if (!foundElem) {
+        error = {
+          errorId: 'elemNotFoundInForm',
+          status: 400,
+          message: `System Setting elemId '${data[i].elemId}' was not found in System Settings form. No data was saved.`,
+        };
+        break;
+      }
+
       let existingItem = null;
       if (existingData) {
         existingItem = existingData.find((d) => d.simpleId === data[i].elemId);
@@ -140,15 +153,18 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
     }
 
     // BulkWrite the data
-    const updateResult = await DBSystemSettingModel.collection.bulkWrite(bulkWrite);
-    if (updateResult.modifiedCount !== data.length) {
-      error = {
-        errorId: 'sysSettingsUpdateCount',
-        status: 200,
-        message: `systemSettingsPutRoute tried to modify ${data.length} system settings but was able to update ${updateResult.modifiedCount} system settings.`,
-      };
-    } else {
-      ok = true;
+    if (!Object.keys(error).length) {
+      const updateResult = await DBSystemSettingModel.collection.bulkWrite(bulkWrite);
+      const updateCount = updateResult.modifiedCount + updateResult.upsertedCount;
+      if (updateCount !== data.length) {
+        error = {
+          errorId: 'sysSettingsUpdateCount',
+          status: 200,
+          message: `systemSettingsPutRoute tried to modify ${data.length} system settings but was able to update ${updateCount} system settings.`,
+        };
+      } else {
+        ok = true;
+      }
     }
   }
 

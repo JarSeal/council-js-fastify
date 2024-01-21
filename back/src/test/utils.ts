@@ -388,6 +388,22 @@ export const createSysSettings = async () => {
         },
         label: { langKey: 'Use 2-factor authentication' },
       },
+      {
+        elemId: 'defaultEditedHistoryCount',
+        orderNr: 2,
+        elemType: 'inputNumber',
+        valueType: 'number',
+        elemData: {
+          defaultValue: 10,
+          minValue: 0,
+          category: 'logs',
+          description: {
+            langKey:
+              'How many edited logs are logged by default to all edited history arrays (0 - Infinity).',
+          },
+        },
+        label: { langKey: 'Default edited history count' },
+      },
     ],
     [
       {
