@@ -141,9 +141,9 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
               ...(existingItem
                 ? {
                     edited: createNewEditedArray(
-                      existingItem?.edited || [],
+                      existingItem.edited || [],
                       userData?.userId,
-                      existingItem?.editedHistoryCount
+                      existingItem.editedHistoryCount
                     ),
                   }
                 : { edited: [] }),
