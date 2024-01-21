@@ -35,6 +35,7 @@ const systemSettingSchema = new Schema<DBSystemSetting>({
       _id: false,
       user: {
         type: Schema.Types.ObjectId,
+        ref: 'User',
       },
       date: dateDBSchema,
     },

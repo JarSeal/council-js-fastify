@@ -138,11 +138,15 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
           upsert: true,
           update: {
             $set: {
-              edited: createNewEditedArray(
-                existingItem?.edited || [],
-                userData?.userId,
-                existingItem?.editedHistoryCount
-              ),
+              ...(existingItem
+                ? {
+                    edited: createNewEditedArray(
+                      existingItem?.edited || [],
+                      userData?.userId,
+                      existingItem?.editedHistoryCount
+                    ),
+                  }
+                : { edited: [] }),
               value: data[i].value,
               category: formElem?.elemData?.category,
               systemDocument: true,
@@ -210,7 +214,10 @@ export const getSystemSettings = async (props: {
     search = { category: category };
     searchType = 'category';
   }
-  const settings = await DBSystemSettingModel.find<DBSystemSetting>(search);
+  const settings = await DBSystemSettingModel.find<DBSystemSetting>(search).populate({
+    path: 'edited.user',
+    select: 'simpleId',
+  });
 
   // Map data to form
   const returnData = [];
