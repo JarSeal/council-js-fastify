@@ -17,8 +17,8 @@ describe('validation util', () => {
     maxPassLength: 12,
   };
 
-  it('should validate the publicSignUp body successfully', () => {
-    const validation = validatePublicSignup(
+  it('should validate the publicSignUp body successfully', async () => {
+    const validation = await validatePublicSignup(
       {
         username: 'myusername',
         pass: 'myPa$$word1',
@@ -30,8 +30,8 @@ describe('validation util', () => {
     expect(validation).toBe(null);
   });
 
-  it('should validate the publicSignUp body and return username too long error', () => {
-    const validation = validatePublicSignup(
+  it('should validate the publicSignUp body and return username too long error', async () => {
+    const validation = await validatePublicSignup(
       {
         username: 'myusernameistoolong',
         pass: 'myPa$$word1',
@@ -47,8 +47,8 @@ describe('validation util', () => {
     );
   });
 
-  it('should validate the publicSignUp body and return username too short error', () => {
-    const validation = validatePublicSignup(
+  it('should validate the publicSignUp body and return username too short error', async () => {
+    const validation = await validatePublicSignup(
       {
         username: 'm',
         pass: 'myPa$$word1',
@@ -64,8 +64,8 @@ describe('validation util', () => {
     );
   });
 
-  it('should validate the publicSignUp body and return username invalid', () => {
-    const validation = validatePublicSignup(
+  it('should validate the publicSignUp body and return username invalid', async () => {
+    const validation = await validatePublicSignup(
       {
         username: 'm@',
         pass: 'myPa$$word1',
@@ -81,8 +81,8 @@ describe('validation util', () => {
     );
   });
 
-  it('should validate the publicSignUp body and return password too long error', () => {
-    const validation = validatePublicSignup(
+  it('should validate the publicSignUp body and return password too long error', async () => {
+    const validation = await validatePublicSignup(
       {
         username: 'mysusername',
         pass: 'somepasswordthatistoolonG$1',
@@ -98,8 +98,8 @@ describe('validation util', () => {
     );
   });
 
-  it('should validate the publicSignUp body and return password too short error', () => {
-    const validation = validatePublicSignup(
+  it('should validate the publicSignUp body and return password too short error', async () => {
+    const validation = await validatePublicSignup(
       {
         username: 'mysusername',
         pass: 's',
@@ -115,8 +115,8 @@ describe('validation util', () => {
     );
   });
 
-  it('should validate the publicSignUp body and return username taken error', () => {
-    const validation = validatePublicSignup(
+  it('should validate the publicSignUp body and return username taken error', async () => {
+    const validation = await validatePublicSignup(
       {
         username: 'myusername',
         pass: 'myPa$$word1',

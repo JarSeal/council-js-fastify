@@ -12,7 +12,7 @@ export interface DBSystemSetting {
   simpleId: string;
 
   // Setting value
-  value: string;
+  value: unknown;
 
   // Setting category
   category: string;

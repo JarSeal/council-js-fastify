@@ -3,17 +3,17 @@ import type { FastifyError } from 'fastify';
 import type { Body } from '../features/publicSignUp/schemas';
 import { errors } from '../core/errors';
 import type { DBUser } from '../dbModels/user';
-import { getConfig, type ConfigFile } from '../core/config';
+import { getConfig, getSysSetting, getSysSettingsForm } from '../core/config';
 import type { FormElem, TransText } from '../dbModels/_modelTypePartials';
 import { customValidators } from '../customFunctions/validation';
 
 export type ValidationError = FastifyError | null;
 
-export const validatePublicSignup = (
+export const validatePublicSignup = async (
   body: Body,
   foundUser: DBUser | null,
-  options?: Partial<ConfigFile['user']>
-): ValidationError => {
+  options?: { [key: string]: unknown }
+): Promise<ValidationError> => {
   const username = body.username.trim();
   const pass = body.pass.trim();
 
@@ -22,15 +22,15 @@ export const validatePublicSignup = (
   }
 
   const minUserLength =
-    options?.minUsernameLength || getConfig<number>('user.minUsernameLength', 2);
-  if (username.length < minUserLength) {
+    (options?.minUsernameLength as number) || (await getSysSetting<number>('minUsernameLength'));
+  if (minUserLength && username.length < minUserLength) {
     return new errors.COUNCL_ERR_VALIDATE(
       `Username is too short, minimum is ${minUserLength} characters.`
     );
   }
   const maxUserLength =
-    options?.maxUsernameLength || getConfig<number>('user.maxUsernameLength', 32);
-  if (username.length > maxUserLength) {
+    (options?.maxUsernameLength as number) || (await getSysSetting<number>('maxUsernameLength'));
+  if (maxUserLength && username.length > maxUserLength) {
     return new errors.COUNCL_ERR_VALIDATE(
       `Username is too long, maximum is ${maxUserLength} characters.`
     );
@@ -40,22 +40,31 @@ export const validatePublicSignup = (
       'Username contains invalid characters, only a-z, A-Z, 0-9, -, and _ allowed.'
     );
   }
-  const minPassLength = options?.minPassLength || getConfig<number>('user.minPassLength', 8);
-  if (pass.length < minPassLength) {
+  const minPassLength =
+    (options?.minPassLength as number) || (await getSysSetting<number>('minPassLength'));
+  if (minPassLength && pass.length < minPassLength) {
     return new errors.COUNCL_ERR_VALIDATE(
       `Password is too short, minimum is ${minPassLength} characters.`
     );
   }
-  const maxPassLength = options?.maxPassLength || getConfig<number>('user.maxPassLength', 128);
-  if (pass.length > maxPassLength) {
+  const maxPassLength =
+    (options?.maxPassLength as number) || (await getSysSetting<number>('maxPassLength'));
+  if (maxPassLength && pass.length > maxPassLength) {
     return new errors.COUNCL_ERR_VALIDATE(
       `Password is too long, maximum is ${maxPassLength} characters.`
     );
   }
   if (!validatePassword(pass)) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      getConfig<string>('user.passNotValidMessage.langKey', 'Password not valid')
-    );
+    let message = 'Password is invalid';
+    const sysSettingsForm = await getSysSettingsForm();
+    if (sysSettingsForm) {
+      const elem = sysSettingsForm.form.formElems.find((item) => item.elemId === 'passRegExp');
+      if (elem?.inputErrors) {
+        const error = elem.inputErrors.find((err) => err.errorId === 'passNotValidMessage');
+        if (error?.message?.langKey) message = error.message.langKey;
+      }
+    }
+    return new errors.COUNCL_ERR_VALIDATE(message);
   }
   return null;
 };

@@ -16,7 +16,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
 
   // Validate fields
   const foundUser = await DBUserModel.findOne<DBUser>({ simpleId: username }).lean();
-  const validateError = validatePublicSignup(body, foundUser);
+  const validateError = await validatePublicSignup(body, foundUser);
   if (validateError) {
     return res.send(validateError);
   }

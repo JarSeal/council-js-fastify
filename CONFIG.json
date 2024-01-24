@@ -1,20 +1,28 @@
 {
-  "user": {
-    "minUsernameLength": 2,
-    "maxUsernameLength": 32,
-    "minPassLength": 8,
-    "maxPassLength": 128,
-    "passRegExp": ["^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})"],
-    "passNotValidMessage": {
-      "langKey": "Password is not strong enough or is invalid, must contain a lower case, an upper case, a number, and a special character (!@#$%^&*)."
-    },
-    "maxEmails": 2,
+  "security": {
+    "use2FA": "DISABLED",
     "maxLoginAttempts": 4,
     "sessionMaxAge": 3600,
     "coolDownAge": 240,
     "maxLoginLogs": 5,
-    "maxLoginAttemptLogs": 5
+    "maxLoginAttemptLogs": 5,
+    "minUsernameLength": 2,
+    "maxUsernameLength": 32,
+    "minPassLength": 8,
+    "maxPassLength": 128,
+    "passRegExp": "^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})",
+    "passNotValidMessage": {
+      "langKey": "Password is not strong enough or is invalid, must contain a lower case, an upper case, a number, and a special character (!@#$%^&*)."
+    },
+    "forceEmailVerification": false,
+    "maxEmails": 2
   },
-  "dataItemsMaxLimit": 500,
-  "dataCollationLocale": "fi"
+  "data": {
+    "dataItemsMaxLimit": 500,
+    "dataCollationLocale": "fi"
+  },
+  "caches": {
+    "useGroupsCache": 180000,
+    "systemSettingsCache": 180000
+  }
 }

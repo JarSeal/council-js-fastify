@@ -1,8 +1,8 @@
 import { config } from 'dotenv';
-import { Type } from '@sinclair/typebox';
-import type { Static } from '@sinclair/typebox';
 
 import * as CONFIG from '../../../CONFIG.json';
+import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting';
+import DBFormModel, { type DBForm } from '../dbModels/form';
 
 config();
 
@@ -31,19 +31,8 @@ export const SESSION_SECRET =
   process.env.SESSION_SECRET || 'a secret with minimum length of 32 characters';
 export const SESSION_COOKIE_NAME = IS_PRODUCTION ? `__Host-${'counclSess'}` : 'counclSess';
 
-const configFileSchema = Type.Object({
-  user: Type.Object({
-    minUsernameLength: Type.Number(),
-    maxUsernameLength: Type.Number(),
-    minPassLength: Type.Number(),
-    maxPassLength: Type.Number(),
-    maxEmails: Type.Number(),
-  }),
-});
-export type ConfigFile = Static<typeof configFileSchema>;
-
 export const getConfig = <T>(path?: string, defaultValue?: unknown): T => {
-  const conf = CONFIG ? (CONFIG as ConfigFile) : {};
+  const conf = CONFIG || {};
   const returnWrapper = (returnConf: unknown) => {
     if (returnConf === undefined && defaultValue === undefined) {
       // eslint-disable-next-line no-console
@@ -77,4 +66,68 @@ export const getConfig = <T>(path?: string, defaultValue?: unknown): T => {
     return returnWrapper(returnConf);
   }
   return conf as T;
+};
+
+let cachedSysSettings: DBSystemSetting[] | null = null;
+let cachedSysSettingsForm: DBForm | null = null;
+let cachedTime: Date | null = null;
+const SETTINGS_CACHE_TIME = getConfig<number>('caches.systemSettingsCache', 180000);
+
+export const setCachedSysSettings = async () => {
+  cachedSysSettings = await DBSystemSettingModel.find<DBSystemSetting>({});
+  cachedSysSettingsForm = await DBFormModel.findOne<DBForm>({ simpleId: 'systemSettings' });
+  cachedTime = new Date();
+};
+
+const getCachedSysSettings = async () => {
+  if (
+    !cachedSysSettings ||
+    !cachedTime ||
+    new Date(cachedTime.getTime() + SETTINGS_CACHE_TIME) < new Date()
+  ) {
+    await setCachedSysSettings();
+  }
+  return cachedSysSettings;
+};
+
+// @TODO: add tests
+export const getSysSetting = async <T>(id: string): Promise<T | undefined> => {
+  const settings = await getCachedSysSettings();
+  if (!settings) return undefined;
+
+  const setting = settings.find((item) => item.simpleId === id);
+  if (!setting) return undefined;
+
+  return setting.value as T;
+};
+
+// @TODO: add tests
+export const getSysSettingsForm = async () => {
+  if (
+    !cachedSysSettingsForm ||
+    !cachedTime ||
+    new Date(cachedTime.getTime() + SETTINGS_CACHE_TIME) < new Date()
+  ) {
+    await setCachedSysSettings();
+  }
+  return cachedSysSettingsForm;
+};
+
+export type PublicSysSettings = { [key: string]: unknown };
+
+// @TODO: add tests
+export const getPublicSysSettings = async (): Promise<PublicSysSettings> => {
+  const settings = await getCachedSysSettings();
+  if (!settings || !cachedSysSettingsForm) return {};
+
+  const publicSettings: PublicSysSettings = {};
+  for (let i = 0; i < cachedSysSettingsForm.form.formElems.length; i++) {
+    const elem = cachedSysSettingsForm.form.formElems[i];
+    if (elem.elemData?.publicSetting) {
+      const setting = settings.find((item) => item.simpleId === elem.elemId);
+      if (setting) publicSettings[elem.elemId] = setting.value;
+    }
+  }
+
+  return publicSettings;
 };

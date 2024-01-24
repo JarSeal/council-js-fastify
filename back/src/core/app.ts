@@ -70,7 +70,7 @@ const initApp = async (): Promise<FastifyInstance> => {
     httpOnly: IS_PRODUCTION,
     secure: IS_PRODUCTION,
     path: '/',
-    maxAge: getConfig<number>('user.sessionMaxAge') * 1000, // @TODO: add session length as a system setting
+    maxAge: getConfig<number>('security.sessionMaxAge', 3600) * 1000,
   };
   await app.register(cookie);
   await app.register(fastifySession, {

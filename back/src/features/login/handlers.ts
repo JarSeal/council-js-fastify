@@ -138,10 +138,13 @@ const setInvalidLoginAttempt = async (
     const maxLoginAttemptLogs = getConfig<number>('user.maxLoginAttemptLogs'); // @TODO: make this a system setting
     const loginAttempts = (user.security.loginAttempts || 0) + 1;
     user.security.loginAttempts = loginAttempts;
-    user.security.lastLoginAttempts = [
-      { date: new Date(), agentId },
-      ...user.security.lastLoginAttempts,
-    ].splice(0, maxLoginAttemptLogs);
+    user.security.lastLoginAttempts =
+      maxLoginAttemptLogs !== 0
+        ? [{ date: new Date(), agentId }, ...user.security.lastLoginAttempts].splice(
+            0,
+            maxLoginAttemptLogs
+          )
+        : [{ date: new Date(), agentId }, ...user.security.lastLoginAttempts];
     let maxLoginsAttempted = false;
     if (maxLoginAttempts <= loginAttempts) {
       user.security.coolDownStarted = new Date();
@@ -183,10 +186,10 @@ const logAndResetLoginAttempts = async (
   user.security.isUnderCoolDown = false;
   if (!doNotLog) {
     const maxLoginLogs = getConfig<number>('user.maxLoginLogs'); // @TODO: make this a system setting
-    user.security.lastLogins = [{ date: new Date(), agentId }, ...user.security.lastLogins].splice(
-      0,
-      maxLoginLogs
-    );
+    user.security.lastLogins =
+      maxLoginLogs !== 0
+        ? [{ date: new Date(), agentId }, ...user.security.lastLogins].splice(0, maxLoginLogs)
+        : [{ date: new Date(), agentId }, ...user.security.lastLogins];
   }
   try {
     savedUser = await DBUserModel.findOneAndUpdate<DBUser>(

@@ -116,8 +116,8 @@ const getForms = async (db) => {
             orderNr: 0,
             elemType: 'inputText',
             elemData: {
-              minLength: getConfig('user.minUsernameLength', 2),
-              maxLength: getConfig('user.maxUsernameLength', 32),
+              minLength: getConfig('security.minUsernameLength', 2),
+              maxLength: getConfig('security.maxUsernameLength', 32),
             },
             label: { langKey: 'Username' },
             required: true,
@@ -166,12 +166,12 @@ const getForms = async (db) => {
             elemType: 'inputText',
             elemData: {
               password: true,
-              minLength: getConfig('user.minPassLength'),
-              maxLength: getConfig('user.maxPassLength'),
+              minLength: getConfig('security.minPassLength', 8),
+              maxLength: getConfig('security.maxPassLength', 128),
             },
             label: { langKey: 'Password' },
             required: true,
-            validationRegExp: getConfig('user.passRegExp'),
+            validationRegExp: getConfig('security.passRegExp', ''),
             mustMatchValue: 'passAgain',
             errors: [
               {

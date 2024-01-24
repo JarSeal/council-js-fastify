@@ -62,7 +62,10 @@ const sessionSchema = new Schema<DBSession>({
       domain: { type: String, default: null },
       httpOnly: { type: Boolean, default: true },
       _expires: { type: Date, required: true },
-      originalMaxAge: { type: Number, default: getConfig<number>('user.sessionMaxAge') * 1000 },
+      originalMaxAge: {
+        type: Number,
+        default: getConfig<number>('security.sessionMaxAge', 3600) * 1000,
+      },
     },
   },
 });
