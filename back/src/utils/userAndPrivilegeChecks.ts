@@ -303,7 +303,7 @@ export const combinePrivileges = (
   return combined;
 };
 
-// @TODO: add test
+// @TODO: add tests
 export const combineBasicPrivileges = (
   ...privileges: Partial<AllPrivilegeProps>[]
 ): BasicPrivilegeProps => {

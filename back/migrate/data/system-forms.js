@@ -178,8 +178,7 @@ const getForms = async (db) => {
               {
                 errorId: 'validationRegExp',
                 message: {
-                  langKey:
-                    'Password must contain at least: lower and upper case, number, special character (!#$%&?@* )',
+                  langKey: getConfig('security.passNotValidMessage', 'Password not valid'),
                 },
               },
               {

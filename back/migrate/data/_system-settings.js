@@ -222,12 +222,40 @@ const systemSettings = [
     },
     label: { langKey: 'Use 2-factor authentication' },
   },
+  {
+    elemId: 'loginUserOrEmailMethod',
+    orderNr: 10,
+    elemType: 'inputDropDown',
+    valueType: 'string',
+    elemData: {
+      defaultValue: config?.security?.loginUserOrEmailMethod || 'USERNAME_ONLY',
+      options: [
+        { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
+        { label: { langKey: 'Email only' }, value: 'EMAIL_ONLY' },
+        {
+          label: { langKey: 'User chooses, Username as default' },
+          value: 'USER_CHOOSES_USERNAME_AS_DEFAULT',
+        },
+        {
+          label: { langKey: 'User chooses, Email as default' },
+          value: 'USER_CHOOSES_EMAIL_AS_DEFAULT',
+        },
+      ],
+      category: 'security',
+      publicSetting: true,
+      description: {
+        langKey:
+          'Whether users are required to login with a Username or Email, or if they can choose the option',
+      },
+    },
+    label: { langKey: 'Login with Username, Email, or Both' },
+  },
   // security CATEGORY [END]
 
   // data CATEGORY [START]
   {
     elemId: 'dataItemsMaxLimit',
-    orderNr: 10,
+    orderNr: 11,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -243,7 +271,7 @@ const systemSettings = [
   },
   {
     elemId: 'dataCollationLocale',
-    orderNr: 11,
+    orderNr: 12,
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {

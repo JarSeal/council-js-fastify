@@ -1,7 +1,7 @@
 import type { FastifyError } from 'fastify';
 
 import { errors } from '../core/errors';
-import { getConfig } from '../core/config';
+import { getConfig, getSysSetting } from '../core/config';
 import type { FormElem, TransText } from '../dbModels/_modelTypePartials';
 import { customValidators } from '../customFunctions/validation';
 
@@ -311,5 +311,16 @@ const elemDataValidation = (
     }
   }
 
+  return null;
+};
+
+export const validateLoginMethod = async (loginMethod: string): Promise<FastifyError | null> => {
+  const loginMethodSetting = await getSysSetting<string>('loginUserOrEmailMethod');
+  if (
+    (loginMethodSetting === 'USERNAME_ONLY' && loginMethod !== 'username') ||
+    (loginMethodSetting === 'EMAIL_ONLY' && loginMethod !== 'email')
+  ) {
+    return new errors.UNAUTHORIZED(`Users' are not allowed login by ${loginMethod}`);
+  }
   return null;
 };

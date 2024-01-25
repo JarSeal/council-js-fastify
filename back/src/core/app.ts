@@ -52,6 +52,8 @@ const initApp = async (): Promise<FastifyInstance> => {
         const hostnameFromRequest = new URL(origin).hostname;
         // @TODO: research if this is something that could be also set from the system configuration setting
         // so that the host names could be added to the system during run time
+        // @UPDATE: these host names can be added from the system settings
+        // @TODO: add trustedHostNames system setting (category security), and add the added env variables to description (they cannot and should not be changed without a deploy)
         const hostnameArray = CLIENT_HOST_NAMES.split(',').map((h) => h.trim());
         if (hostnameArray.includes(hostnameFromRequest)) {
           cb(null, true);
