@@ -15,11 +15,13 @@ import {
   SESSION_SECRET,
   SESSION_COOKIE_NAME,
   getConfig,
+  getSysSetting,
 } from './config';
 import type { Environment } from './config';
 import apis from './apis';
 import { initDB } from './db';
 import { sessionStore } from './sessionStore';
+import { errors } from './errors';
 
 export const apiRoot = '/api';
 
@@ -49,17 +51,19 @@ const initApp = async (): Promise<FastifyInstance> => {
       if (!origin) {
         cb(null, true);
       } else {
-        const hostnameFromRequest = new URL(origin).hostname;
-        // @TODO: research if this is something that could be also set from the system configuration setting
-        // so that the host names could be added to the system during run time
-        // @UPDATE: these host names can be added from the system settings
-        // @TODO: add trustedHostNames system setting (category security), and add the added env variables to description (they cannot and should not be changed without a deploy)
-        const hostnameArray = CLIENT_HOST_NAMES.split(',').map((h) => h.trim());
-        if (hostnameArray.includes(hostnameFromRequest)) {
-          cb(null, true);
-        } else {
-          cb(new Error('Not allowed'), false);
-        }
+        const hostNameFromRequest = new URL(origin).hostname;
+        const hostNameArrayFromEnv = CLIENT_HOST_NAMES.split(',').map((h) => h.trim());
+        getSysSetting('allowedHostNames')
+          .then((value) => {
+            const sysValues = (value as string).split(',').map((h) => h.trim());
+            const hostNames = [...hostNameArrayFromEnv, ...sysValues];
+            if (hostNames.includes(hostNameFromRequest)) {
+              cb(null, true);
+            } else {
+              cb(new errors.UNAUTHORIZED(`Origin not allowed: ${origin}`), false);
+            }
+          })
+          .catch(() => cb(new Error('CORS checker failed'), false));
       }
     },
   });

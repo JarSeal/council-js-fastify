@@ -250,12 +250,27 @@ const systemSettings = [
     },
     label: { langKey: 'Login with Username, Email, or Both' },
   },
+  {
+    elemId: 'allowedHostNames',
+    orderNr: 11,
+    elemType: 'inputText',
+    valueType: 'string',
+    elemData: {
+      defaultValue: '',
+      category: 'security',
+      description: {
+        langKey:
+          'Allowed host names list, separated by a comma (spaces after the comma are ignored). For example: "https://www.example1.com, http://www.example2.com". There could be other allowed URLs which are defined in the environment variables.',
+      },
+    },
+    label: { langKey: 'Max emails per user' },
+  },
   // security CATEGORY [END]
 
   // data CATEGORY [START]
   {
     elemId: 'dataItemsMaxLimit',
-    orderNr: 11,
+    orderNr: 12,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -271,7 +286,7 @@ const systemSettings = [
   },
   {
     elemId: 'dataCollationLocale',
-    orderNr: 12,
+    orderNr: 13,
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
