@@ -1,73 +1,11 @@
 import type { FastifyError } from 'fastify';
 
-import type { Body } from '../features/publicSignUp/schemas';
 import { errors } from '../core/errors';
-import type { DBUser } from '../dbModels/user';
-import { getConfig, getSysSetting, getSysSettingsForm } from '../core/config';
+import { getConfig } from '../core/config';
 import type { FormElem, TransText } from '../dbModels/_modelTypePartials';
 import { customValidators } from '../customFunctions/validation';
 
 export type ValidationError = FastifyError | null;
-
-export const validatePublicSignup = async (
-  body: Body,
-  foundUser: DBUser | null,
-  options?: { [key: string]: unknown }
-): Promise<ValidationError> => {
-  const username = body.username.trim();
-  const pass = body.pass.trim();
-
-  if (foundUser) {
-    return new errors.USERNAME_TAKEN(username);
-  }
-
-  const minUserLength =
-    (options?.minUsernameLength as number) || (await getSysSetting<number>('minUsernameLength'));
-  if (minUserLength && username.length < minUserLength) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      `Username is too short, minimum is ${minUserLength} characters.`
-    );
-  }
-  const maxUserLength =
-    (options?.maxUsernameLength as number) || (await getSysSetting<number>('maxUsernameLength'));
-  if (maxUserLength && username.length > maxUserLength) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      `Username is too long, maximum is ${maxUserLength} characters.`
-    );
-  }
-  if (!validateSimpleId(username)) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      'Username contains invalid characters, only a-z, A-Z, 0-9, -, and _ allowed.'
-    );
-  }
-  const minPassLength =
-    (options?.minPassLength as number) || (await getSysSetting<number>('minPassLength'));
-  if (minPassLength && pass.length < minPassLength) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      `Password is too short, minimum is ${minPassLength} characters.`
-    );
-  }
-  const maxPassLength =
-    (options?.maxPassLength as number) || (await getSysSetting<number>('maxPassLength'));
-  if (maxPassLength && pass.length > maxPassLength) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      `Password is too long, maximum is ${maxPassLength} characters.`
-    );
-  }
-  if (!validatePassword(pass)) {
-    let message = 'Password is invalid';
-    const sysSettingsForm = await getSysSettingsForm();
-    if (sysSettingsForm) {
-      const elem = sysSettingsForm.form.formElems.find((item) => item.elemId === 'passRegExp');
-      if (elem?.inputErrors) {
-        const error = elem.inputErrors.find((err) => err.errorId === 'passNotValidMessage');
-        if (error?.message?.langKey) message = error.message.langKey;
-      }
-    }
-    return new errors.COUNCL_ERR_VALIDATE(message);
-  }
-  return null;
-};
 
 export const simpleIdRegExp = ['^[a-zA-Z0-9-_]+$', 'gm'];
 export const validateSimpleId = (simpleId: unknown) => {
@@ -103,7 +41,7 @@ export const validatePhoneWithExtraChars = (value: unknown) => {
 };
 
 export const validatePassword = (value: unknown, alternateRegex?: string) => {
-  const passRegex = alternateRegex || getConfig<string>('user.passRegExp', '');
+  const passRegex = alternateRegex || getConfig<string>('security.passRegExp', '');
   if (!passRegex) return true;
   return new RegExp(passRegex).test(String(value));
 };

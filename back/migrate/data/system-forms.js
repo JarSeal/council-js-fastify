@@ -2,6 +2,7 @@
 const timeNow = new Date();
 const { getConfig } = require('../../dist/back/src/core/config');
 const { simpleIdRegex } = require('../../dist/back/src/utils/validation');
+const systemSettings = require('./_system-settings');
 
 if (!getConfig || simpleIdRegex) {
   console.error(
@@ -121,7 +122,7 @@ const getForms = async (db) => {
             },
             label: { langKey: 'Username' },
             required: true,
-            validationRegExp: simpleIdRegex,
+            validationRegExp: { pattern: simpleIdRegex[0], flags: simpleIdRegex[1] },
             errors: [
               {
                 errorId: 'validationRegExp',
@@ -171,7 +172,7 @@ const getForms = async (db) => {
             },
             label: { langKey: 'Password' },
             required: true,
-            validationRegExp: getConfig('security.passRegExp', ''),
+            validationRegExp: { pattern: getConfig('security.passRegExp', '')[0] },
             mustMatchValue: 'passAgain',
             errors: [
               {
@@ -526,58 +527,7 @@ const getForms = async (db) => {
       systemDocument: true,
       owner: null,
       url: '/api/v1/sys/system-settings',
-      form: {
-        formElems: [
-          {
-            elemId: 'forceEmailVerification',
-            orderNr: 0,
-            elemType: 'inputDropDown',
-            valueType: 'string',
-            elemData: {
-              defaultValue: 'disabled',
-              options: [
-                { label: { langKey: 'Disabled' }, value: 'disabled' },
-                { label: { langKey: 'Enabled' }, value: 'enabled' },
-              ],
-              category: 'security',
-              description: {
-                langKey:
-                  "Whether users' must verify their E-mail before being able to use the service or not.",
-              },
-            },
-            label: { langKey: 'Force E-mail verification' },
-          },
-          {
-            elemId: 'use2FA',
-            orderNr: 1,
-            elemType: 'inputDropDown',
-            valueType: 'string',
-            elemData: {
-              defaultValue: 'disabled',
-              options: [
-                { label: { langKey: 'Disabled' }, value: 'disabled' },
-                { label: { langKey: 'Enabled' }, value: 'enabled' },
-                { label: { langKey: 'User chooses' }, value: 'user_chooses' },
-                {
-                  label: { langKey: 'User chooses, set to disabled for all' },
-                  value: 'user_chooses_and_set_to_disabled_for_all',
-                },
-                {
-                  label: { langKey: 'User chooses, set to enabled for all' },
-                  value: 'user_chooses_and_set_to_enabled_for_all',
-                },
-              ],
-              category: 'security',
-              publicSetting: true,
-              description: {
-                langKey:
-                  'Whether to enable 2-factor authentication for all users or not, or whether users can choose to enable 2FA for themselves.',
-              },
-            },
-            label: { langKey: 'Use 2-factor authentication' },
-          },
-        ],
-      },
+      form: { formElems: systemSettings },
       privileges: [
         {
           simpleId: 'form__systemSettings__canUseForm',

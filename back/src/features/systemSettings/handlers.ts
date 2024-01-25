@@ -234,7 +234,7 @@ export const getSystemSettings = async (props: {
         continue;
       }
       const setting = settings.find((s) => s.simpleId === elem.elemId);
-      let value = setting?.value as unknown;
+      let value = setting?.value;
       if (value === undefined) {
         value = elem.elemData?.defaultValue === undefined ? undefined : elem.elemData?.defaultValue;
       }

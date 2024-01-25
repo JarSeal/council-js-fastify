@@ -181,7 +181,7 @@ describe('login', () => {
   it('should set the user to a cooldown period when giving wrong password too many times', async () => {
     await createUser('cooldownuser');
     let response;
-    for (let i = 0; i < getConfig<number>('user.maxLoginAttempts'); i++) {
+    for (let i = 0; i < getConfig<number>('security.maxLoginAttempts'); i++) {
       response = await app.inject({
         method: 'POST',
         path: '/api/v1/sys/login',
