@@ -1,10 +1,10 @@
 // FORMS:
 const timeNow = new Date();
 const { getConfig } = require('../../dist/back/src/core/config');
-const { simpleIdRegex } = require('../../dist/back/src/utils/validation');
+const { simpleIdRegExp } = require('../../dist/back/src/utils/validation');
 const systemSettings = require('./_system-settings');
 
-if (!getConfig || simpleIdRegex) {
+if (!getConfig || !simpleIdRegExp) {
   console.error(
     'Build the project before running migrations (in the project root run: "yarn build").'
   );
@@ -122,7 +122,7 @@ const getForms = async (db) => {
             },
             label: { langKey: 'Username' },
             required: true,
-            validationRegExp: { pattern: simpleIdRegex[0], flags: simpleIdRegex[1] },
+            validationRegExp: { pattern: simpleIdRegExp[0], flags: simpleIdRegExp[1] },
             errors: [
               {
                 errorId: 'validationRegExp',
@@ -178,7 +178,8 @@ const getForms = async (db) => {
               {
                 errorId: 'validationRegExp',
                 message: {
-                  langKey: getConfig('security.passNotValidMessage', 'Password not valid'),
+                  langKey:
+                    'Password must contain at least: lower and upper case, number, special character (!#$%&?@* )',
                 },
               },
               {
