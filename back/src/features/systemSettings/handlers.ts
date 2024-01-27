@@ -10,7 +10,7 @@ import DBSystemSettingModel, { type DBSystemSetting } from '../../dbModels/syste
 import { validateFormDataInput } from '../../utils/validation';
 import { createNewEditedArray } from '../../utils/parsingAndConverting';
 import { setCachedSysSettings } from '../../core/config';
-import { restartApp } from '../../server';
+import { restartApp } from '../../core/app';
 
 // Read (GET)
 export const systemSettingsGetRoute: RouteHandler<SystemSettingsGetRoute> = async (req, res) => {
@@ -189,7 +189,7 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
 
   // Check if need to restart app
   if (ok && restartRequired) {
-    await restartApp(req.log);
+    await restartApp(req.server, req.log);
   }
 
   return res.send({

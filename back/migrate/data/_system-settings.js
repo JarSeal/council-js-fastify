@@ -55,7 +55,8 @@ const systemSettingsFormElems = [
       ],
       category: 'security',
       description: {
-        langKey: 'How long is the maximum session age (idle age).',
+        langKey:
+          'How long is the maximum session age (idle age). Editing this setting will restart the app.',
       },
     },
     label: { langKey: 'Session max age' },
@@ -70,7 +71,7 @@ const systemSettingsFormElems = [
       category: 'security',
       description: {
         langKey:
-          'Whether the session type is "Rolling" or not. "Rolling" means that the session expiration time is reset on every check / call.',
+          'Whether the session type is "Rolling" or not. When "Rolling" is turned on, it means that the session expiration time is reset on every session check / api call. It also means that the session is saved to the sessionStore all the time (more calls). Editing this setting will restart the app.',
       },
     },
     label: { langKey: 'Rolling Session' },
