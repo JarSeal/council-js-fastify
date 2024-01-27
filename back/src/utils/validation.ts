@@ -207,11 +207,10 @@ const elemDataValidation = (
     // string minLength
     if (
       elem.elemData?.minLength !== undefined &&
-      (elem.elemData?.minLength as number) > value.length
+      typeof elem.elemData.minLength === 'number' &&
+      elem.elemData.minLength > value.length
     ) {
-      const defaultError = `ElemId '${elem.elemId}' value is too short (minLength: ${
-        elem.elemData?.minLength as number
-      }).`;
+      const defaultError = `ElemId '${elem.elemId}' value is too short (minLength: ${elem.elemData.minLength}).`;
       const customError =
         elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'minLength');
       new errors.FORM_DATA_BAD_REQUEST(
@@ -228,11 +227,10 @@ const elemDataValidation = (
     // string maxLength
     if (
       elem.elemData?.maxLength !== undefined &&
-      (elem.elemData?.maxLength as number) < value.length
+      typeof elem.elemData.maxLength === 'number' &&
+      elem.elemData?.maxLength < value.length
     ) {
-      const defaultError = `ElemId '${elem.elemId}' value is too long (maxLength: ${
-        elem.elemData?.maxLength as number
-      }).`;
+      const defaultError = `ElemId '${elem.elemId}' value is too long (maxLength: ${elem.elemData.maxLength}).`;
       const customError =
         elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'maxLength');
       new errors.FORM_DATA_BAD_REQUEST(
@@ -251,10 +249,12 @@ const elemDataValidation = (
   if (elem.valueType === 'number' && sentElem) {
     const value = sentElem.value as number;
     // number minValue
-    if (elem.elemData?.minValue !== undefined && (elem.elemData?.minValue as number) > value) {
-      const defaultError = `ElemId '${elem.elemId}' value is too small (minValue: ${
-        elem.elemData?.minValue as number
-      }).`;
+    if (
+      elem.elemData?.minValue !== undefined &&
+      typeof elem.elemData.minValue === 'number' &&
+      elem.elemData.minValue > value
+    ) {
+      const defaultError = `ElemId '${elem.elemId}' value is too small (minValue: ${elem.elemData.minValue}).`;
       const customError =
         elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'minValue');
       new errors.FORM_DATA_BAD_REQUEST(
@@ -269,10 +269,12 @@ const elemDataValidation = (
       };
     }
     // number maxValue
-    if (elem.elemData?.maxValue !== undefined && (elem.elemData?.maxValue as number) < value) {
-      const defaultError = `ElemId '${elem.elemId}' value is too large (maxValue: ${
-        elem.elemData?.maxValue as number
-      }).`;
+    if (
+      elem.elemData?.maxValue !== undefined &&
+      typeof elem.elemData.maxValue === 'number' &&
+      elem.elemData.maxValue < value
+    ) {
+      const defaultError = `ElemId '${elem.elemId}' value is too large (maxValue: ${elem.elemData.maxValue}).`;
       const customError =
         elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'maxValue');
       new errors.FORM_DATA_BAD_REQUEST(
