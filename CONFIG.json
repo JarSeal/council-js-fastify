@@ -6,12 +6,6 @@
     "coolDownAge": 240,
     "maxLoginLogs": 5,
     "maxLoginAttemptLogs": 5,
-    "minUsernameLength": 2,
-    "maxUsernameLength": 32,
-    "minPassLength": 8,
-    "maxPassLength": 128,
-    "passRegExp": ["^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})"],
-    "passNotValidMessage": "Password is not strong enough or is invalid, must contain a lower case, an upper case, a number, and a special character (!@#$%^&*).",
     "forceEmailVerification": false,
     "maxEmails": 2,
     "use2FA": "DISABLED",
@@ -22,7 +16,6 @@
     "dataCollationLocale": "fi"
   },
   "caches": {
-    "useGroupsCache": 180000,
-    "systemSettingsCache": 180000
+    "userGroupsCacheTime": 180
   }
 }

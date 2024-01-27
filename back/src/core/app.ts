@@ -1,7 +1,8 @@
 import path from 'path';
 import fs from 'fs';
-import fastify from 'fastify';
-import type { FastifyInstance } from 'fastify';
+import { fastify as _fastify } from 'fastify';
+import type { Fastify } from '@fastify/restartable';
+import type { FastifyInstance } from '@fastify/restartable/node_modules/fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import cookie from '@fastify/cookie';
@@ -14,7 +15,6 @@ import {
   IS_PRODUCTION,
   SESSION_SECRET,
   SESSION_COOKIE_NAME,
-  getConfig,
   getSysSetting,
 } from './config';
 import type { Environment } from './config';
@@ -25,25 +25,32 @@ import { errors } from './errors';
 
 export const apiRoot = '/api';
 
-const initApp = async (): Promise<FastifyInstance> => {
-  const envToLogger = {
-    development: {
-      transport: {
-        target: 'pino-pretty',
-        options: {
-          translateTime: 'HH:MM:ss Z',
-          ignore: 'pid,hostname',
-        },
+type _Fastify = typeof _fastify;
+
+const envToLogger = {
+  development: {
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        translateTime: 'HH:MM:ss Z',
+        ignore: 'pid,hostname',
       },
     },
-    production: true,
-    test: false,
-  };
+  },
+  production: true,
+  test: false,
+};
+export const fastifyOptions = {
+  logger: envToLogger[ENVIRONMENT as Environment],
+};
 
+const initApp = async (fastify?: Fastify, opts?: unknown) => {
   // Fastify
-  const app = fastify({
-    logger: envToLogger[ENVIRONMENT as Environment],
-  }).withTypeProvider<TypeBoxTypeProvider>();
+  const f = fastify ? (fastify as unknown as _Fastify) : _fastify;
+  const app = f(opts || fastifyOptions).withTypeProvider<TypeBoxTypeProvider>();
+
+  // Database
+  await initDB(app);
 
   // CORS
   await app.register(fastifyCors, {
@@ -68,23 +75,20 @@ const initApp = async (): Promise<FastifyInstance> => {
     },
   });
 
-  // Database
-  await initDB(app);
-
   // Cookies and session
   const cookieSharedConfig = {
-    httpOnly: IS_PRODUCTION,
-    secure: IS_PRODUCTION,
+    httpOnly: Boolean(IS_PRODUCTION),
+    secure: Boolean(IS_PRODUCTION),
     path: '/',
-    maxAge: getConfig<number>('security.sessionMaxAge', 3600) * 1000,
+    maxAge: ((await getSysSetting<number>('sessionMaxAge')) || 3600) * 1000,
   };
   await app.register(cookie);
   await app.register(fastifySession, {
     secret: SESSION_SECRET,
     cookieName: SESSION_COOKIE_NAME,
     cookie: cookieSharedConfig,
-    rolling: true,
     store: sessionStore,
+    rolling: Boolean(await getSysSetting<boolean>('sessionIsRolling')),
   });
 
   // API routes
@@ -105,6 +109,11 @@ const initApp = async (): Promise<FastifyInstance> => {
   app.get('*', (_, res) => res.sendFile('index.html'));
 
   return app;
+};
+
+export const createRestartableApp = async (fastify: Fastify) => {
+  const app = await initApp(fastify);
+  return app as unknown as FastifyInstance;
 };
 
 export default initApp;

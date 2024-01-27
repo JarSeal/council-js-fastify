@@ -1,10 +1,9 @@
 // FORMS:
 const timeNow = new Date();
-const { getConfig } = require('../../dist/back/src/core/config');
 const { simpleIdRegExp } = require('../../dist/back/src/utils/validation');
-const systemSettings = require('./_system-settings');
+const systemSettingsFormElems = require('./_system-settings');
 
-if (!getConfig || !simpleIdRegExp) {
+if (!simpleIdRegExp) {
   console.error(
     'Build the project before running migrations (in the project root run: "yarn build").'
   );
@@ -117,8 +116,8 @@ const getForms = async (db) => {
             orderNr: 0,
             elemType: 'inputText',
             elemData: {
-              minLength: getConfig('security.minUsernameLength', 2),
-              maxLength: getConfig('security.maxUsernameLength', 32),
+              minLength: 2,
+              maxLength: 32,
             },
             label: { langKey: 'Username' },
             required: true,
@@ -167,12 +166,14 @@ const getForms = async (db) => {
             elemType: 'inputText',
             elemData: {
               password: true,
-              minLength: getConfig('security.minPassLength', 8),
-              maxLength: getConfig('security.maxPassLength', 128),
+              minLength: 8,
+              maxLength: 128,
             },
             label: { langKey: 'Password' },
             required: true,
-            validationRegExp: { pattern: getConfig('security.passRegExp', '')[0] },
+            validationRegExp: {
+              pattern: '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})',
+            },
             mustMatchValue: 'passAgain',
             errors: [
               {
@@ -527,7 +528,7 @@ const getForms = async (db) => {
       systemDocument: true,
       owner: null,
       url: '/api/v1/sys/system-settings',
-      form: { formElems: systemSettings },
+      form: { formElems: systemSettingsFormElems },
       privileges: [
         {
           simpleId: 'form__systemSettings__canUseForm',

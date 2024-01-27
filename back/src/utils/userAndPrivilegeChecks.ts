@@ -9,7 +9,7 @@ import type {
 } from '../dbModels/_modelTypePartials';
 import { errors } from '../core/errors';
 import type { RequiredActions } from '../features/login/schemas';
-import { getConfig } from '../core/config';
+import { getSysSetting } from '../core/config';
 
 export const emptyPrivilege: AllPrivilegeProps = {
   public: 'false',
@@ -54,7 +54,7 @@ export const getUserData = async (
     const timeNow = new Date();
     let cacheBusted = bypassCache;
     if (!bypassCache && req.session?.cacheSetData) {
-      const CACHE_TIME = getConfig<number>('caches.useGroupsCache', 180000);
+      const CACHE_TIME = ((await getSysSetting<number>('userGroupsCacheTime')) || 180) * 1000;
       const cachedTimeLimit = new Date(req.session.cacheSetData.getTime() + CACHE_TIME);
       if (cachedTimeLimit > timeNow) {
         cacheBusted = false;

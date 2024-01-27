@@ -72,10 +72,10 @@ describe('validation util', () => {
     const result3 = validatePassword('a', regex);
     const result4 = validatePassword('mypa$$Word1', regex);
     const result5 = validatePassword('@notherPassword99', regex);
-    const result6 = validatePassword('$horT1');
-    const result7 = validatePassword('almostGoodPass1');
-    const result8 = validatePassword('almostgooda$$1');
-    const result9 = validatePassword('almostGoodPa$$');
+    const result6 = validatePassword('$horT1', regex);
+    const result7 = validatePassword('almostGoodPass1', regex);
+    const result8 = validatePassword('almostgooda$$1', regex);
+    const result9 = validatePassword('almostGoodPa$$', regex);
 
     expect(result1).toBeFalsy();
     expect(result2).toBeFalsy();

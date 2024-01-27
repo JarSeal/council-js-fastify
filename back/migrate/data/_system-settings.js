@@ -1,6 +1,6 @@
 const config = require('../../../CONFIG.json');
 
-const systemSettings = [
+const systemSettingsFormElems = [
   // security CATEGORY [START]
   {
     elemId: 'sessionMaxAge',
@@ -315,6 +315,49 @@ const systemSettings = [
     label: { langKey: 'Data Items Max Limit' },
   },
   // data CATEGORY [END]
+
+  // caches CATEGORY [START]
+  {
+    elemId: 'userGroupsCacheTime',
+    orderNr: 14,
+    elemType: 'inputDropDown',
+    valueType: 'number',
+    elemData: {
+      defaultValue: config?.security?.userGroupsCacheTime || 180,
+      options: [
+        { label: { langKey: '30 seconds' }, value: 30 },
+        { label: { langKey: '1 minute' }, value: 60 },
+        { label: { langKey: '2 minutes' }, value: 120 },
+        { label: { langKey: '3 minutes' }, value: 180 },
+        { label: { langKey: '4 minutes' }, value: 240 },
+        { label: { langKey: '5 minutes' }, value: 300 },
+        { label: { langKey: '10 minutes' }, value: 600 },
+        { label: { langKey: '15 minutes' }, value: 900 },
+        { label: { langKey: '30 minutes' }, value: 1800 },
+        { label: { langKey: '45 minutes' }, value: 2700 },
+        { label: { langKey: '1 hour' }, value: 3600 },
+        { label: { langKey: '1.5 hours' }, value: 5400 },
+        { label: { langKey: '2 hours' }, value: 7200 },
+        { label: { langKey: '3 hours' }, value: 10800 },
+        { label: { langKey: '4 hours' }, value: 14400 },
+        { label: { langKey: '5 hours' }, value: 18000 },
+        { label: { langKey: '6 hours' }, value: 21600 },
+        { label: { langKey: '9 hours' }, value: 32400 },
+        { label: { langKey: '12 hours' }, value: 43200 },
+        { label: { langKey: '16 hours' }, value: 57600 },
+        { label: { langKey: '20 hours' }, value: 72000 },
+        { label: { langKey: '23 hours' }, value: 82800 },
+        { label: { langKey: '24 hours (1 day)' }, value: 86400 },
+      ],
+      category: 'caches',
+      description: {
+        langKey:
+          "How long is the cache time for user groups on the user's session. If a user is added/removed to/from a group, it will take this amount of time before the session registers it. Logging out and in again will reset cache.",
+      },
+    },
+    label: { langKey: 'User Groups Session Cache Time' },
+  },
+  // caches CATEGORY [END]
 ];
 
-module.exports = systemSettings;
+module.exports = systemSettingsFormElems;
