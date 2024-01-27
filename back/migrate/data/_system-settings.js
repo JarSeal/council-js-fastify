@@ -318,12 +318,12 @@ const systemSettingsFormElems = [
 
   // caches CATEGORY [START]
   {
-    elemId: 'useGroupsCacheTime',
+    elemId: 'userGroupsCacheTime',
     orderNr: 14,
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.useGroupsCacheTime || 180,
+      defaultValue: config?.security?.userGroupsCacheTime || 180,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
         { label: { langKey: '1 minute' }, value: 60 },

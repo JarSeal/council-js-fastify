@@ -16,6 +16,6 @@
     "dataCollationLocale": "fi"
   },
   "caches": {
-    "useGroupsCacheTime": 180
+    "userGroupsCacheTime": 180
   }
 }

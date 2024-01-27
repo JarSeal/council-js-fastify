@@ -50,9 +50,6 @@ export const systemSettingsGetRoute: RouteHandler<SystemSettingsGetRoute> = asyn
 
   const returnObject = await getSystemSettings({ settingId, category, getForm });
 
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  console.log('UUURTAAA************************', req.session.isModified.toString());
-
   return res.send(returnObject);
 };
 

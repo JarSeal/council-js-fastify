@@ -54,7 +54,7 @@ export const getUserData = async (
     const timeNow = new Date();
     let cacheBusted = bypassCache;
     if (!bypassCache && req.session?.cacheSetData) {
-      const CACHE_TIME = ((await getSysSetting<number>('useGroupsCacheTime')) || 0) * 1000;
+      const CACHE_TIME = ((await getSysSetting<number>('userGroupsCacheTime')) || 180) * 1000;
       const cachedTimeLimit = new Date(req.session.cacheSetData.getTime() + CACHE_TIME);
       if (cachedTimeLimit > timeNow) {
         cacheBusted = false;

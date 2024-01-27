@@ -80,8 +80,7 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
     httpOnly: Boolean(IS_PRODUCTION),
     secure: Boolean(IS_PRODUCTION),
     path: '/',
-    // maxAge: ((await getSysSetting<number>('sessionMaxAge')) || 3600) * 1000,
-    maxAge: 3600000,
+    maxAge: ((await getSysSetting<number>('sessionMaxAge')) || 3600) * 1000,
   };
   await app.register(cookie);
   await app.register(fastifySession, {
@@ -89,10 +88,8 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
     cookieName: SESSION_COOKIE_NAME,
     cookie: cookieSharedConfig,
     store: sessionStore,
-    rolling: false,
+    rolling: Boolean(await getSysSetting<boolean>('sessionIsRolling')),
   });
-
-  const setRoll = Boolean(await getSysSetting<boolean>('sessionIsRolling'));
 
   // API routes
   await app.register(apis, { prefix: apiRoot });
@@ -110,8 +107,6 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
 
   // Client routes (all GET routes, except the GET API routes)
   app.get('*', (_, res) => res.sendFile('index.html'));
-
-  console.log('TADAA************************', setRoll);
 
   return app;
 };
