@@ -1,7 +1,6 @@
 import mongoose, { Schema, type Types } from 'mongoose';
 
 import { simpleIdDBSchema } from './_schemaPartials';
-import { getConfig } from '../core/config';
 import { requiredActionsDBSchema, type RequiredActions } from '../features/login/schemas';
 
 export interface Session {
@@ -64,7 +63,7 @@ const sessionSchema = new Schema<DBSession>({
       _expires: { type: Date, required: true },
       originalMaxAge: {
         type: Number,
-        default: getConfig<number>('security.sessionMaxAge', 3600) * 1000,
+        required: true,
       },
     },
   },

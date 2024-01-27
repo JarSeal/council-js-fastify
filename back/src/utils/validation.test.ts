@@ -3,7 +3,6 @@ import {
   isValueAndTypeValid,
   validateEmail,
   validateFormDataInput,
-  validatePassword,
   validatePhoneWithExtraChars,
   validateSimpleId,
 } from './validation';
@@ -63,29 +62,6 @@ describe('validation util', () => {
     expect(result7).toBeFalsy();
     expect(result8).toBeTruthy();
     expect(result9).toBeTruthy();
-  });
-
-  it('should validate a password', () => {
-    const regex = '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})';
-    const result1 = validatePassword('', regex);
-    const result2 = validatePassword(null, regex);
-    const result3 = validatePassword('a', regex);
-    const result4 = validatePassword('mypa$$Word1', regex);
-    const result5 = validatePassword('@notherPassword99', regex);
-    const result6 = validatePassword('$horT1', regex);
-    const result7 = validatePassword('almostGoodPass1', regex);
-    const result8 = validatePassword('almostgooda$$1', regex);
-    const result9 = validatePassword('almostGoodPa$$', regex);
-
-    expect(result1).toBeFalsy();
-    expect(result2).toBeFalsy();
-    expect(result3).toBeFalsy();
-    expect(result4).toBeTruthy();
-    expect(result5).toBeTruthy();
-    expect(result6).toBeFalsy();
-    expect(result7).toBeFalsy();
-    expect(result8).toBeFalsy();
-    expect(result9).toBeFalsy();
   });
 
   it('should validate a valueType', () => {

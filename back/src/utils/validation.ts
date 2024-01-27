@@ -1,7 +1,7 @@
 import type { FastifyError } from 'fastify';
 
 import { errors } from '../core/errors';
-import { getConfig, getSysSetting } from '../core/config';
+import { getSysSetting } from '../core/config';
 import type { FormElem, TransText } from '../dbModels/_modelTypePartials';
 import { customValidators } from '../customFunctions/validation';
 
@@ -38,12 +38,6 @@ export const validatePhoneWithExtraChars = (value: unknown) => {
     .replace('(', '')
     .replace(')', '');
   return !isNaN(Number(strippedNumber));
-};
-
-export const validatePassword = (value: unknown, alternateRegex?: string) => {
-  const passRegex = alternateRegex || getConfig<string>('security.passRegExp', '');
-  if (!passRegex) return true;
-  return new RegExp(passRegex).test(String(value));
 };
 
 export const isValueAndTypeValid = (valueType: string, value: unknown): boolean => {
