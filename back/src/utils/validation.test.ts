@@ -421,5 +421,23 @@ describe('validation util', () => {
     ];
     result = validateFormDataInput(formElems3, formData11);
     expect(result).toStrictEqual(null);
+
+    const formElems4 = [
+      {
+        elemId: 'myElem1',
+        orderNr: 0,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: { maxLength: 8 },
+      },
+    ] as FormElem[];
+    const formData12 = [
+      {
+        elemId: 'myElem1',
+        value: '$@ÄÅÖäåö',
+      },
+    ];
+    result = validateFormDataInput(formElems4, formData12);
+    expect(result).toBe(null);
   });
 });

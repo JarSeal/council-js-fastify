@@ -202,9 +202,6 @@ const elemDataValidation = (
   elem: FormElem,
   sentElem: { elemId: string; value: unknown } | undefined
 ) => {
-  // @TODO: value.length is not the right way to count length for strings.
-  // Will work fine for a-z characters, but special characters will be longer than 1.
-  // Implement a proper character count.
   if (elem.valueType === 'string' && sentElem) {
     const value = sentElem.value as string;
     // string minLength
