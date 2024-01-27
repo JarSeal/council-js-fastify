@@ -53,6 +53,8 @@ export const isValueAndTypeValid = (valueType: string, value: unknown): boolean 
       return typeof value === 'string';
     case 'number':
       return typeof value === 'number';
+    case 'boolean':
+      return typeof value === 'boolean';
     case 'date':
       try {
         forgedDate = new Date(String(value)).toISOString();

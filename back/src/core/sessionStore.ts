@@ -40,6 +40,7 @@ export const sessionStore = {
       );
       return callback(error);
     }
+    console.log('sessionStoreSet******************************', session.cookie.expires, sessionId);
     callback();
   },
 

@@ -9,6 +9,8 @@ import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBSystemSettingModel, { type DBSystemSetting } from '../../dbModels/systemSetting';
 import { validateFormDataInput } from '../../utils/validation';
 import { createNewEditedArray } from '../../utils/parsingAndConverting';
+import { setCachedSysSettings } from '../../core/config';
+import { restartApp } from '../../server';
 
 // Read (GET)
 export const systemSettingsGetRoute: RouteHandler<SystemSettingsGetRoute> = async (req, res) => {
@@ -48,12 +50,16 @@ export const systemSettingsGetRoute: RouteHandler<SystemSettingsGetRoute> = asyn
 
   const returnObject = await getSystemSettings({ settingId, category, getForm });
 
+  // eslint-disable-next-line @typescript-eslint/unbound-method
+  console.log('UUURTAAA************************', req.session.isModified.toString());
+
   return res.send(returnObject);
 };
 
 // Edit / Create (PUT)
 export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = async (req, res) => {
   const { data, getData } = req.body;
+  const settingsNeedingRestart = ['sessionMaxAge', 'sessionIsRolling'];
 
   // Check if data to be saved is empty
   if (!data?.length) {
@@ -97,6 +103,7 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
   }
 
   let ok = false;
+  let restartRequired = false;
 
   // Validate data
   let error = {};
@@ -124,6 +131,8 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
         };
         break;
       }
+
+      if (settingsNeedingRestart.includes(foundElem.elemId)) restartRequired = true;
 
       let existingItem = null;
       if (existingData) {
@@ -177,6 +186,14 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
     getSettingsData = await getSystemSettings({ ...getData });
   }
   if ('code' in getSettingsData) getSettingsData = {};
+
+  // Cache system settings to memory
+  await setCachedSysSettings();
+
+  // Check if need to restart app
+  if (ok && restartRequired) {
+    await restartApp(req.log);
+  }
 
   return res.send({
     ok,

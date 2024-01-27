@@ -70,21 +70,14 @@ export const getConfig = <T>(path?: string, defaultValue?: unknown): T => {
 
 let cachedSysSettings: DBSystemSetting[] | null = null;
 let cachedSysSettingsForm: DBForm | null = null;
-let cachedTime: Date | null = null;
-const SETTINGS_CACHE_TIME = getConfig<number>('caches.systemSettingsCache', 180000);
 
 export const setCachedSysSettings = async () => {
   cachedSysSettings = await DBSystemSettingModel.find<DBSystemSetting>({});
   cachedSysSettingsForm = await DBFormModel.findOne<DBForm>({ simpleId: 'systemSettings' });
-  cachedTime = new Date();
 };
 
 const getCachedSysSettings = async () => {
-  if (
-    !cachedSysSettings ||
-    !cachedTime ||
-    new Date(cachedTime.getTime() + SETTINGS_CACHE_TIME) < new Date()
-  ) {
+  if (!cachedSysSettings) {
     await setCachedSysSettings();
   }
   return cachedSysSettings;
@@ -103,11 +96,7 @@ export const getSysSetting = async <T>(id: string): Promise<T | undefined> => {
 
 // @TODO: add tests
 export const getSysSettingsForm = async () => {
-  if (
-    !cachedSysSettingsForm ||
-    !cachedTime ||
-    new Date(cachedTime.getTime() + SETTINGS_CACHE_TIME) < new Date()
-  ) {
+  if (!cachedSysSettingsForm) {
     await setCachedSysSettings();
   }
   return cachedSysSettingsForm;
@@ -118,11 +107,12 @@ export type PublicSysSettings = { [key: string]: unknown };
 // @TODO: add tests
 export const getPublicSysSettings = async (): Promise<PublicSysSettings> => {
   const settings = await getCachedSysSettings();
-  if (!settings || !cachedSysSettingsForm) return {};
+  const sysForm = await getSysSettingsForm();
+  if (!settings || !sysForm) return {};
 
   const publicSettings: PublicSysSettings = {};
-  for (let i = 0; i < cachedSysSettingsForm.form.formElems.length; i++) {
-    const elem = cachedSysSettingsForm.form.formElems[i];
+  for (let i = 0; i < sysForm.form.formElems.length; i++) {
+    const elem = sysForm.form.formElems[i];
     if (elem.elemData?.publicSetting) {
       const setting = settings.find((item) => item.simpleId === elem.elemId);
       if (setting) publicSettings[elem.elemId] = setting.value;
