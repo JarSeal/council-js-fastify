@@ -529,7 +529,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
         elemData: createElemData(formElemTypes[formElemIndex]),
         label: { langKey: 'Label ' + (i + 1) },
         required: Math.round(Math.random()) > 0.5,
-        // @TODO: add validationRegExt, mustMatchValue, validationFn
+        // @TODO: add validationRegExp, mustMatchValue, validationFn
         doNotSave: formElemTypes[formElemIndex] === 'text',
       };
       formElems.push(formElem);

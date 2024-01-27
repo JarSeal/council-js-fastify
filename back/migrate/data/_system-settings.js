@@ -266,12 +266,28 @@ const systemSettingsFormElems = [
     },
     label: { langKey: 'Max emails per user' },
   },
+  {
+    elemId: 'defaultEditedLogs',
+    orderNr: 12,
+    elemType: 'inputNumber',
+    valueType: 'number',
+    elemData: {
+      defaultValue: config?.security?.defaultEditedLogs || 5,
+      minValue: 0,
+      category: 'security',
+      description: {
+        langKey:
+          'How many edited history log items are saved to a document as default. This number can be overridden, if a form has a "editedHistoryCount" defined.',
+      },
+    },
+    label: { langKey: 'Default Edited History Log Items Count' },
+  },
   // security CATEGORY [END]
 
   // data CATEGORY [START]
   {
     elemId: 'dataItemsMaxLimit',
-    orderNr: 12,
+    orderNr: 13,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -287,7 +303,7 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'dataCollationLocale',
-    orderNr: 13,
+    orderNr: 14,
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
@@ -320,7 +336,7 @@ const systemSettingsFormElems = [
   // caches CATEGORY [START]
   {
     elemId: 'userGroupsCacheTime',
-    orderNr: 14,
+    orderNr: 15,
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {

@@ -6,6 +6,7 @@
     "coolDownAge": 240,
     "maxLoginLogs": 5,
     "maxLoginAttemptLogs": 5,
+    "defaultEditedLogs": 10,
     "forceEmailVerification": false,
     "maxEmails": 2,
     "use2FA": "DISABLED",

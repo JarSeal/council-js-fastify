@@ -146,7 +146,7 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
             $set: {
               ...(existingItem
                 ? {
-                    edited: createNewEditedArray(
+                    edited: await createNewEditedArray(
                       existingItem.edited || [],
                       userData?.userId,
                       existingItem.editedHistoryCount
