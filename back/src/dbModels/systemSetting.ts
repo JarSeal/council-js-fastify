@@ -21,7 +21,7 @@ export interface DBSystemSetting {
   edited: Edited[];
 
   // Edited history count
-  editedHistoryCount: number;
+  editedHistoryCount?: number;
 
   systemDocument: boolean;
 }

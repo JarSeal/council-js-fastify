@@ -89,7 +89,12 @@ export const getSysSetting = async <T>(id: string): Promise<T | undefined> => {
   if (!settings) return undefined;
 
   const setting = settings.find((item) => item.simpleId === id);
-  if (!setting) return undefined;
+  if (!setting) {
+    const formElem = cachedSysSettingsForm?.form.formElems
+      ? cachedSysSettingsForm?.form.formElems.find((elem) => elem.elemId === id)
+      : undefined;
+    return formElem?.elemData?.defaultValue as T;
+  }
 
   return setting.value as T;
 };

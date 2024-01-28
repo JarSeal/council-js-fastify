@@ -73,15 +73,15 @@ describe('systemSettings', () => {
     expect(body.data).toStrictEqual([
       {
         elemId: 'forceEmailVerification',
-        value: 'disabled',
-        valueType: 'string',
+        value: false,
+        valueType: 'boolean',
         category: 'security',
         edited: [],
         orderNr: 0,
       },
       {
         elemId: 'use2FA',
-        value: 'disabled',
+        value: 'DISABLED',
         valueType: 'string',
         category: 'security',
         edited: [],
@@ -94,6 +94,22 @@ describe('systemSettings', () => {
         category: 'logs',
         edited: [],
         orderNr: 2,
+      },
+      {
+        elemId: 'loginMethod',
+        value: 'USERNAME_ONLY',
+        valueType: 'string',
+        category: 'security',
+        edited: [],
+        orderNr: 3,
+      },
+      {
+        elemId: 'userGroupsCacheTime',
+        value: 180,
+        valueType: 'number',
+        category: 'caches',
+        edited: [],
+        orderNr: 4,
       },
     ]);
   });
@@ -124,7 +140,7 @@ describe('systemSettings', () => {
     expect(body.data).toStrictEqual([
       {
         elemId: 'use2FA',
-        value: 'disabled',
+        value: 'DISABLED',
         valueType: 'string',
         category: 'security',
         edited: [],
@@ -159,7 +175,7 @@ describe('systemSettings', () => {
     expect(body.data).toStrictEqual([
       {
         elemId: 'use2FA',
-        value: 'disabled',
+        value: 'DISABLED',
         valueType: 'string',
         category: 'security',
         edited: [],
@@ -202,19 +218,27 @@ describe('systemSettings', () => {
     expect(body.data).toStrictEqual([
       {
         elemId: 'forceEmailVerification',
-        value: 'disabled',
-        valueType: 'string',
+        value: false,
+        valueType: 'boolean',
         category: 'security',
         edited: [],
         orderNr: 0,
       },
       {
         elemId: 'use2FA',
-        value: 'disabled',
+        value: 'DISABLED',
         valueType: 'string',
         category: 'security',
         edited: [],
         orderNr: 1,
+      },
+      {
+        elemId: 'loginMethod',
+        value: 'USERNAME_ONLY',
+        valueType: 'string',
+        category: 'security',
+        edited: [],
+        orderNr: 2,
       },
     ]);
     expect(body.form).toStrictEqual({
@@ -226,15 +250,11 @@ describe('systemSettings', () => {
           label: { langKey: 'Force E-mail verification' },
           elemId: 'forceEmailVerification',
           orderNr: 0,
-          elemType: 'inputDropDown',
-          valueType: 'string',
+          elemType: 'inputCheckbox',
+          valueType: 'boolean',
           classes: [],
           elemData: {
-            defaultValue: 'disabled',
-            options: [
-              { label: { langKey: 'Disabled' }, value: 'disabled' },
-              { label: { langKey: 'Enabled' }, value: 'enabled' },
-            ],
+            defaultValue: false,
             category: 'security',
             description: {
               langKey:
@@ -252,18 +272,18 @@ describe('systemSettings', () => {
           valueType: 'string',
           classes: [],
           elemData: {
-            defaultValue: 'disabled',
+            defaultValue: 'DISABLED',
             options: [
-              { label: { langKey: 'Disabled' }, value: 'disabled' },
-              { label: { langKey: 'Enabled' }, value: 'enabled' },
-              { label: { langKey: 'User chooses' }, value: 'user_chooses' },
+              { label: { langKey: 'Disabled' }, value: 'DISABLED' },
+              { label: { langKey: 'Enabled' }, value: 'ENABLED' },
+              { label: { langKey: 'User chooses' }, value: 'USER_CHOOSES' },
               {
                 label: { langKey: 'User chooses, set to disabled for all' },
-                value: 'user_chooses_and_set_to_disabled_for_all',
+                value: 'USER_CHOOSES_AND_SET_TO_DISABLED',
               },
               {
                 label: { langKey: 'User chooses, set to enabled for all' },
-                value: 'user_chooses_and_set_to_enabled_for_all',
+                value: 'USER_CHOOSES_AND_SET_TO_ENABLED',
               },
             ],
             category: 'security',
@@ -292,6 +312,60 @@ describe('systemSettings', () => {
             },
             minValue: 0,
           },
+          doNotSave: false,
+          inputErrors: [],
+        },
+        {
+          label: { langKey: 'Login with Username, Email, or Both' },
+          elemId: 'loginMethod',
+          orderNr: 3,
+          elemType: 'inputDropDown',
+          valueType: 'string',
+          classes: [],
+          elemData: {
+            defaultValue: 'USERNAME_ONLY',
+            options: [
+              { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
+              { label: { langKey: 'Email only' }, value: 'EMAIL_ONLY' },
+              {
+                label: { langKey: 'User chooses, Username as default' },
+                value: 'USER_CHOOSES_USERNAME_AS_DEFAULT',
+              },
+              {
+                label: { langKey: 'User chooses, Email as default' },
+                value: 'USER_CHOOSES_EMAIL_AS_DEFAULT',
+              },
+            ],
+            category: 'security',
+            publicSetting: true,
+            description: {
+              langKey:
+                'Whether users are required to login with a Username or Email, or if they can choose the option',
+            },
+          },
+          doNotSave: false,
+          inputErrors: [],
+        },
+        {
+          elemId: 'userGroupsCacheTime',
+          elemType: 'inputDropDown',
+          orderNr: 4,
+          valueType: 'number',
+          classes: [],
+          elemData: {
+            defaultValue: 180,
+            options: [
+              { label: { langKey: '30 seconds' }, value: 30 },
+              { label: { langKey: '3 minutes' }, value: 180 },
+              { label: { langKey: '10 minutes' }, value: 600 },
+            ],
+            category: 'caches',
+            description: {
+              langKey:
+                "How long is the cache time for user groups on the user's session. If a user is added/removed to/from a group, it will take this amount of time before the session registers it. Logging out and in again will reset cache.",
+            },
+          },
+          label: { langKey: 'User Groups Session Cache Time' },
           doNotSave: false,
           inputErrors: [],
         },
@@ -326,15 +400,15 @@ describe('systemSettings', () => {
     expect(body.data).toStrictEqual([
       {
         elemId: 'forceEmailVerification',
-        value: 'disabled',
-        valueType: 'string',
+        value: false,
+        valueType: 'boolean',
         category: 'security',
         edited: [],
         orderNr: 0,
       },
       {
         elemId: 'use2FA',
-        value: 'disabled',
+        value: 'DISABLED',
         valueType: 'string',
         category: 'security',
         edited: [],
@@ -347,6 +421,14 @@ describe('systemSettings', () => {
         category: 'logs',
         edited: [],
         orderNr: 2,
+      },
+      {
+        elemId: 'loginMethod',
+        value: 'USERNAME_ONLY',
+        valueType: 'string',
+        category: 'security',
+        edited: [],
+        orderNr: 3,
       },
     ]);
   });
@@ -456,7 +538,7 @@ describe('systemSettings', () => {
     const response = await app.inject({
       method: 'PUT',
       path: '/api/v1/sys/system-settings',
-      body: { data: [{ elemId: 'use2FA', value: 'enabled' }] },
+      body: { data: [{ elemId: 'use2FA', value: 'ENABLED' }] },
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
@@ -485,7 +567,7 @@ describe('systemSettings', () => {
       path: '/api/v1/sys/system-settings',
       body: {
         data: [
-          { elemId: 'use2FA', value: 'enabled' },
+          { elemId: 'use2FA', value: 'ENABLED' },
           { elemId: 'defaultEditedHistoryCount', value: 5 },
         ],
       },
@@ -559,7 +641,7 @@ describe('systemSettings', () => {
       path: '/api/v1/sys/system-settings',
       body: {
         data: [
-          { elemId: 'use2FA', value: 'disabled' },
+          { elemId: 'use2FA', value: 'DISABLED' },
           { elemId: 'defaultEditedHistoryCount', value: 5 },
         ],
       },
@@ -571,7 +653,7 @@ describe('systemSettings', () => {
       path: '/api/v1/sys/system-settings',
       body: {
         data: [
-          { elemId: 'use2FA', value: 'enabled' },
+          { elemId: 'use2FA', value: 'ENABLED' },
           { elemId: 'defaultEditedHistoryCount', value: 7 },
         ],
         getData: { settingId: ['use2FA', 'defaultEditedHistoryCount'] },
@@ -585,7 +667,7 @@ describe('systemSettings', () => {
     expect(body.ok).toBeTruthy();
     const elem1 = body.data?.find((item) => item.elemId === 'use2FA');
     expect(elem1?.edited).toBeTruthy();
-    expect(elem1?.value).toBe('enabled');
+    expect(elem1?.value).toBe('ENABLED');
     expect(elem1?.valueType).toBe('string');
     const elem2 = body.data?.find((item) => item.elemId === 'defaultEditedHistoryCount');
     expect(elem2?.edited).toBeTruthy();
