@@ -32,7 +32,6 @@ const getForms = async (db) => {
         formElems: [
           {
             elemId: 'loginMethod',
-            orderNr: 0,
             elemType: 'inputRadioGroup',
             elemData: {
               defaultValue: 'username',
@@ -52,14 +51,12 @@ const getForms = async (db) => {
           },
           {
             elemId: 'usernameOrEmail',
-            orderNr: 1,
             elemType: 'inputText',
             label: { langKey: 'Username or Email' },
             required: true,
           },
           {
             elemId: 'pass',
-            orderNr: 2,
             elemType: 'inputText',
             elemData: { password: true },
             label: { langKey: 'Password' },
@@ -67,7 +64,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'agentId',
-            orderNr: 3,
             elemType: 'hidden',
             required: true,
           },
@@ -113,7 +109,6 @@ const getForms = async (db) => {
         formElems: [
           {
             elemId: 'username',
-            orderNr: 0,
             elemType: 'inputText',
             elemData: {
               minLength: 2,
@@ -133,7 +128,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'email',
-            orderNr: 1,
             elemType: 'inputText',
             elemData: { email: true },
             label: { langKey: 'E-mail' },
@@ -148,7 +142,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'emailAgain',
-            orderNr: 2,
             elemType: 'inputText',
             elemData: { email: true },
             label: { langKey: 'E-mail again' },
@@ -162,7 +155,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'pass',
-            orderNr: 3,
             elemType: 'inputText',
             elemData: {
               password: true,
@@ -191,7 +183,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'passAgain',
-            orderNr: 4,
             elemType: 'inputText',
             elemData: { password: true },
             label: { langKey: 'Password again' },
@@ -244,7 +235,6 @@ const getForms = async (db) => {
         formElems: [
           {
             elemId: 'redirectUrl',
-            orderNr: 0,
             elemType: 'hidden',
           },
         ],
@@ -293,7 +283,6 @@ const getForms = async (db) => {
         formElems: [
           {
             elemId: 'userId',
-            orderNr: 0,
             elemType: 'hidden',
             valueType: 'string',
             privileges: {
@@ -317,7 +306,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'fullName',
-            orderNr: 1,
             elemType: 'inputText',
             valueType: 'string',
             elemData: { maxLength: 200, category: { langKey: 'General' } },
@@ -325,7 +313,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'description',
-            orderNr: 2,
             elemType: 'inputText',
             valueType: 'string',
             elemData: {
@@ -338,7 +325,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'phonenumber',
-            orderNr: 3,
             elemType: 'inputText',
             valueType: 'string',
             elemData: { maxLength: 20, category: { langKey: 'General' } },
@@ -421,7 +407,6 @@ const getForms = async (db) => {
         formElems: [
           {
             elemId: 'userId',
-            orderNr: 0,
             elemType: 'hidden',
             valueType: 'string',
             privileges: {
@@ -445,7 +430,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'use2FA',
-            orderNr: 1,
             elemType: 'inputDropDown',
             valueType: 'boolean',
             elemData: {

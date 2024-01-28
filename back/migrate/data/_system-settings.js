@@ -4,7 +4,6 @@ const systemSettingsFormElems = [
   // security CATEGORY [START]
   {
     elemId: 'sessionMaxAge',
-    orderNr: 1,
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {
@@ -63,7 +62,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'sessionIsRolling',
-    orderNr: 2,
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
@@ -78,7 +76,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'maxLoginAttempts',
-    orderNr: 3,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -95,7 +92,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'coolDownAge',
-    orderNr: 4,
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {
@@ -136,7 +132,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'maxLoginLogs',
-    orderNr: 5,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -151,7 +146,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'maxLoginAttemptLogs',
-    orderNr: 6,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -166,7 +160,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'forceEmailVerification',
-    orderNr: 7,
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
@@ -180,7 +173,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'maxEmails',
-    orderNr: 8,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -196,7 +188,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'use2FA',
-    orderNr: 9,
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
@@ -225,7 +216,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'loginMethod',
-    orderNr: 10,
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
@@ -253,7 +243,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'allowedHostNames',
-    orderNr: 11,
     elemType: 'inputText',
     valueType: 'string',
     elemData: {
@@ -268,7 +257,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'defaultEditedLogs',
-    orderNr: 12,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -287,7 +275,6 @@ const systemSettingsFormElems = [
   // data CATEGORY [START]
   {
     elemId: 'dataItemsMaxLimit',
-    orderNr: 13,
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
@@ -303,7 +290,6 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'dataCollationLocale',
-    orderNr: 14,
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
@@ -336,7 +322,6 @@ const systemSettingsFormElems = [
   // caches CATEGORY [START]
   {
     elemId: 'userGroupsCacheTime',
-    orderNr: 15,
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {
