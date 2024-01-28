@@ -26,6 +26,7 @@ import apis from './apis';
 import { initDB } from './db';
 import { sessionStore } from './sessionStore';
 import { errors } from './errors';
+import { addMonitorCount } from '../utils/monitorUtils';
 
 export const apiRoot = '/api';
 
@@ -126,9 +127,14 @@ export const restartApp = async (
   loggerMsg?: string
 ) => {
   if (appInstance && 'restart' in appInstance) {
-    // @TODO: add monitor count for how many restarts there has been
     if (logger) logger.info(loggerMsg || 'Council JS (Fastify) restart');
     await (appInstance.restart as () => Promise<void>)();
+
+    await addMonitorCount('appRestartCount')
+      .then((result) => {
+        if (result) appInstance.log.error(result);
+      })
+      .catch((err) => appInstance.log.error(err));
   }
 };
 

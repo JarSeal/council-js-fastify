@@ -3,6 +3,7 @@ import { restartable, type Fastify } from '@fastify/restartable';
 
 import { createRestartableApp, fastifyOptions } from './core/app';
 import { HOST, PORT } from './core/config';
+import { addMonitorCount } from './utils/monitorUtils';
 
 process.env.TZ = 'UTC';
 
@@ -16,7 +17,11 @@ restartable(createRestartableApp, fastifyOptions, fastify as unknown as Fastify)
           `Council JS (Fastify) back API started and listening at ${address}`,
       },
       () => {
-        // @TODO: add monitor count for how many deploy starts there has been
+        addMonitorCount('appStartCount')
+          .then((result) => {
+            if (result) app.log.error(result);
+          })
+          .catch((err) => app.log.error(err));
       }
     );
   })
