@@ -10,7 +10,7 @@
     "forceEmailVerification": false,
     "maxEmails": 2,
     "use2FA": "DISABLED",
-    "loginUserOrEmailMethod": "USER_CHOOSES_USERNAME_AS_DEFAULT"
+    "loginMethod": "USER_CHOOSES_USERNAME_AS_DEFAULT"
   },
   "data": {
     "dataItemsMaxLimit": 500,

@@ -310,10 +310,12 @@ const elemDataValidation = (
 };
 
 export const validateLoginMethod = async (loginMethod: string): Promise<FastifyError | null> => {
-  const loginMethodSetting = await getSysSetting<string>('loginUserOrEmailMethod');
+  const VALID_LOGIN_METHODS = ['username', 'email'];
+  const loginMethodSetting = await getSysSetting<string>('loginMethod');
   if (
     (loginMethodSetting === 'USERNAME_ONLY' && loginMethod !== 'username') ||
-    (loginMethodSetting === 'EMAIL_ONLY' && loginMethod !== 'email')
+    (loginMethodSetting === 'EMAIL_ONLY' && loginMethod !== 'email') ||
+    !VALID_LOGIN_METHODS.includes(loginMethod)
   ) {
     return new errors.UNAUTHORIZED(`Users' are not allowed login by ${loginMethod}`);
   }

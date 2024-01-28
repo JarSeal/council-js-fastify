@@ -224,12 +224,12 @@ const systemSettingsFormElems = [
     label: { langKey: 'Use 2-factor authentication' },
   },
   {
-    elemId: 'loginUserOrEmailMethod',
+    elemId: 'loginMethod',
     orderNr: 10,
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
-      defaultValue: config?.security?.loginUserOrEmailMethod || 'USERNAME_ONLY',
+      defaultValue: config?.security?.loginMethod || 'USERNAME_ONLY',
       options: [
         { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
         { label: { langKey: 'Email only' }, value: 'EMAIL_ONLY' },
