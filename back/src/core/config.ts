@@ -83,7 +83,6 @@ const getCachedSysSettings = async () => {
   return cachedSysSettings;
 };
 
-// @TODO: add tests
 export const getSysSetting = async <T>(id: string): Promise<T | undefined> => {
   const settings = await getCachedSysSettings();
   if (!settings) return undefined;
@@ -99,7 +98,6 @@ export const getSysSetting = async <T>(id: string): Promise<T | undefined> => {
   return setting.value as T;
 };
 
-// @TODO: add tests
 export const getSysSettingsForm = async () => {
   if (!cachedSysSettingsForm) {
     await setCachedSysSettings();
@@ -109,7 +107,6 @@ export const getSysSettingsForm = async () => {
 
 export type PublicSysSettings = { [key: string]: unknown };
 
-// @TODO: add tests
 export const getPublicSysSettings = async (): Promise<PublicSysSettings> => {
   const settings = await getCachedSysSettings();
   const sysForm = await getSysSettingsForm();
@@ -120,7 +117,11 @@ export const getPublicSysSettings = async (): Promise<PublicSysSettings> => {
     const elem = sysForm.form.formElems[i];
     if (elem.elemData?.publicSetting) {
       const setting = settings.find((item) => item.simpleId === elem.elemId);
-      if (setting) publicSettings[elem.elemId] = setting.value;
+      if (setting) {
+        publicSettings[elem.elemId] = setting.value;
+      } else if (elem.elemData.defaultValue !== undefined) {
+        publicSettings[elem.elemId] = elem.elemData.defaultValue;
+      }
     }
   }
 

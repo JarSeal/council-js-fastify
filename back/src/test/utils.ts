@@ -386,7 +386,7 @@ export const createSysSettings = async () => {
         label: { langKey: 'Use 2-factor authentication' },
       },
       {
-        elemId: 'defaultEditedHistoryCount',
+        elemId: 'defaultEditedLogs',
         orderNr: 2,
         elemType: 'inputNumber',
         valueType: 'number',
