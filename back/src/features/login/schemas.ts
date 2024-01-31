@@ -2,10 +2,13 @@ import { Type } from '@sinclair/typebox';
 import type { Static } from '@sinclair/typebox';
 import type { RouteGenericInterface, FastifyError } from 'fastify';
 
+export const loginMethodsSchema = Type.Union([Type.Literal('username'), Type.Literal('email')]);
+export type LoginMethods = Static<typeof loginMethodsSchema>;
+
 export const bodySchema = Type.Object({
   usernameOrEmail: Type.String(),
   pass: Type.String(),
-  loginMethod: Type.Union([Type.Literal('username'), Type.Literal('email')]),
+  loginMethod: loginMethodsSchema,
   agentId: Type.String({ minLength: 32, maxLength: 32 }),
 });
 

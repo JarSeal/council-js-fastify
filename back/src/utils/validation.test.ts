@@ -1,11 +1,17 @@
+import mongoose from 'mongoose';
+
+import initApp from '../core/app';
 import { type FormElem } from '../dbModels/_modelTypePartials';
 import {
   isValueAndTypeValid,
   validateEmail,
   validateFormDataInput,
+  validateLoginMethod,
   validatePhoneWithExtraChars,
   validateSimpleId,
 } from './validation';
+import DBSystemSettingModel from '../dbModels/systemSetting';
+import { setCachedSysSettings } from '../core/config';
 
 describe('validation util', () => {
   it('should validate a simpleId', () => {
@@ -415,5 +421,62 @@ describe('validation util', () => {
     ];
     result = validateFormDataInput(formElems4, formData12);
     expect(result).toBe(null);
+  });
+
+  it('validateLoginMethod', async () => {
+    const app = await initApp();
+    const simpleId = 'loginMethod';
+
+    const newSetting = new DBSystemSettingModel({
+      simpleId,
+      value: 'USERNAME_ONLY',
+      category: 'security',
+      systemDocument: true,
+    });
+    await newSetting.save();
+    await setCachedSysSettings();
+
+    let result = await validateLoginMethod('username');
+    expect(result).toBe(null);
+
+    result = await validateLoginMethod('email');
+    expect(result?.code).toBe('UNAUTHORIZED');
+
+    await DBSystemSettingModel.findOneAndUpdate({ simpleId }, { value: 'EMAIL_ONLY' });
+    await setCachedSysSettings();
+
+    result = await validateLoginMethod('username');
+    expect(result?.code).toBe('UNAUTHORIZED');
+
+    result = await validateLoginMethod('email');
+    expect(result).toBe(null);
+
+    await DBSystemSettingModel.findOneAndUpdate(
+      { simpleId },
+      { value: 'USER_CHOOSES_USERNAME_AS_DEFAULT' }
+    );
+    await setCachedSysSettings();
+
+    result = await validateLoginMethod('username');
+    expect(result).toBe(null);
+
+    result = await validateLoginMethod('email');
+    expect(result).toBe(null);
+
+    await DBSystemSettingModel.findOneAndUpdate(
+      { simpleId },
+      { value: 'USER_CHOOSES_EMAIL_AS_DEFAULT' }
+    );
+    await setCachedSysSettings();
+
+    result = await validateLoginMethod('username');
+    expect(result).toBe(null);
+
+    result = await validateLoginMethod('email');
+    expect(result).toBe(null);
+
+    await app.close();
+    await mongoose.connection.db.dropDatabase();
+    await mongoose.connection.close();
   });
 });

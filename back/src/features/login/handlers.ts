@@ -17,7 +17,6 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const loginMethod = body.loginMethod;
 
   // Check loginMethod
-  // @TODO: add tests
   const validateLoginMethodError = await validateLoginMethod(loginMethod);
   if (validateLoginMethodError) {
     return res.send(validateLoginMethodError);
