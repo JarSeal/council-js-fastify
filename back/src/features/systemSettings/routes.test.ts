@@ -88,7 +88,7 @@ describe('systemSettings', () => {
         orderNr: 1,
       },
       {
-        elemId: 'defaultEditedHistoryCount',
+        elemId: 'defaultEditedLogs',
         value: 10,
         valueType: 'number',
         category: 'logs',
@@ -165,7 +165,7 @@ describe('systemSettings', () => {
 
     const response = await app.inject({
       method: 'GET',
-      path: '/api/v1/sys/system-settings?settingId=use2FA&settingId=defaultEditedHistoryCount',
+      path: '/api/v1/sys/system-settings?settingId=use2FA&settingId=defaultEditedLogs',
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
@@ -182,7 +182,7 @@ describe('systemSettings', () => {
         orderNr: 0,
       },
       {
-        elemId: 'defaultEditedHistoryCount',
+        elemId: 'defaultEditedLogs',
         value: 10,
         valueType: 'number',
         category: 'logs',
@@ -298,7 +298,7 @@ describe('systemSettings', () => {
         },
         {
           label: { langKey: 'Default edited history count' },
-          elemId: 'defaultEditedHistoryCount',
+          elemId: 'defaultEditedLogs',
           orderNr: 2,
           elemType: 'inputNumber',
           valueType: 'number',
@@ -415,7 +415,7 @@ describe('systemSettings', () => {
         orderNr: 1,
       },
       {
-        elemId: 'defaultEditedHistoryCount',
+        elemId: 'defaultEditedLogs',
         value: 10,
         valueType: 'number',
         category: 'logs',
@@ -568,7 +568,7 @@ describe('systemSettings', () => {
       body: {
         data: [
           { elemId: 'use2FA', value: 'ENABLED' },
-          { elemId: 'defaultEditedHistoryCount', value: 5 },
+          { elemId: 'defaultEditedLogs', value: 5 },
         ],
       },
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
@@ -598,7 +598,7 @@ describe('systemSettings', () => {
       method: 'PUT',
       path: '/api/v1/sys/system-settings',
       body: {
-        data: [{ elemId: 'defaultEditedHistoryCount', value: 5 }],
+        data: [{ elemId: 'defaultEditedLogs', value: 5 }],
       },
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
@@ -607,8 +607,8 @@ describe('systemSettings', () => {
       method: 'PUT',
       path: '/api/v1/sys/system-settings',
       body: {
-        data: [{ elemId: 'defaultEditedHistoryCount', value: 7 }],
-        getData: { settingId: 'defaultEditedHistoryCount' },
+        data: [{ elemId: 'defaultEditedLogs', value: 7 }],
+        getData: { settingId: 'defaultEditedLogs' },
       },
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
@@ -617,7 +617,7 @@ describe('systemSettings', () => {
     const body = JSON.parse(response.body) as SystemSettingsPutReply;
     expect(response.statusCode).toBe(200);
     expect(body.ok).toBeTruthy();
-    const elem = body.data?.find((item) => item.elemId === 'defaultEditedHistoryCount');
+    const elem = body.data?.find((item) => item.elemId === 'defaultEditedLogs');
     expect(elem?.edited).toBeTruthy();
     expect(elem?.value).toBe(7);
   });
@@ -642,7 +642,7 @@ describe('systemSettings', () => {
       body: {
         data: [
           { elemId: 'use2FA', value: 'DISABLED' },
-          { elemId: 'defaultEditedHistoryCount', value: 5 },
+          { elemId: 'defaultEditedLogs', value: 5 },
         ],
       },
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
@@ -654,9 +654,9 @@ describe('systemSettings', () => {
       body: {
         data: [
           { elemId: 'use2FA', value: 'ENABLED' },
-          { elemId: 'defaultEditedHistoryCount', value: 7 },
+          { elemId: 'defaultEditedLogs', value: 7 },
         ],
-        getData: { settingId: ['use2FA', 'defaultEditedHistoryCount'] },
+        getData: { settingId: ['use2FA', 'defaultEditedLogs'] },
       },
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
@@ -669,7 +669,7 @@ describe('systemSettings', () => {
     expect(elem1?.edited).toBeTruthy();
     expect(elem1?.value).toBe('ENABLED');
     expect(elem1?.valueType).toBe('string');
-    const elem2 = body.data?.find((item) => item.elemId === 'defaultEditedHistoryCount');
+    const elem2 = body.data?.find((item) => item.elemId === 'defaultEditedLogs');
     expect(elem2?.edited).toBeTruthy();
     expect(elem2?.value).toBe(7);
     expect(elem2?.valueType).toBe('number');
