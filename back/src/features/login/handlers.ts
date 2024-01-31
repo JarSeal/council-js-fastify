@@ -5,7 +5,7 @@ import type { LoginRoute } from './schemas';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import { errors } from '../../core/errors';
-import { getConfig, getSysSetting } from '../../core/config';
+import { getConfig, getPublicSysSettings, getSysSetting } from '../../core/config';
 import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
 import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
 import { getUserData } from '../../utils/userAndPrivilegeChecks';
@@ -79,7 +79,10 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const requiredActions = await getRequiredActionsFromUser(userData);
   req.session.requiredActions = requiredActions;
 
-  return res.status(200).send({ ok: true, requiredActions });
+  // Get public settings
+  const publicSettings = await getPublicSysSettings();
+
+  return res.status(200).send({ ok: true, requiredActions, publicSettings });
 };
 
 // Check cool down

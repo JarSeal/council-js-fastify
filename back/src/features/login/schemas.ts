@@ -30,9 +30,11 @@ export type RequiredActions = Static<typeof requiredActionsSchema>;
 export const replySchema = Type.Object({
   ok: Type.Boolean(),
   requiredActions: requiredActionsSchema,
+  publicSettings: Type.Record(Type.String(), Type.Unknown()),
 });
+export type Reply = Static<typeof replySchema>;
 
 export interface LoginRoute extends RouteGenericInterface {
   readonly Body: Static<typeof bodySchema>;
-  readonly Reply: Static<typeof replySchema> | FastifyError;
+  readonly Reply: Reply | FastifyError;
 }

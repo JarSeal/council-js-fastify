@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
 import { SESSION_COOKIE_NAME, getConfig } from '../../core/config';
-import type { LoginRoute } from './schemas';
+import type { Reply } from './schemas';
 import type { LogoutRoute } from '../logout/schemas';
 import { createUser, csrfHeader, validAgentId } from '../../test/utils';
 
@@ -216,9 +216,11 @@ describe('login', () => {
       ...csrfHeader,
     });
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
-    let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
+    const loginBody1 = JSON.parse(response.body) as Reply;
     expect(response?.statusCode).toBe(200);
-    expect(body).toStrictEqual({ ok: true, requiredActions: null });
+    expect(loginBody1.ok).toBeTruthy();
+    expect(loginBody1.requiredActions).toBe(null);
+    expect(loginBody1.publicSettings).toBeTruthy();
 
     response = await app.inject({
       method: 'POST',
@@ -232,10 +234,10 @@ describe('login', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    body = JSON.parse(response?.body || '') as FastifyError;
+    const loginBody2 = JSON.parse(response.body) as FastifyError;
     expect(response?.statusCode).toBe(400);
-    expect(body.code).toEqual('SESSION_CANNOT_BE_SIGNED_IN');
-    expect(body.message).toStrictEqual('Cannot be signed in to access route');
+    expect(loginBody2.code).toEqual('SESSION_CANNOT_BE_SIGNED_IN');
+    expect(loginBody2.message).toStrictEqual('Cannot be signed in to access route');
   });
 
   it('should successfully login with an email and fail if tried again without logging out', async () => {
@@ -252,9 +254,11 @@ describe('login', () => {
       ...csrfHeader,
     });
     const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
-    let body = JSON.parse(response?.body || '') as LoginRoute['Reply'];
+    const loginBody1 = JSON.parse(response.body) as Reply;
     expect(response?.statusCode).toBe(200);
-    expect(body).toStrictEqual({ ok: true, requiredActions: null });
+    expect(loginBody1.ok).toBeTruthy();
+    expect(loginBody1.requiredActions).toBe(null);
+    expect(loginBody1.publicSettings).toBeTruthy();
 
     response = await app.inject({
       method: 'POST',
@@ -268,10 +272,10 @@ describe('login', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    body = JSON.parse(response?.body || '') as FastifyError;
+    const loginBody2 = JSON.parse(response.body) as FastifyError;
     expect(response?.statusCode).toBe(400);
-    expect(body.code).toEqual('SESSION_CANNOT_BE_SIGNED_IN');
-    expect(body.message).toStrictEqual('Cannot be signed in to access route');
+    expect(loginBody2.code).toEqual('SESSION_CANNOT_BE_SIGNED_IN');
+    expect(loginBody2.message).toStrictEqual('Cannot be signed in to access route');
   });
 
   it('should fail a logout if not signed in', async () => {
