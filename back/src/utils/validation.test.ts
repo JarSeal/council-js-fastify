@@ -1,153 +1,19 @@
+import mongoose from 'mongoose';
+
+import initApp from '../core/app';
 import { type FormElem } from '../dbModels/_modelTypePartials';
 import {
   isValueAndTypeValid,
   validateEmail,
   validateFormDataInput,
-  validatePassword,
+  validateLoginMethod,
   validatePhoneWithExtraChars,
-  validatePublicSignup,
   validateSimpleId,
 } from './validation';
+import DBSystemSettingModel from '../dbModels/systemSetting';
+import { setCachedSysSettings } from '../core/config';
 
 describe('validation util', () => {
-  const validationOptions = {
-    minUsernameLength: 2,
-    maxUsernameLength: 12,
-    minPassLength: 8,
-    maxPassLength: 12,
-  };
-
-  it('should validate the publicSignUp body successfully', () => {
-    const validation = validatePublicSignup(
-      {
-        username: 'myusername',
-        pass: 'myPa$$word1',
-        email: 'a@a.com',
-      },
-      null,
-      validationOptions
-    );
-    expect(validation).toBe(null);
-  });
-
-  it('should validate the publicSignUp body and return username too long error', () => {
-    const validation = validatePublicSignup(
-      {
-        username: 'myusernameistoolong',
-        pass: 'myPa$$word1',
-        email: 'a@a.com',
-      },
-      null,
-      validationOptions
-    );
-    expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
-    expect(validation?.message).toBe(
-      'New user validation failed: Username is too long, maximum is 12 characters.'
-    );
-  });
-
-  it('should validate the publicSignUp body and return username too short error', () => {
-    const validation = validatePublicSignup(
-      {
-        username: 'm',
-        pass: 'myPa$$word1',
-        email: 'a@a.com',
-      },
-      null,
-      validationOptions
-    );
-    expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
-    expect(validation?.message).toBe(
-      'New user validation failed: Username is too short, minimum is 2 characters.'
-    );
-  });
-
-  it('should validate the publicSignUp body and return username invalid', () => {
-    const validation = validatePublicSignup(
-      {
-        username: 'm@',
-        pass: 'myPa$$word1',
-        email: 'a@a.com',
-      },
-      null,
-      validationOptions
-    );
-    expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
-    expect(validation?.message).toBe(
-      'New user validation failed: Username contains invalid characters, only a-z, A-Z, 0-9, -, and _ allowed.'
-    );
-  });
-
-  it('should validate the publicSignUp body and return password too long error', () => {
-    const validation = validatePublicSignup(
-      {
-        username: 'mysusername',
-        pass: 'somepasswordthatistoolonG$1',
-        email: 'a@a.com',
-      },
-      null,
-      validationOptions
-    );
-    expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
-    expect(validation?.message).toBe(
-      'New user validation failed: Password is too long, maximum is 12 characters.'
-    );
-  });
-
-  it('should validate the publicSignUp body and return password too short error', () => {
-    const validation = validatePublicSignup(
-      {
-        username: 'mysusername',
-        pass: 's',
-        email: 'a@a.com',
-      },
-      null,
-      validationOptions
-    );
-    expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('COUNCL_ERR_VALIDATE');
-    expect(validation?.message).toBe(
-      'New user validation failed: Password is too short, minimum is 8 characters.'
-    );
-  });
-
-  it('should validate the publicSignUp body and return username taken error', () => {
-    const validation = validatePublicSignup(
-      {
-        username: 'myusername',
-        pass: 'myPa$$word1',
-        email: 'a@a.com',
-      },
-      {
-        simpleId: 'myusername',
-        emails: [
-          {
-            email: 'a@a.com',
-            verified: false,
-            token: { token: null, tokenId: null },
-            added: new Date(),
-          },
-        ],
-        passwordHash: 'jkfasjkfsajkfs',
-        created: {
-          user: null,
-          publicForm: true,
-          date: new Date(),
-        },
-        edited: [],
-        security: { lastLoginAttempts: [], lastLogins: [] },
-      },
-      validationOptions
-    );
-    expect(validation?.statusCode).toBe(400);
-    expect(validation?.code).toBe('USERNAME_TAKEN');
-    expect(validation?.message).toBe("Username 'myusername' is taken");
-  });
-
   it('should validate a simpleId', () => {
     const result1 = validateSimpleId('');
     const result2 = validateSimpleId(null);
@@ -202,29 +68,6 @@ describe('validation util', () => {
     expect(result7).toBeFalsy();
     expect(result8).toBeTruthy();
     expect(result9).toBeTruthy();
-  });
-
-  it('should validate a password', () => {
-    const regex = '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})';
-    const result1 = validatePassword('', regex);
-    const result2 = validatePassword(null, regex);
-    const result3 = validatePassword('a', regex);
-    const result4 = validatePassword('mypa$$Word1', regex);
-    const result5 = validatePassword('@notherPassword99', regex);
-    const result6 = validatePassword('$horT1');
-    const result7 = validatePassword('almostGoodPass1');
-    const result8 = validatePassword('almostgooda$$1');
-    const result9 = validatePassword('almostGoodPa$$');
-
-    expect(result1).toBeFalsy();
-    expect(result2).toBeFalsy();
-    expect(result3).toBeFalsy();
-    expect(result4).toBeTruthy();
-    expect(result5).toBeTruthy();
-    expect(result6).toBeFalsy();
-    expect(result7).toBeFalsy();
-    expect(result8).toBeFalsy();
-    expect(result9).toBeFalsy();
   });
 
   it('should validate a valueType', () => {
@@ -560,5 +403,80 @@ describe('validation util', () => {
     ];
     result = validateFormDataInput(formElems3, formData11);
     expect(result).toStrictEqual(null);
+
+    const formElems4 = [
+      {
+        elemId: 'myElem1',
+        orderNr: 0,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: { maxLength: 8 },
+      },
+    ] as FormElem[];
+    const formData12 = [
+      {
+        elemId: 'myElem1',
+        value: '$@ÄÅÖäåö',
+      },
+    ];
+    result = validateFormDataInput(formElems4, formData12);
+    expect(result).toBe(null);
+  });
+
+  it('validateLoginMethod', async () => {
+    const app = await initApp();
+    const simpleId = 'loginMethod';
+
+    const newSetting = new DBSystemSettingModel({
+      simpleId,
+      value: 'USERNAME_ONLY',
+      category: 'security',
+      systemDocument: true,
+    });
+    await newSetting.save();
+    await setCachedSysSettings();
+
+    let result = await validateLoginMethod('username');
+    expect(result).toBe(null);
+
+    result = await validateLoginMethod('email');
+    expect(result?.code).toBe('UNAUTHORIZED');
+
+    await DBSystemSettingModel.findOneAndUpdate({ simpleId }, { value: 'EMAIL_ONLY' });
+    await setCachedSysSettings();
+
+    result = await validateLoginMethod('username');
+    expect(result?.code).toBe('UNAUTHORIZED');
+
+    result = await validateLoginMethod('email');
+    expect(result).toBe(null);
+
+    await DBSystemSettingModel.findOneAndUpdate(
+      { simpleId },
+      { value: 'USER_CHOOSES_USERNAME_AS_DEFAULT' }
+    );
+    await setCachedSysSettings();
+
+    result = await validateLoginMethod('username');
+    expect(result).toBe(null);
+
+    result = await validateLoginMethod('email');
+    expect(result).toBe(null);
+
+    await DBSystemSettingModel.findOneAndUpdate(
+      { simpleId },
+      { value: 'USER_CHOOSES_EMAIL_AS_DEFAULT' }
+    );
+    await setCachedSysSettings();
+
+    result = await validateLoginMethod('username');
+    expect(result).toBe(null);
+
+    result = await validateLoginMethod('email');
+    expect(result).toBe(null);
+
+    await app.close();
+    await mongoose.connection.db.dropDatabase();
+    await mongoose.connection.close();
   });
 });

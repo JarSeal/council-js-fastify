@@ -12,6 +12,15 @@ import {
 import { formDataPut } from './handlers.PUT';
 import { formDataDelete } from './handlers.DELETE';
 
+export const formDataErrorSchema = Type.Object({
+  errorId: Type.String(),
+  status: Type.Number(),
+  message: Type.String(),
+  elemId: Type.Optional(Type.String()),
+  customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
+});
+export type FormDataError = Static<typeof formDataErrorSchema>;
+
 // GET
 export const getFormReplySchema = Type.Object({
   formTitle: transTextSchema,
@@ -79,15 +88,7 @@ export const formDataPostBodyReplySchema = Type.Object({
   ok: Type.Boolean(),
   dataId: Type.Optional(Type.String()),
   getData: Type.Optional(getReplySchema),
-  error: Type.Optional(
-    Type.Object({
-      errorId: Type.String(),
-      status: Type.Number(),
-      message: Type.String(),
-      elemId: Type.Optional(Type.String()),
-      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
-    })
-  ),
+  error: Type.Optional(formDataErrorSchema),
 });
 export type FormDataPostReply = Static<typeof formDataPostBodyReplySchema>;
 export interface FormDataPostRoute extends RouteGenericInterface {
@@ -126,15 +127,7 @@ export const formDataPutAndDeleteBodyReplySchema = Type.Object({
   ok: Type.Boolean(),
   dataId: Type.Optional(Type.Union([Type.String(), Type.Array(Type.String())])),
   getData: Type.Optional(getReplySchema),
-  error: Type.Optional(
-    Type.Object({
-      errorId: Type.String(),
-      status: Type.Number(),
-      message: Type.String(),
-      elemId: Type.Optional(Type.String()),
-      customError: Type.Optional(Type.Unknown()), // @TODO: should be transTextSchema, but it doesn't work (fix at some point)
-    })
-  ),
+  error: Type.Optional(formDataErrorSchema),
   targetCount: Type.Optional(Type.Number()),
   modifiedCount: Type.Optional(Type.Number()),
   deletedCount: Type.Optional(Type.Number()),

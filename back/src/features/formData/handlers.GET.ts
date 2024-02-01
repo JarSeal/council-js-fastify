@@ -24,7 +24,7 @@ import {
   parseFormDataSortStringFromQueryString,
   parseSearchQuery,
 } from '../../utils/parsingAndConverting';
-import { getConfig } from '../../core/config';
+import { getSysSetting } from '../../core/config';
 import type { TransText } from '../../@types/form';
 import { afterFns } from '../../customFunctions/afterFn';
 import { getRequiredActions } from '../../utils/requiredLoginChecks';
@@ -236,7 +236,7 @@ export const getFormData = async (
       delete?: Partial<AllPrivilegeProps>;
     }[] = [];
 
-    const MAX_LIMIT = getConfig<number>('dataItemsMaxLimit', 500);
+    const MAX_LIMIT = (await getSysSetting<number>('dataItemsMaxLimit')) || 500;
     const limiter = limit && limit < MAX_LIMIT ? Math.abs(limit) : MAX_LIMIT;
     const sorter = parseFormDataSortStringFromQueryString(sort, form);
     const populate = [
@@ -270,7 +270,7 @@ export const getFormData = async (
       sort: sorter,
       collation: {
         // https://www.mongodb.com/docs/manual/reference/collation-locales-defaults/#std-label-collation-languages-locales
-        locale: getConfig<string>('dataCollationLocale', 'en'), // @TODO: add locale support (as a systemSetting and possibly to form as well)
+        locale: (await getSysSetting<string>('dataCollationLocale')) || 'en',
       },
       populate,
     };

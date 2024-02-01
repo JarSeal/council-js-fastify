@@ -1,9 +1,9 @@
 // FORMS:
 const timeNow = new Date();
-const { getConfig } = require('../../dist/back/src/core/config');
-const { simpleIdRegex } = require('../../dist/back/src/utils/validation');
+const { simpleIdRegExp } = require('../../dist/back/src/utils/validation');
+const systemSettingsFormElems = require('./_system-settings');
 
-if (!getConfig || simpleIdRegex) {
+if (!simpleIdRegExp) {
   console.error(
     'Build the project before running migrations (in the project root run: "yarn build").'
   );
@@ -26,13 +26,12 @@ const getForms = async (db) => {
       edited: [],
       systemDocument: true,
       owner: null,
-      url: '/api/v1/login',
+      url: '/api/v1/sys/login',
       form: {
         formTitle: { langKey: 'Login' },
         formElems: [
           {
             elemId: 'loginMethod',
-            orderNr: 0,
             elemType: 'inputRadioGroup',
             elemData: {
               defaultValue: 'username',
@@ -52,14 +51,12 @@ const getForms = async (db) => {
           },
           {
             elemId: 'usernameOrEmail',
-            orderNr: 1,
             elemType: 'inputText',
             label: { langKey: 'Username or Email' },
             required: true,
           },
           {
             elemId: 'pass',
-            orderNr: 2,
             elemType: 'inputText',
             elemData: { password: true },
             label: { langKey: 'Password' },
@@ -67,7 +64,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'agentId',
-            orderNr: 3,
             elemType: 'hidden',
             required: true,
           },
@@ -107,21 +103,20 @@ const getForms = async (db) => {
       edited: [],
       systemDocument: true,
       owner: null,
-      url: '/api/v1/publicsignup',
+      url: '/api/v1/sys/public-signup',
       form: {
         formTitle: { langKey: 'Sign up' },
         formElems: [
           {
             elemId: 'username',
-            orderNr: 0,
             elemType: 'inputText',
             elemData: {
-              minLength: getConfig('user.minUsernameLength', 2),
-              maxLength: getConfig('user.maxUsernameLength', 32),
+              minLength: 2,
+              maxLength: 32,
             },
             label: { langKey: 'Username' },
             required: true,
-            validationRegExp: simpleIdRegex,
+            validationRegExp: { pattern: simpleIdRegExp[0], flags: simpleIdRegExp[1] },
             errors: [
               {
                 errorId: 'validationRegExp',
@@ -133,7 +128,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'email',
-            orderNr: 1,
             elemType: 'inputText',
             elemData: { email: true },
             label: { langKey: 'E-mail' },
@@ -148,7 +142,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'emailAgain',
-            orderNr: 2,
             elemType: 'inputText',
             elemData: { email: true },
             label: { langKey: 'E-mail again' },
@@ -162,16 +155,17 @@ const getForms = async (db) => {
           },
           {
             elemId: 'pass',
-            orderNr: 3,
             elemType: 'inputText',
             elemData: {
               password: true,
-              minLength: getConfig('user.minPassLength'),
-              maxLength: getConfig('user.maxPassLength'),
+              minLength: 8,
+              maxLength: 128,
             },
             label: { langKey: 'Password' },
             required: true,
-            validationRegExp: getConfig('user.passRegExp'),
+            validationRegExp: {
+              pattern: '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})',
+            },
             mustMatchValue: 'passAgain',
             errors: [
               {
@@ -189,7 +183,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'passAgain',
-            orderNr: 4,
             elemType: 'inputText',
             elemData: { password: true },
             label: { langKey: 'Password again' },
@@ -237,12 +230,11 @@ const getForms = async (db) => {
       edited: [],
       systemDocument: true,
       owner: null,
-      url: '/api/v1/logout',
+      url: '/api/v1/sys/logout',
       form: {
         formElems: [
           {
             elemId: 'redirectUrl',
-            orderNr: 0,
             elemType: 'hidden',
           },
         ],
@@ -283,7 +275,7 @@ const getForms = async (db) => {
       maxDataCreatorDocs: 1,
       owner: null,
       addFillerToPrivileges: ['$read.users', '$edit.users', '$delete.users'],
-      url: '/api/v1/sys/userdata',
+      url: '/api/v1/sys/user-data',
       afterCreateFn: ['checkAndSetRequiredActions'],
       afterEditFn: ['checkAndSetRequiredActions'],
       afterDeleteFn: ['checkAndSetRequiredActions'],
@@ -291,7 +283,6 @@ const getForms = async (db) => {
         formElems: [
           {
             elemId: 'userId',
-            orderNr: 0,
             elemType: 'hidden',
             valueType: 'string',
             privileges: {
@@ -315,7 +306,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'fullName',
-            orderNr: 1,
             elemType: 'inputText',
             valueType: 'string',
             elemData: { maxLength: 200, category: { langKey: 'General' } },
@@ -323,7 +313,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'description',
-            orderNr: 2,
             elemType: 'inputText',
             valueType: 'string',
             elemData: {
@@ -336,7 +325,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'phonenumber',
-            orderNr: 3,
             elemType: 'inputText',
             valueType: 'string',
             elemData: { maxLength: 20, category: { langKey: 'General' } },
@@ -414,12 +402,11 @@ const getForms = async (db) => {
       maxDataCreatorDocs: 1,
       owner: null,
       addFillerToPrivileges: ['$read.users', '$edit.users', '$delete.users'],
-      url: '/api/v1/sys/usersettings',
+      url: '/api/v1/sys/user-settings',
       form: {
         formElems: [
           {
             elemId: 'userId',
-            orderNr: 0,
             elemType: 'hidden',
             valueType: 'string',
             privileges: {
@@ -443,7 +430,6 @@ const getForms = async (db) => {
           },
           {
             elemId: 'use2FA',
-            orderNr: 1,
             elemType: 'inputDropDown',
             valueType: 'boolean',
             elemData: {
@@ -452,7 +438,7 @@ const getForms = async (db) => {
                 { label: { langKey: 'Disabled' }, value: false },
                 { label: { langKey: 'Enabled' }, value: true },
               ],
-              category: { langKey: 'Security' },
+              category: 'security',
             },
             label: { langKey: 'Use 2-factor authentication' },
           },
@@ -525,67 +511,50 @@ const getForms = async (db) => {
       edited: [],
       systemDocument: true,
       owner: null,
-      url: '/api/v1/sys/systemsettings',
-      form: {
-        formElems: [
-          {
-            elemId: 'forceEmailVerification',
-            orderNr: 0,
-            elemType: 'inputDropDown',
-            valueType: 'string',
-            elemData: {
-              defaultValue: 'disabled',
-              options: [
-                { label: { langKey: 'Disabled' }, value: 'disabled' },
-                { label: { langKey: 'Enabled' }, value: 'enabled' },
-              ],
-              category: { langKey: 'Security' },
-              description: {
-                langKey:
-                  "Whether users' must verify their E-mail before being able to use the service or not.",
-              },
-            },
-            label: { langKey: 'Force E-mail verification' },
-          },
-          {
-            elemId: 'use2FA',
-            orderNr: 1,
-            elemType: 'inputDropDown',
-            valueType: 'string',
-            elemData: {
-              defaultValue: 'disabled',
-              options: [
-                { label: { langKey: 'Disabled' }, value: 'disabled' },
-                { label: { langKey: 'Enabled' }, value: 'enabled' },
-                { label: { langKey: 'User chooses' }, value: 'user_chooses' },
-                {
-                  label: { langKey: 'User chooses, set to disabled for all' },
-                  value: 'user_chooses_and_set_to_disabled_for_all',
-                },
-                {
-                  label: { langKey: 'User chooses, set to enabled for all' },
-                  value: 'user_chooses_and_set_to_enabled_for_all',
-                },
-              ],
-              category: { langKey: 'Security' },
-              publicSetting: true,
-              description: {
-                langKey:
-                  'Whether to enable 2-factor authentication for all users or not, or whether users can choose to enable 2FA for themselves.',
-              },
-            },
-            label: { langKey: 'Use 2-factor authentication' },
-          },
-        ],
-      },
+      url: '/api/v1/sys/system-settings',
+      form: { formElems: systemSettingsFormElems },
       privileges: [
         {
           simpleId: 'form__systemSettings__canUseForm',
           priCategoryId: 'form',
-          priTargetId: 'systemSettins',
+          priTargetId: 'systemSettings',
           priAccessId: 'canUseForm',
           name: 'Use form: Council System Settings',
           description: 'Who can use the "Council System Settings" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+        {
+          simpleId: 'form__systemSettings__canReadData',
+          priCategoryId: 'form',
+          priTargetId: 'systemSettings',
+          priAccessId: 'canReadData',
+          name: 'Read data: Council System Settings',
+          description: 'Who can use read "Council System Settings" data.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+        {
+          simpleId: 'form__systemSettings__canEditData',
+          priCategoryId: 'form',
+          priTargetId: 'systemSettings',
+          priAccessId: 'canEditData',
+          name: 'Edit data: Council System Settings',
+          description: 'Who can use edit "Council System Settings" data.',
           created: timeNow,
           privilegeAccess: {
             public: 'false',

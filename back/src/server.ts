@@ -1,17 +1,28 @@
-import initApp from './core/app';
+import fastify from 'fastify';
+import { restartable, type Fastify } from '@fastify/restartable';
+
+import { createRestartableApp, fastifyOptions } from './core/app';
 import { HOST, PORT } from './core/config';
+import { addMonitorCount } from './utils/monitorUtils';
 
 process.env.TZ = 'UTC';
 
-initApp()
+restartable(createRestartableApp, fastifyOptions, fastify as unknown as Fastify)
   .then((app) => {
     app.listen(
       {
         port: PORT,
         host: HOST,
-        listenTextResolver: (address) => `Council JS (Fastify) back API listening at ${address}`,
+        listenTextResolver: (address) =>
+          `Council JS (Fastify) back API started and listening at ${address}`,
       },
-      () => null
+      () => {
+        addMonitorCount('appStartCount')
+          .then((result) => {
+            if (result) app.log.error(result);
+          })
+          .catch((err) => app.log.error(err));
+      }
     );
   })
   .catch((err: Error) => {

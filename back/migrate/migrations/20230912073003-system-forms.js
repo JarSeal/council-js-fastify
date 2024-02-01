@@ -19,6 +19,14 @@ module.exports = {
         privileges = [...privileges, ...systemForms[i].privileges];
         delete systemForms[i].privileges;
 
+        // @TODO: add a check to compare formElem options and default value (throw error if defaultValue not in options)
+
+        // Set orderNr for formElems
+        const elems = systemForms[i].form.formElems;
+        for (let j = 0; j < elems.length; j++) {
+          elems[j].orderNr = j;
+        }
+
         await db.collection('forms').insertOne(systemForms[i]);
       }
     }

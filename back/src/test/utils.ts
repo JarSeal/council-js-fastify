@@ -158,6 +158,7 @@ export const createSysDocuments = async () => {
   await createSysAdmin();
   await createGroup('sysAdmins');
   await createGroup('basicUsers');
+  await createSysSettings();
 
   sysDocumentsCreated = true;
 };
@@ -193,6 +194,7 @@ export const createForm = async (
     formText?: string;
     lockOrder?: boolean;
     canEditPrivileges?: BasicPrivilegeProps;
+    systemDocument?: boolean;
   }
 ) => {
   const adminId = await createSysAdmin();
@@ -219,6 +221,7 @@ export const createForm = async (
   if (opts?.fillerIsFormDataOwner) form.fillerIsFormDataOwner = opts.fillerIsFormDataOwner;
   if (opts?.addFillerToPrivileges) form.addFillerToPrivileges = opts.addFillerToPrivileges;
   if (opts?.canEditPrivileges) form.canEditPrivileges = opts.canEditPrivileges;
+  if (opts?.systemDocument) form.systemDocument = opts.systemDocument;
 
   form.formDataDefaultPrivileges = {
     read: {
@@ -330,4 +333,173 @@ export const createPrivilege = async (
   const createdPrivilege = await privilege.save();
 
   return createdPrivilege._id;
+};
+
+export const createSysSettings = async () => {
+  const timeNow = new Date();
+  return await createForm(
+    'systemSettings',
+    '/api/v1/sys/system-settings',
+    [
+      {
+        elemId: 'forceEmailVerification',
+        orderNr: 0,
+        elemType: 'inputCheckbox',
+        valueType: 'boolean',
+        elemData: {
+          defaultValue: false,
+          category: 'security',
+          description: {
+            langKey:
+              "Whether users' must verify their E-mail before being able to use the service or not.",
+          },
+        },
+        label: { langKey: 'Force E-mail verification' },
+      },
+      {
+        elemId: 'use2FA',
+        orderNr: 1,
+        elemType: 'inputDropDown',
+        valueType: 'string',
+        elemData: {
+          defaultValue: 'DISABLED',
+          options: [
+            { label: { langKey: 'Disabled' }, value: 'DISABLED' },
+            { label: { langKey: 'Enabled' }, value: 'ENABLED' },
+            { label: { langKey: 'User chooses' }, value: 'USER_CHOOSES' },
+            {
+              label: { langKey: 'User chooses, set to disabled for all' },
+              value: 'USER_CHOOSES_AND_SET_TO_DISABLED',
+            },
+            {
+              label: { langKey: 'User chooses, set to enabled for all' },
+              value: 'USER_CHOOSES_AND_SET_TO_ENABLED',
+            },
+          ],
+          category: 'security',
+          publicSetting: true,
+          description: {
+            langKey:
+              'Whether to enable 2-factor authentication for all users or not, or whether users can choose to enable 2FA for themselves.',
+          },
+        },
+        label: { langKey: 'Use 2-factor authentication' },
+      },
+      {
+        elemId: 'defaultEditedLogs',
+        orderNr: 2,
+        elemType: 'inputNumber',
+        valueType: 'number',
+        elemData: {
+          defaultValue: 10,
+          minValue: 0,
+          category: 'logs',
+          description: {
+            langKey:
+              'How many edited logs are logged by default to all edited history arrays (0 - Infinity).',
+          },
+        },
+        label: { langKey: 'Default edited history count' },
+      },
+      {
+        elemId: 'loginMethod',
+        orderNr: 3,
+        elemType: 'inputDropDown',
+        valueType: 'string',
+        elemData: {
+          defaultValue: 'USERNAME_ONLY',
+          options: [
+            { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
+            { label: { langKey: 'Email only' }, value: 'EMAIL_ONLY' },
+            {
+              label: { langKey: 'User chooses, Username as default' },
+              value: 'USER_CHOOSES_USERNAME_AS_DEFAULT',
+            },
+            {
+              label: { langKey: 'User chooses, Email as default' },
+              value: 'USER_CHOOSES_EMAIL_AS_DEFAULT',
+            },
+          ],
+          category: 'security',
+          publicSetting: true,
+          description: {
+            langKey:
+              'Whether users are required to login with a Username or Email, or if they can choose the option',
+          },
+        },
+        label: { langKey: 'Login with Username, Email, or Both' },
+      },
+      {
+        elemId: 'userGroupsCacheTime',
+        elemType: 'inputDropDown',
+        orderNr: 4,
+        valueType: 'number',
+        elemData: {
+          defaultValue: 180,
+          options: [
+            { label: { langKey: '30 seconds' }, value: 30 },
+            { label: { langKey: '3 minutes' }, value: 180 },
+            { label: { langKey: '10 minutes' }, value: 600 },
+          ],
+          category: 'caches',
+          description: {
+            langKey:
+              "How long is the cache time for user groups on the user's session. If a user is added/removed to/from a group, it will take this amount of time before the session registers it. Logging out and in again will reset cache.",
+          },
+        },
+        label: { langKey: 'User Groups Session Cache Time' },
+      },
+    ],
+    [
+      {
+        priCategoryId: 'form',
+        priTargetId: 'systemSettings',
+        priAccessId: 'canUseForm',
+        name: 'Use form: Council System Settings',
+        description: 'Who can use the "Council System Settings" form.',
+        created: timeNow,
+        privilegeAccess: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+      {
+        priCategoryId: 'form',
+        priTargetId: 'systemSettings',
+        priAccessId: 'canReadData',
+        name: 'Read data: Council System Settings',
+        description: 'Who can use read "Council System Settings" data.',
+        created: timeNow,
+        privilegeAccess: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+      {
+        priCategoryId: 'form',
+        priTargetId: 'systemSettings',
+        priAccessId: 'canEditData',
+        name: 'Edit data: Council System Settings',
+        description: 'Who can use edit "Council System Settings" data.',
+        created: timeNow,
+        privilegeAccess: {
+          public: 'false',
+          requireCsrfHeader: true,
+          users: [],
+          groups: [],
+          excludeUsers: [],
+          excludeGroups: [],
+        },
+      },
+    ],
+    { systemDocument: true }
+  );
 };

@@ -202,7 +202,7 @@ describe('POST formData', () => {
     await createUser('myusername', { verified: true });
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -625,7 +625,7 @@ describe('POST formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -741,7 +741,7 @@ describe('POST formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -924,7 +924,7 @@ describe('POST formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1034,7 +1034,7 @@ describe('POST formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1142,7 +1142,7 @@ describe('POST formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1226,7 +1226,7 @@ describe('POST formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1335,7 +1335,7 @@ describe('POST formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',

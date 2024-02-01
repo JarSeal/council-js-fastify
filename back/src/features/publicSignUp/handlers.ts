@@ -2,27 +2,58 @@ import type { RouteHandler } from 'fastify';
 import { hash } from 'bcrypt';
 
 import { errors } from '../../core/errors';
-import { validatePublicSignup } from '../../utils/validation';
+import { validateFormDataInput } from '../../utils/validation';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
 import { HASH_SALT_ROUNDS } from '../../core/config';
 import { createUrlTokenAndId } from '../../utils/token';
+import DBFormModel, { type DBForm } from '../../dbModels/form';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
   const email = body.email.trim();
   const username = body.username.trim();
 
-  // Validate fields
+  // Check if username is taken
   const foundUser = await DBUserModel.findOne<DBUser>({ simpleId: username }).lean();
-  const validateError = validatePublicSignup(body, foundUser);
-  if (validateError) {
-    return res.send(validateError);
+  if (foundUser) {
+    return res.send(new errors.USERNAME_TAKEN(username));
   }
+
+  // Check if email is taken
   const foundEmail = await DBUserModel.findOne<DBUser>({ 'emails.email': email }).lean();
   if (foundEmail) {
     return res.send(new errors.EMAIL_TAKEN(email));
+  }
+
+  // Get form and validate input
+  const publicSignUpForm = await DBFormModel.findOne<DBForm>({ simpleId: 'publicSignUp' });
+  const formData = [
+    {
+      elemId: 'username',
+      value: username,
+    },
+    {
+      elemId: 'email',
+      value: email,
+    },
+    {
+      elemId: 'emailAgain',
+      value: body.emailAgain,
+    },
+    {
+      elemId: 'pass',
+      value: body.pass,
+    },
+    {
+      elemId: 'passAgain',
+      value: body.passAgain,
+    },
+  ];
+  const validateError = validateFormDataInput(publicSignUpForm?.form.formElems || [], formData);
+  if (validateError) {
+    return res.status(validateError.status).send({ ok: false, error: validateError });
   }
 
   // Create email verification URL ID token

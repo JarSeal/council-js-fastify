@@ -224,7 +224,7 @@ describe('DELETE formData', () => {
     await createSysAdmin(true);
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'superadmin',
         pass: 'password',
@@ -288,7 +288,7 @@ describe('DELETE formData', () => {
 
     await app.inject({
       method: 'POST',
-      path: '/api/v1/logout',
+      path: '/api/v1/sys/logout',
       body: {},
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
@@ -783,7 +783,7 @@ describe('DELETE formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -878,7 +878,7 @@ describe('DELETE formData', () => {
     await createSysAdmin(true);
     const loginSysAdminResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'superadmin',
         pass: 'password',
@@ -914,7 +914,7 @@ describe('DELETE formData', () => {
 
     await app.inject({
       method: 'POST',
-      path: '/api/v1/logout',
+      path: '/api/v1/sys/logout',
       body: {},
       cookies: { [SESSION_COOKIE_NAME]: String(sysAdminSessionCookie?.value) },
       ...csrfHeader,
@@ -922,7 +922,7 @@ describe('DELETE formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',

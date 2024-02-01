@@ -2,16 +2,124 @@ import type { FastifyError, FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
-import type { PublicSignUpRoute } from './schemas';
+import type { PublicSignUpRoute, Reply } from './schemas';
 import DBUserModel, { type DBUser } from '../../dbModels/user';
 import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
-import { csrfHeader } from '../../test/utils';
+import { createForm, csrfHeader } from '../../test/utils';
+import { simpleIdRegExp } from '../../utils/validation';
+
+const createPublicSignUpForm = async () =>
+  await createForm(
+    'publicSignUp',
+    '/api/v1/sys/public-signup',
+    [
+      {
+        elemId: 'username',
+        orderNr: 0,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: {
+          minLength: 2,
+          maxLength: 32,
+        },
+        label: { langKey: 'Username' },
+        required: true,
+        validationRegExp: { pattern: simpleIdRegExp[0], flags: simpleIdRegExp[1] },
+        inputErrors: [
+          {
+            errorId: 'validationRegExp',
+            message: {
+              langKey: 'Invalid input, only letters (a-z), numbers, "-", and "_" are allowed.',
+            },
+          },
+        ],
+      },
+      {
+        elemId: 'email',
+        orderNr: 1,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: { email: true },
+        label: { langKey: 'E-mail' },
+        required: true,
+        mustMatchValue: 'emailAgain',
+        inputErrors: [
+          {
+            errorId: 'mustMatchValue',
+            message: { langKey: 'E-mails do not match' },
+          },
+        ],
+      },
+      {
+        elemId: 'emailAgain',
+        orderNr: 2,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: { email: true },
+        label: { langKey: 'E-mail again' },
+        required: true,
+        mustMatchValue: 'email',
+        inputErrors: [
+          {
+            errorId: 'mustMatchValue',
+          },
+        ],
+      },
+      {
+        elemId: 'pass',
+        orderNr: 3,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: {
+          password: true,
+          minLength: 8,
+          maxLength: 128,
+        },
+        label: { langKey: 'Password' },
+        required: true,
+        validationRegExp: {
+          pattern: '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})',
+        },
+        mustMatchValue: 'passAgain',
+        inputErrors: [
+          {
+            errorId: 'validationRegExp',
+            message: {
+              langKey:
+                'Password must contain at least: lower and upper case, number, special character (!#$%&?@* )',
+            },
+          },
+          {
+            errorId: 'mustMatchValue',
+            message: { langKey: 'Passwords do not match' },
+          },
+        ],
+      },
+      {
+        elemId: 'passAgain',
+        orderNr: 4,
+        elemType: 'inputText',
+        valueType: 'string',
+        elemData: { password: true },
+        label: { langKey: 'Password again' },
+        required: true,
+        mustMatchValue: 'pass',
+        inputErrors: [
+          {
+            errorId: 'mustMatchValue',
+          },
+        ],
+      },
+    ],
+    []
+  );
 
 describe('publicSignUp', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
     app = await initApp();
+    await createPublicSignUpForm();
   });
 
   afterAll(async () => {
@@ -26,7 +134,7 @@ describe('publicSignUp', () => {
     const email = 'myusername@somedomain.nl';
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { username, pass, email },
     });
     const body = JSON.parse(response.body) as FastifyError;
@@ -38,7 +146,7 @@ describe('publicSignUp', () => {
   it('should fail the publicSignUp without proper payload', async () => {
     let response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       ...csrfHeader,
     });
     let body = JSON.parse(response.body) as FastifyError;
@@ -48,7 +156,7 @@ describe('publicSignUp', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { username: 'myusername' },
       ...csrfHeader,
     });
@@ -59,7 +167,7 @@ describe('publicSignUp', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
+      path: '/api/v1/sys/public-signup',
       body: { email: 'my.email@server.com' },
       ...csrfHeader,
     });
@@ -70,8 +178,8 @@ describe('publicSignUp', () => {
 
     response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
-      body: { email: 'my.email@server.com', username: 'myusername' },
+      path: '/api/v1/sys/public-signup',
+      body: { email: 'my.email@server.com', emailAgain: '', username: 'myusername' },
       ...csrfHeader,
     });
     body = JSON.parse(response.body) as FastifyError;
@@ -83,8 +191,14 @@ describe('publicSignUp', () => {
   it('should fail the publicSignUp with invalid email', async () => {
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
-      body: { username: 'myusername', pass: 'somepass', email: 'not_email' },
+      path: '/api/v1/sys/public-signup',
+      body: {
+        username: 'myusername',
+        pass: 'somepass',
+        passAgain: '',
+        email: 'not_email',
+        emailAgain: '',
+      },
       ...csrfHeader,
     });
     const body = JSON.parse(response.body) as FastifyError;
@@ -96,31 +210,45 @@ describe('publicSignUp', () => {
   it('should fail the publicSignUp with too short username', async () => {
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
-      body: { username: '', pass: 'somepass', email: 'aa@aa.aa' },
+      path: '/api/v1/sys/public-signup',
+      body: {
+        username: 's',
+        pass: 'somepass',
+        passAgain: 'somepass',
+        email: 'aa@aa.aa',
+        emailAgain: 'aa@aa.aa',
+      },
       ...csrfHeader,
     });
-    const body = JSON.parse(response.body) as FastifyError;
+    const body = JSON.parse(response.body) as Reply;
     expect(response.statusCode).toBe(400);
-    expect(body.code).toEqual('COUNCL_ERR_VALIDATE');
-    expect(
-      body.message.startsWith('New user validation failed: Username is too short')
-    ).toBeTruthy();
+    expect(body.ok).toBeFalsy();
+    expect(body.error?.errorId).toBe('minLength');
+    expect(body.error?.elemId).toBe('username');
+    expect(body.error?.message).toBe("ElemId 'username' value is too short (minLength: 2).");
   });
 
   it('should fail the publicSignUp with too short password', async () => {
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
-      body: { username: 'myusername', pass: '', email: 'aa@aa.aa' },
+      path: '/api/v1/sys/public-signup',
+      body: {
+        username: 'myusername',
+        pass: 's',
+        passAgain: 's',
+        email: 'aa@aa.aa',
+        emailAgain: 'aa@aa.aa',
+      },
       ...csrfHeader,
     });
-    const body = JSON.parse(response.body) as FastifyError;
+    const body = JSON.parse(response.body) as Reply;
     expect(response.statusCode).toBe(400);
-    expect(body.code).toEqual('COUNCL_ERR_VALIDATE');
-    expect(
-      body.message.startsWith('New user validation failed: Password is too short')
-    ).toBeTruthy();
+    expect(body.ok).toBeFalsy();
+    expect(body.error?.errorId).toBe('validationRegExp');
+    expect(body.error?.elemId).toBe('pass');
+    expect((body.error?.customError as { langKey: string })?.langKey).toBe(
+      'Password must contain at least: lower and upper case, number, special character (!#$%&?@* )'
+    );
   });
 
   it('should successfully register a new user', async () => {
@@ -129,8 +257,8 @@ describe('publicSignUp', () => {
     const email = 'myusername@somedomain.nl';
     const response = await app.inject({
       method: 'POST',
-      path: '/api/v1/publicsignup',
-      body: { username, pass, email },
+      path: '/api/v1/sys/public-signup',
+      body: { username, pass, passAgain: pass, email, emailAgain: email },
       ...csrfHeader,
     });
     const timeNow = getTimestamp();

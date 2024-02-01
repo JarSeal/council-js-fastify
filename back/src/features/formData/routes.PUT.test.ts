@@ -245,7 +245,7 @@ describe('PUT formData', () => {
     await createSysAdmin(true);
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'superadmin',
         pass: 'password',
@@ -303,7 +303,7 @@ describe('PUT formData', () => {
 
     await app.inject({
       method: 'POST',
-      path: '/api/v1/logout',
+      path: '/api/v1/sys/logout',
       body: {},
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
@@ -891,7 +891,7 @@ describe('PUT formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1140,7 +1140,7 @@ describe('PUT formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1391,7 +1391,7 @@ describe('PUT formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1571,7 +1571,7 @@ describe('PUT formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -1957,7 +1957,7 @@ describe('PUT formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -2187,7 +2187,7 @@ describe('PUT formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -2408,7 +2408,7 @@ describe('PUT formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',
@@ -2561,7 +2561,7 @@ describe('PUT formData', () => {
 
     const loginResponse = await app.inject({
       method: 'POST',
-      path: '/api/v1/login',
+      path: '/api/v1/sys/login',
       body: {
         usernameOrEmail: 'myusername',
         pass: 'password',

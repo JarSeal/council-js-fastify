@@ -265,7 +265,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
           filter: { _id: dataSets[i]._id },
           update: {
             $set: {
-              edited: createNewEditedArray(
+              edited: await createNewEditedArray(
                 dataSets[i].edited,
                 userData?.userId,
                 dataSets[i].editedHistoryCount
@@ -473,7 +473,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       { _id: dataSet._id },
       {
         $set: {
-          edited: createNewEditedArray(
+          edited: await createNewEditedArray(
             dataSet.edited,
             userData?.userId,
             dataSet.editedHistoryCount

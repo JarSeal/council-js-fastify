@@ -1,4 +1,4 @@
-import { Type, type Static } from '@sinclair/typebox';
+import { Type, Kind, type Static } from '@sinclair/typebox';
 
 export const valueTypeSchema = Type.Union([
   Type.Literal('string'),
@@ -86,3 +86,25 @@ export const formFormSchema = Type.Object({
   formElems: Type.Array(formElemSchema),
 });
 export type FormForm = Static<typeof formFormSchema>;
+
+export const dateSchema = Type.Unsafe<Date>({
+  type: 'string',
+  format: 'date-time',
+  [Kind]: 'Date',
+});
+
+export const userIdSchema = Type.Union([
+  Type.String(),
+  Type.Null(),
+  Type.Object({
+    simpleId: Type.String(),
+    _id: Type.String(),
+  }),
+]);
+
+export const editedSchema = Type.Array(
+  Type.Object({
+    user: userIdSchema,
+    date: dateSchema,
+  })
+);

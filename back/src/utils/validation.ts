@@ -1,64 +1,12 @@
 import type { FastifyError } from 'fastify';
 
-import type { Body } from '../features/publicSignUp/schemas';
 import { errors } from '../core/errors';
-import type { DBUser } from '../dbModels/user';
-import { getConfig, type ConfigFile } from '../core/config';
-import type { FormElem } from '../dbModels/_modelTypePartials';
+import { getSysSetting } from '../core/config';
+import type { FormElem, TransText } from '../dbModels/_modelTypePartials';
 import { customValidators } from '../customFunctions/validation';
+import type { LoginMethods } from '../features/login/schemas';
 
 export type ValidationError = FastifyError | null;
-
-export const validatePublicSignup = (
-  body: Body,
-  foundUser: DBUser | null,
-  options?: Partial<ConfigFile['user']>
-): ValidationError => {
-  const username = body.username.trim();
-  const pass = body.pass.trim();
-
-  if (foundUser) {
-    return new errors.USERNAME_TAKEN(username);
-  }
-
-  const minUserLength =
-    options?.minUsernameLength || getConfig<number>('user.minUsernameLength', 2);
-  if (username.length < minUserLength) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      `Username is too short, minimum is ${minUserLength} characters.`
-    );
-  }
-  const maxUserLength =
-    options?.maxUsernameLength || getConfig<number>('user.maxUsernameLength', 32);
-  if (username.length > maxUserLength) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      `Username is too long, maximum is ${maxUserLength} characters.`
-    );
-  }
-  if (!validateSimpleId(username)) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      'Username contains invalid characters, only a-z, A-Z, 0-9, -, and _ allowed.'
-    );
-  }
-  const minPassLength = options?.minPassLength || getConfig<number>('user.minPassLength', 8);
-  if (pass.length < minPassLength) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      `Password is too short, minimum is ${minPassLength} characters.`
-    );
-  }
-  const maxPassLength = options?.maxPassLength || getConfig<number>('user.maxPassLength', 128);
-  if (pass.length > maxPassLength) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      `Password is too long, maximum is ${maxPassLength} characters.`
-    );
-  }
-  if (!validatePassword(pass)) {
-    return new errors.COUNCL_ERR_VALIDATE(
-      getConfig<string>('user.passNotValidMessage.langKey', 'Password not valid')
-    );
-  }
-  return null;
-};
 
 export const simpleIdRegExp = ['^[a-zA-Z0-9-_]+$', 'gm'];
 export const validateSimpleId = (simpleId: unknown) => {
@@ -70,6 +18,7 @@ export const validateSimpleId = (simpleId: unknown) => {
 
 export const validateEmail = (value: unknown) => {
   // case insensitive
+  if (value === undefined) return true;
   if (typeof value !== 'string') return false;
   if (!value) return true; // The check for empty is handled with 'required' param
   return new RegExp(
@@ -80,6 +29,7 @@ export const validateEmail = (value: unknown) => {
 export const validatePhoneWithExtraChars = (value: unknown) => {
   // phone number validation, with extra characters allowed:
   // +[space]-()
+  if (value === undefined) return true;
   if (typeof value !== 'string' && typeof value !== 'number') return false;
   if (!value) return true; // The check for empty is handled with 'required' param
   const strippedNumber = String(value)
@@ -91,12 +41,6 @@ export const validatePhoneWithExtraChars = (value: unknown) => {
   return !isNaN(Number(strippedNumber));
 };
 
-export const validatePassword = (value: unknown, alternateRegex?: string) => {
-  const passRegex = alternateRegex || getConfig<string>('user.passRegExp', '');
-  if (!passRegex) return true;
-  return new RegExp(passRegex).test(String(value));
-};
-
 export const isValueAndTypeValid = (valueType: string, value: unknown): boolean => {
   let forgedDate;
   switch (valueType) {
@@ -104,6 +48,8 @@ export const isValueAndTypeValid = (valueType: string, value: unknown): boolean 
       return typeof value === 'string';
     case 'number':
       return typeof value === 'number';
+    case 'boolean':
+      return typeof value === 'boolean';
     case 'date':
       try {
         forgedDate = new Date(String(value)).toISOString();
@@ -251,19 +197,15 @@ const elemDataValidation = (
   elem: FormElem,
   sentElem: { elemId: string; value: unknown } | undefined
 ) => {
-  // @TODO: value.length is not the right way to count length for strings.
-  // Will work fine for a-z characters, but special characters will be longer than 1.
-  // Implement a proper character count.
   if (elem.valueType === 'string' && sentElem) {
     const value = sentElem.value as string;
     // string minLength
     if (
       elem.elemData?.minLength !== undefined &&
-      (elem.elemData?.minLength as number) > value.length
+      typeof elem.elemData.minLength === 'number' &&
+      elem.elemData.minLength > value.length
     ) {
-      const defaultError = `ElemId '${elem.elemId}' value is too short (minLength: ${
-        elem.elemData?.minLength as number
-      }).`;
+      const defaultError = `ElemId '${elem.elemId}' value is too short (minLength: ${elem.elemData.minLength}).`;
       const customError =
         elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'minLength');
       new errors.FORM_DATA_BAD_REQUEST(
@@ -280,11 +222,10 @@ const elemDataValidation = (
     // string maxLength
     if (
       elem.elemData?.maxLength !== undefined &&
-      (elem.elemData?.maxLength as number) < value.length
+      typeof elem.elemData.maxLength === 'number' &&
+      elem.elemData?.maxLength < value.length
     ) {
-      const defaultError = `ElemId '${elem.elemId}' value is too long (maxLength: ${
-        elem.elemData?.maxLength as number
-      }).`;
+      const defaultError = `ElemId '${elem.elemId}' value is too long (maxLength: ${elem.elemData.maxLength}).`;
       const customError =
         elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'maxLength');
       new errors.FORM_DATA_BAD_REQUEST(
@@ -303,10 +244,12 @@ const elemDataValidation = (
   if (elem.valueType === 'number' && sentElem) {
     const value = sentElem.value as number;
     // number minValue
-    if (elem.elemData?.minValue !== undefined && (elem.elemData?.minValue as number) > value) {
-      const defaultError = `ElemId '${elem.elemId}' value is too small (minValue: ${
-        elem.elemData?.minValue as number
-      }).`;
+    if (
+      elem.elemData?.minValue !== undefined &&
+      typeof elem.elemData.minValue === 'number' &&
+      elem.elemData.minValue > value
+    ) {
+      const defaultError = `ElemId '${elem.elemId}' value is too small (minValue: ${elem.elemData.minValue}).`;
       const customError =
         elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'minValue');
       new errors.FORM_DATA_BAD_REQUEST(
@@ -321,10 +264,12 @@ const elemDataValidation = (
       };
     }
     // number maxValue
-    if (elem.elemData?.maxValue !== undefined && (elem.elemData?.maxValue as number) < value) {
-      const defaultError = `ElemId '${elem.elemId}' value is too large (maxValue: ${
-        elem.elemData?.maxValue as number
-      }).`;
+    if (
+      elem.elemData?.maxValue !== undefined &&
+      typeof elem.elemData.maxValue === 'number' &&
+      elem.elemData.maxValue < value
+    ) {
+      const defaultError = `ElemId '${elem.elemId}' value is too large (maxValue: ${elem.elemData.maxValue}).`;
       const customError =
         elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'maxValue');
       new errors.FORM_DATA_BAD_REQUEST(
@@ -340,5 +285,40 @@ const elemDataValidation = (
     }
   }
 
+  if (elem.elemData?.options && sentElem) {
+    // Validate options
+    const options = elem.elemData.options as { langKey: TransText; value: unknown }[];
+    if (!options.find((opt) => opt.value === sentElem?.value)) {
+      const defaultError = `ElemId '${elem.elemId}' value is not one of the options: ${options
+        .map((opt) => opt.value)
+        .toString()}).`;
+      const customError =
+        elem.inputErrors && elem.inputErrors.find((err) => err.errorId === 'invalidOption');
+      new errors.FORM_DATA_BAD_REQUEST(
+        `${defaultError}${customError ? ' customError: ' + JSON.stringify(customError) : ''}`
+      );
+      return {
+        errorId: 'invalidOption',
+        status: 400,
+        message: defaultError,
+        elemId: elem.elemId,
+        ...(customError?.message ? { customError: customError.message } : {}),
+      };
+    }
+  }
+
+  return null;
+};
+
+export const validateLoginMethod = async (
+  loginMethod: LoginMethods
+): Promise<FastifyError | null> => {
+  const loginMethodSetting = await getSysSetting<string>('loginMethod');
+  if (
+    (loginMethodSetting === 'USERNAME_ONLY' && loginMethod !== 'username') ||
+    (loginMethodSetting === 'EMAIL_ONLY' && loginMethod !== 'email')
+  ) {
+    return new errors.UNAUTHORIZED(`Users' are not allowed login by ${loginMethod}`);
+  }
   return null;
 };

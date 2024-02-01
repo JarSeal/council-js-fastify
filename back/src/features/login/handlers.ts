@@ -5,17 +5,23 @@ import type { LoginRoute } from './schemas';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import { errors } from '../../core/errors';
-import { getConfig } from '../../core/config';
+import { getConfig, getPublicSysSettings, getSysSetting } from '../../core/config';
 import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
 import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
 import { getUserData } from '../../utils/userAndPrivilegeChecks';
+import { validateLoginMethod } from '../../utils/validation';
 
 export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const body = req.body;
   const usernameOrEmail = body.usernameOrEmail.trim();
   const loginMethod = body.loginMethod;
-  // @TODO: add a system setting to set the login method
-  // and check that the used method is allowed ('username', 'email', or 'both')!
+
+  // Check loginMethod
+  const validateLoginMethodError = await validateLoginMethod(loginMethod);
+  if (validateLoginMethodError) {
+    return res.send(validateLoginMethodError);
+  }
+
   let username = loginMethod === 'username' ? usernameOrEmail : null;
   const email = loginMethod === 'email' ? usernameOrEmail : null;
   const pass = body.pass.trim();
@@ -54,7 +60,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
     }
   }
 
-  // @TODO: check 2-factor authentication need
+  // @TODO: check 2-factor authentication need here and res.send if it is, when implemented
 
   // Reset login attempts and log login
   const logAndResetLoginAttemptsError = await logAndResetLoginAttempts(user, agentId);
@@ -73,7 +79,10 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const requiredActions = await getRequiredActionsFromUser(userData);
   req.session.requiredActions = requiredActions;
 
-  return res.status(200).send({ ok: true, requiredActions });
+  // Get public settings
+  const publicSettings = await getPublicSysSettings();
+
+  return res.status(200).send({ ok: true, requiredActions, publicSettings });
 };
 
 // Check cool down
@@ -105,7 +114,8 @@ const checkCoolDown = async (user: DBUser, agentId: string): Promise<null | Fast
   }
 
   // Check if user is still under cool down period
-  const coolDownAge = getConfig<number>('user.coolDownAge'); // @TODO: make this a system setting
+  const coolDownAge =
+    (await getSysSetting<number>('coolDownAge')) || getConfig<number>('security.coolDownAge', 240);
   if (getTimestampFromDate(user.security.coolDownStarted) + coolDownAge > getTimestamp()) {
     // User is under cool down period
     return new errors.LOGIN_USER_UNDER_COOLDOWN(
@@ -134,14 +144,21 @@ const setInvalidLoginAttempt = async (
 ): Promise<null | FastifyError> => {
   if (!user.security.isUnderCoolDown) {
     let error, savedUser;
-    const maxLoginAttempts = getConfig<number>('user.maxLoginAttempts'); // @TODO: make this a system setting
-    const maxLoginAttemptLogs = getConfig<number>('user.maxLoginAttemptLogs'); // @TODO: make this a system setting
+    const maxLoginAttempts =
+      (await getSysSetting<number>('maxLoginAttempts')) ||
+      getConfig<number>('security.maxLoginAttempts', 4);
+    const maxLoginAttemptLogs =
+      (await getSysSetting<number>('maxLoginAttemptLogs')) ||
+      getConfig<number>('security.maxLoginAttemptLogs', 5);
     const loginAttempts = (user.security.loginAttempts || 0) + 1;
     user.security.loginAttempts = loginAttempts;
-    user.security.lastLoginAttempts = [
-      { date: new Date(), agentId },
-      ...user.security.lastLoginAttempts,
-    ].splice(0, maxLoginAttemptLogs);
+    user.security.lastLoginAttempts =
+      maxLoginAttemptLogs !== 0
+        ? [{ date: new Date(), agentId }, ...user.security.lastLoginAttempts].splice(
+            0,
+            maxLoginAttemptLogs
+          )
+        : [{ date: new Date(), agentId }, ...user.security.lastLoginAttempts];
     let maxLoginsAttempted = false;
     if (maxLoginAttempts <= loginAttempts) {
       user.security.coolDownStarted = new Date();
@@ -182,11 +199,12 @@ const logAndResetLoginAttempts = async (
   user.security.coolDownStarted = null;
   user.security.isUnderCoolDown = false;
   if (!doNotLog) {
-    const maxLoginLogs = getConfig<number>('user.maxLoginLogs'); // @TODO: make this a system setting
-    user.security.lastLogins = [{ date: new Date(), agentId }, ...user.security.lastLogins].splice(
-      0,
-      maxLoginLogs
-    );
+    const maxLoginLogs =
+      (await getSysSetting<number>('maxLoginLogs')) || getConfig<number>('security.maxLoginLogs');
+    user.security.lastLogins =
+      maxLoginLogs !== 0
+        ? [{ date: new Date(), agentId }, ...user.security.lastLogins].splice(0, maxLoginLogs)
+        : [{ date: new Date(), agentId }, ...user.security.lastLogins];
   }
   try {
     savedUser = await DBUserModel.findOneAndUpdate<DBUser>(

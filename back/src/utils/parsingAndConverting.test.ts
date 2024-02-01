@@ -998,7 +998,7 @@ describe('parsingAndConverting', () => {
     expect(updatedPrivs7).toStrictEqual({ read: { users: [] } });
   });
 
-  it('createNewEditedArray', () => {
+  it('createNewEditedArray', async () => {
     const userId1 = new Types.ObjectId();
     const userId2 = new Types.ObjectId();
     const userId3 = new Types.ObjectId();
@@ -1021,14 +1021,14 @@ describe('parsingAndConverting', () => {
       },
     ];
 
-    const newArray1 = createNewEditedArray(oldArray, userId2, 10, now);
+    const newArray1 = await createNewEditedArray(oldArray, userId2, 10, now);
     expect(newArray1).toHaveLength(4);
     expect(newArray1[0]).toStrictEqual({ user: userId2, date: now });
     expect(newArray1[1]).toStrictEqual({ user: userId1, date: date1 });
     expect(newArray1[2]).toStrictEqual({ user: userId1, date: date2 });
     expect(newArray1[3]).toStrictEqual({ user: userId1, date: date3 });
 
-    const newArray2 = createNewEditedArray(newArray1, userId3, 3, now);
+    const newArray2 = await createNewEditedArray(newArray1, userId3, 3, now);
     expect(newArray2).toHaveLength(3);
     expect(newArray2[0]).toStrictEqual({ user: userId3, date: now });
     expect(newArray2[1]).toStrictEqual({ user: userId2, date: now });

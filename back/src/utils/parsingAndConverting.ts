@@ -18,6 +18,7 @@ import type {
   FormDataPrivilegesAsStringIds,
   UserId,
 } from '../dbModels/_modelTypePartials';
+import { getConfig, getSysSetting } from '../core/config';
 
 export const getApiPathFromReqUrl = (reqUrl: string) =>
   reqUrl.split('?')[0].replace(apiRoot + apiVersion, '');
@@ -469,13 +470,18 @@ export const addPossibleFillerToElemPrivs = (
   return elemPrivs;
 };
 
-export const createNewEditedArray = (
+export const createNewEditedArray = async (
   oldArray: Edited[],
   userId: MongooseTypes.ObjectId | null,
   count?: number,
   forcedDate?: Date
 ) => {
-  const COUNT = count || 10; // @TODO: get this default edit array count (here 10) from settings
+  const defaultCount = await getSysSetting<number>('defaultEditedLogs');
+  const COUNT =
+    (count !== undefined ? count : null) ||
+    (defaultCount !== undefined
+      ? defaultCount
+      : getConfig<number>('security.defaultEditedLogs', 5));
   const date = forcedDate || new Date();
   const oldArrayCopy = [...oldArray];
   oldArrayCopy.unshift({ user: userId, date });
