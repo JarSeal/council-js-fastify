@@ -389,7 +389,7 @@ const systemSettingsFormElems = [
     label: { langKey: 'Email User' },
   },
   {
-    elemId: 'emailPassword',
+    elemId: 'emailPass',
     elemType: 'inputText',
     valueType: 'string',
     elemData: {

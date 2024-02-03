@@ -1,14 +1,16 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
+import { getSysSetting } from './config';
+
 let transporter: Transporter;
-const createTransport = () => {
+const createTransport = async () => {
   transporter = nodemailer.createTransport({
-    host: '', // @TODO: add setting
+    host: (await getSysSetting<string>('emailHost')) || '',
     auth: {
-      user: '', // @TODO: add setting
-      pass: '', // @TODO: add setting
+      user: (await getSysSetting<string>('emailUser')) || '',
+      pass: (await getSysSetting<string>('emailPass')) || '', // @TODO: add decryption
     },
-    port: 587, // @TODO: add setting
+    port: (await getSysSetting<number>('emailPort')) || 587,
   });
 };
 
@@ -18,8 +20,8 @@ type SendEmailParams = {
   emailVars: { [key: string]: string | number | string[] | number[] };
 };
 
-export const sendEmail = ({ templateId, to, emailVars }: SendEmailParams) => {
-  if (!transporter) createTransport();
+export const sendEmail = async ({ templateId, to, emailVars }: SendEmailParams) => {
+  if (!transporter) await createTransport();
 
   // @WIP
   templateId;
