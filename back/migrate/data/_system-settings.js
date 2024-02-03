@@ -360,6 +360,62 @@ const systemSettingsFormElems = [
     label: { langKey: 'User Groups Session Cache Time' },
   },
   // caches CATEGORY [END]
+
+  // email CATEGORY [START]
+  {
+    elemId: 'emailHost',
+    elemType: 'inputText',
+    valueType: 'string',
+    elemData: {
+      defaultValue: '',
+      category: 'email',
+      description: {
+        langKey: 'Email SMTP host name.',
+      },
+    },
+    label: { langKey: 'Email Host' },
+  },
+  {
+    elemId: 'emailUser',
+    elemType: 'inputText',
+    valueType: 'string',
+    elemData: {
+      defaultValue: '',
+      category: 'email',
+      description: {
+        langKey: 'Email SMTP user.',
+      },
+    },
+    label: { langKey: 'Email User' },
+  },
+  {
+    elemId: 'emailPassword',
+    elemType: 'inputText',
+    valueType: 'string',
+    elemData: {
+      defaultValue: '',
+      category: 'email',
+      password: true,
+      description: {
+        langKey: 'Email SMTP password (encrypted in the DB).',
+      },
+    },
+    label: { langKey: 'Email Password' },
+  },
+  {
+    elemId: 'emailPort',
+    elemType: 'inputNumber',
+    valueType: 'number',
+    elemData: {
+      defaultValue: 587,
+      category: 'email',
+      description: {
+        langKey: 'Email SMTP port.',
+      },
+    },
+    label: { langKey: 'Email Port' },
+  },
+  // email CATEGORY [END]
 ];
 
 module.exports = systemSettingsFormElems;
