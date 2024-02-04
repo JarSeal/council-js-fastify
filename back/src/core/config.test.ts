@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import { createSysDocuments } from '../test/utils';
 import { closeDB, initDB } from './db';
 import {
+  decryptData,
+  encryptData,
   getPublicSysSettings,
   getSysSetting,
   getSysSettingsForm,
@@ -58,5 +60,21 @@ describe('config', () => {
   it('getPublicSysSettings', async () => {
     const publicSettings = await getPublicSysSettings();
     expect(publicSettings).toStrictEqual({ use2FA: 'DISABLED', loginMethod: 'USERNAME_ONLY' });
+  });
+
+  it('encryption', () => {
+    const msg1 = 'Some secret message';
+    const encryptedMsg1 = encryptData(msg1);
+    const decryptedMsg1 = decryptData(encryptedMsg1);
+    expect(encryptedMsg1).toBe(
+      'Zjg2ZDdjNDNiY2Q2ZGU3NzNhYTc4N2E5OTg2ZDcxNDI1NTRhMTZkMDQ4YmJjMGY1NDg2YmRhMmFmY2QzMDYyOA=='
+    );
+    expect(decryptedMsg1).toBe(msg1);
+
+    const msg2 = '';
+    const encryptedMsg2 = encryptData(msg2);
+    const decryptedMsg2 = decryptData(encryptedMsg2);
+    expect(encryptedMsg2).toBe('ZjJhMGE0NWI0YjBiODc5Y2M3OGYxZjYxNTQxOTFlYWY=');
+    expect(decryptedMsg2).toBe(msg2);
   });
 });
