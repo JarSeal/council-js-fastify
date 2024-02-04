@@ -1,14 +1,16 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 
-import { getSysSetting } from './config';
+import { decryptData, getSysSetting } from './config';
 
 let transporter: Transporter;
 const createTransport = async () => {
+  const encryptedPass = (await getSysSetting<string>('emailPass')) || '';
+  const pass = decryptData(encryptedPass);
   transporter = nodemailer.createTransport({
     host: (await getSysSetting<string>('emailHost')) || '',
     auth: {
       user: (await getSysSetting<string>('emailUser')) || '',
-      pass: (await getSysSetting<string>('emailPass')) || '', // @TODO: add decryption
+      pass,
     },
     port: (await getSysSetting<number>('emailPort')) || 587,
   });

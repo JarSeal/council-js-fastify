@@ -1,4 +1,5 @@
 import { config } from 'dotenv';
+import crypto from 'crypto';
 
 import * as CONFIG from '../../../CONFIG.json';
 import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting';
@@ -127,3 +128,33 @@ export const getPublicSysSettings = async (): Promise<PublicSysSettings> => {
 
   return publicSettings;
 };
+
+// DB value encryption
+let dbPassSecretKey: string;
+let dbPassSecretIv: string;
+const generateDBHashes = () => {
+  if (dbPassSecretKey && dbPassSecretIv) return;
+  dbPassSecretKey = crypto
+    .createHash('sha512')
+    .update(process.env.DB_PASS_SECRET_KEY || 'dummyKeySecret')
+    .digest('hex')
+    .substring(0, 32);
+  dbPassSecretIv = crypto
+    .createHash('sha512')
+    .update(process.env.DB_PASS_SECRET_IV || 'dummyIvSecret')
+    .digest('hex')
+    .substring(0, 16);
+};
+export const encryptData = (data: string) => {
+  generateDBHashes();
+  const cipher = crypto.createCipheriv('aes-256-cbc', dbPassSecretKey, dbPassSecretIv);
+  // Encrypts data and converts to hex and base64
+  return Buffer.from(cipher.update(data, 'utf8', 'hex') + cipher.final('hex')).toString('base64');
+};
+export function decryptData(encryptedData: string) {
+  generateDBHashes();
+  const buff = Buffer.from(encryptedData, 'base64');
+  const decipher = crypto.createDecipheriv('aes-256-cbc', dbPassSecretKey, dbPassSecretIv);
+  // Decrypts data and converts to utf8
+  return decipher.update(buff.toString('utf8'), 'hex', 'utf8') + decipher.final('utf8');
+}
