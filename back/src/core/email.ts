@@ -21,6 +21,9 @@ type SendEmailParams = {
 };
 
 export const sendEmail = async ({ templateId, to, emailVars }: SendEmailParams) => {
+  const emailEnabled = (await getSysSetting<boolean>('emailEnabled')) || false;
+  if (!emailEnabled) return;
+
   if (!transporter) await createTransport();
 
   // @WIP

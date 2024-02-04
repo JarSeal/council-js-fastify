@@ -363,6 +363,19 @@ const systemSettingsFormElems = [
 
   // email CATEGORY [START]
   {
+    elemId: 'emailEnabled',
+    elemType: 'inputCheckbox',
+    valueType: 'boolean',
+    elemData: {
+      defaultValue: false,
+      category: 'email',
+      description: {
+        langKey: 'Whether to enable email sending or not.',
+      },
+    },
+    label: { langKey: 'Email Enabled' },
+  },
+  {
     elemId: 'emailHost',
     elemType: 'inputText',
     valueType: 'string',
