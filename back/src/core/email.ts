@@ -35,7 +35,6 @@ type SendEmailParams = {
   templateVars?: TemplateVars;
 };
 
-// @TODO: add tests
 export const sendEmail = async ({ to, templateId, templateVars }: SendEmailParams) => {
   const emailEnabled = (await getSysSetting<boolean>('useEmail')) || false;
   if (!emailEnabled) return;
