@@ -74,7 +74,6 @@ export const sendEmail = async ({ to, templateId, templateVars }: SendEmailParam
   readyTemplate;
 };
 
-// @TODO: add tests
 export const validateTemplateVars = (templateVarKeys: string[], templateVars?: TemplateVars) => {
   const missingVars = [];
   if (!templateVars && templateVarKeys.length) {
