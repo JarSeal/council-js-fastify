@@ -363,7 +363,7 @@ const systemSettingsFormElems = [
 
   // email CATEGORY [START]
   {
-    elemId: 'emailEnabled',
+    elemId: 'useEmail',
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
@@ -403,7 +403,7 @@ const systemSettingsFormElems = [
   },
   {
     elemId: 'emailPass',
-    elemType: 'inputText',
+    elemType: 'inputSecret',
     valueType: 'string',
     elemData: {
       defaultValue: '',

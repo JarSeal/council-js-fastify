@@ -26,6 +26,7 @@ export type FormElemType =
   | 'inputDropDown'
   | 'inputText'
   | 'inputNumber'
+  | 'inputSecret'
   | 'hidden';
 
 export type FormDataValueType =
@@ -33,13 +34,13 @@ export type FormDataValueType =
   | 'number'
   | 'boolean'
   | 'date'
-  | 'stringArray'
-  | 'numberArray'
-  | 'booleanArray'
-  | 'dateArray'
-  | 'objectArray'
-  | 'array'
-  | 'object'
+  // | 'stringArray'
+  // | 'numberArray'
+  // | 'booleanArray'
+  // | 'dateArray'
+  // | 'objectArray'
+  // | 'array'
+  // | 'object'
   | 'none'
   | 'unknown';
 

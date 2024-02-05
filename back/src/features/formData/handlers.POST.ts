@@ -25,6 +25,7 @@ import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
 import { afterFns } from '../../customFunctions/afterFn';
 import { getRequiredActions } from '../../utils/requiredLoginChecks';
+import { encryptData } from '../../core/config';
 
 // Create (POST)
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {
@@ -173,9 +174,11 @@ export const postFormData = async (
       userData,
       elem.elemId
     );
+    let value = formData[i].value;
+    if (elem.elemType === 'inputSecret') value = encryptData(String(value));
     saveData.push({
       elemId: elem.elemId,
-      value: formData[i].value,
+      value,
       ...(elemPrivs ? { privileges: elemPrivs } : {}),
     });
     if (formData[i].privileges || elem.privileges) hasElemPrivileges = true;

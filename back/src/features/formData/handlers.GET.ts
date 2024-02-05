@@ -24,7 +24,7 @@ import {
   parseFormDataSortStringFromQueryString,
   parseSearchQuery,
 } from '../../utils/parsingAndConverting';
-import { getSysSetting } from '../../core/config';
+import { decryptData, getSysSetting } from '../../core/config';
 import type { TransText } from '../../@types/form';
 import { afterFns } from '../../customFunctions/afterFn';
 import { getRequiredActions } from '../../utils/requiredLoginChecks';
@@ -137,10 +137,12 @@ const checkAndSetReadData = (
               ...(elem.privileges.edit ? { edit: elem.privileges.edit } : {}),
             }
           : null;
+      let value = elem.value;
+      if (formElem?.elemType === 'inputSecret') value = decryptData(String(value));
       // White list the data props to be returned
       returnData.push({
         elemId: elem.elemId,
-        value: elem.value,
+        value,
         orderNr: returnData.length,
         valueType: formElem?.valueType || 'unknown',
         ...embedIds,

@@ -67,14 +67,14 @@ describe('config', () => {
     const encryptedMsg1 = encryptData(msg1);
     const decryptedMsg1 = decryptData(encryptedMsg1);
     expect(encryptedMsg1).toBe(
-      'Zjg2ZDdjNDNiY2Q2ZGU3NzNhYTc4N2E5OTg2ZDcxNDI1NTRhMTZkMDQ4YmJjMGY1NDg2YmRhMmFmY2QzMDYyOA=='
+      'ODY1YzA0MmE4ZWM0YTc4ZGUwNzUwZmFiYjM3ZGIxN2I0ODkzNDU3YWEzZDFhODFkYzBhMDg5Y2FlNzk4YjNlYg=='
     );
     expect(decryptedMsg1).toBe(msg1);
 
     const msg2 = '';
     const encryptedMsg2 = encryptData(msg2);
     const decryptedMsg2 = decryptData(encryptedMsg2);
-    expect(encryptedMsg2).toBe('ZjJhMGE0NWI0YjBiODc5Y2M3OGYxZjYxNTQxOTFlYWY=');
+    expect(encryptedMsg2).toBe('OWNhNmU2MzY0YjA0MTllZDI5MGQwZjRkYmY3ZTgxNTg=');
     expect(decryptedMsg2).toBe(msg2);
   });
 });

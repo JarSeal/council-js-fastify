@@ -129,19 +129,19 @@ export const getPublicSysSettings = async (): Promise<PublicSysSettings> => {
   return publicSettings;
 };
 
-// DB value encryption
+// DB value/secret encryption
 let dbPassSecretKey: string;
 let dbPassSecretIv: string;
 const generateDBHashes = () => {
   if (dbPassSecretKey && dbPassSecretIv) return;
   dbPassSecretKey = crypto
     .createHash('sha512')
-    .update(process.env.DB_PASS_SECRET_KEY || 'dummyKeySecret')
+    .update(process.env.DB_SECRETS_KEY || 'dummyKeySecret')
     .digest('hex')
     .substring(0, 32);
   dbPassSecretIv = crypto
     .createHash('sha512')
-    .update(process.env.DB_PASS_SECRET_IV || 'dummyIvSecret')
+    .update(process.env.DB_SECRETS_IV || 'dummyIvSecret')
     .digest('hex')
     .substring(0, 16);
 };
