@@ -63,6 +63,9 @@ describe('config', () => {
   });
 
   it('encryption', () => {
+    process.env.DB_SECRETS_KEY = 'secretKey';
+    process.env.DB_SECRETS_IV = 'secretIV';
+
     const msg1 = 'Some secret message';
     const encryptedMsg1 = encryptData(msg1);
     const decryptedMsg1 = decryptData(encryptedMsg1);

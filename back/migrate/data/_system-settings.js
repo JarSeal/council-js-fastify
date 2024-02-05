@@ -369,6 +369,7 @@ const systemSettingsFormElems = [
     elemData: {
       defaultValue: false,
       category: 'email',
+      publicSetting: true,
       description: {
         langKey: 'Whether to enable email sending or not.',
       },
