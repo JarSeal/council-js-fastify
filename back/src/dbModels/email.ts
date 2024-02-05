@@ -28,6 +28,10 @@ export interface DBEmail {
   // Email template
   template: string;
   templateVarKeys: string[];
+  wrapperTemplateId?: string;
+
+  // Whether the email is an HTML template wrapper or not
+  isHtmlTemplateWrapper: boolean;
 }
 
 const groupSchema = new Schema<DBEmail>({
@@ -50,9 +54,11 @@ const groupSchema = new Schema<DBEmail>({
   ],
   editedHistoryCount: { type: Number },
   systemDocument: { type: Boolean, default: false },
-  subject: { type: String, required: true },
+  subject: { type: String },
   template: { type: String, required: true },
   templateVarKeys: [{ _id: false, type: String }],
+  wrapperTemplateId: { type: String },
+  isHtmlTemplateWrapper: { type: Boolean, default: false },
 });
 
 groupSchema.set('toJSON', {

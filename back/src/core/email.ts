@@ -1,4 +1,5 @@
 import nodemailer, { type Transporter } from 'nodemailer';
+import { marked } from 'marked';
 
 import { decryptData, getSysSetting } from './config';
 import { logger } from './app';
@@ -47,30 +48,77 @@ export const sendEmail = async ({ to, templateId, templateVars }: SendEmailParam
   // Create transporter if it doesn't exist
   if (!transporter) await createTransport();
 
-  // Get template from DB
+  // Get template and templateWrapper from DB
   const template = await DBEmailModel.findOne<DBEmail>({ simpleId: templateId });
   if (!template) {
     logger.error(`Email sending failed, template not found (id: '${templateId}').`);
     return;
+  }
+  let templateWrapper: DBEmail | null = null;
+  if (template.wrapperTemplateId) {
+    templateWrapper = await DBEmailModel.findOne<DBEmail>({
+      simpleId: template.wrapperTemplateId,
+      isHtmlTemplateWrapper: true,
+    });
+    if (!templateWrapper) {
+      logger.error(
+        `Email sending failed, wrapper template not found (id: '${template.wrapperTemplateId}').`
+      );
+      return;
+    }
   }
 
   // Validate templateVars and subjectVars
   const templateVarsValidationError = validateTemplateVars(template.templateVarKeys, templateVars);
   if (templateVarsValidationError.length) {
     logger.error(
-      `Email sending failed, missing templateVars params (${templateVarsValidationError.join(
+      `Email sending failed, missing templateVars params for template (${templateVarsValidationError.join(
         ', '
       )}).`
     );
     return;
   }
+  if (templateWrapper) {
+    const wrapperVarsValidationError = validateTemplateVars(
+      templateWrapper?.templateVarKeys,
+      templateVars
+    );
+    if (wrapperVarsValidationError.length) {
+      logger.error(
+        `Email sending failed, missing templateVars params for wrapper (${wrapperVarsValidationError.join(
+          ', '
+        )}).`
+      );
+      return;
+    }
+  }
+
+  let rawTemplate = template.template;
+  if (templateWrapper) {
+    rawTemplate = replaceTemplateVars(templateWrapper.template, { wrapperContent: rawTemplate });
+  }
 
   const readySubject = replaceTemplateVars(template.subject, templateVars);
-  const readyTemplate = replaceTemplateVars(template.template, templateVars);
+  const readyTemplate = replaceTemplateVars(rawTemplate, templateVars);
 
-  // @WIP
-  readySubject;
-  readyTemplate;
+  const emailUser = (await getSysSetting<string>('emailUser')) || '';
+
+  const mailOptions = {
+    from: emailUser,
+    to,
+    subject: readySubject,
+    text: readyTemplate,
+    html: await marked.parse(readyTemplate),
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    logger.info(`Email with template "${templateId}" sent.`);
+  } catch (err) {
+    logger.error(
+      `Error while trying to send email (templateId: ${templateId}), err: ${JSON.stringify(err)}`
+    );
+  }
 };
 
 export const validateTemplateVars = (templateVarKeys: string[], templateVars?: TemplateVars) => {
