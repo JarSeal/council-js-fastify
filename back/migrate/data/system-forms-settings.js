@@ -1,5 +1,4 @@
 const config = require('../../../CONFIG.json');
-const { getConfig } = require('../../dist/back/src/core/config');
 
 const systemSettingsFormElems = [
   // security CATEGORY [START]
@@ -368,7 +367,7 @@ const systemSettingsFormElems = [
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
-      defaultValue: false,
+      defaultValue: process.env.EMAIL_ENABLED === 'true',
       category: 'email',
       publicSetting: true,
       description: {

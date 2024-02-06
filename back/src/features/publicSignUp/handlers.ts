@@ -9,6 +9,7 @@ import type { PublicSignUpRoute } from './schemas';
 import { HASH_SALT_ROUNDS } from '../../core/config';
 import { createUrlTokenAndId } from '../../utils/token';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
+import { sendEmail } from '../../core/email';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
@@ -98,6 +99,17 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
     const createUserError = new errors.DB_CREATE_NEW_USER(error || 'savedUser returned empty');
     return res.send(createUserError);
   }
+
+  await sendEmail({
+    to: email,
+    templateId: 'welcomeEmail',
+    templateVars: {
+      appName: 'Council', // @TODO: change this to come from a setting
+      username,
+      sysLoginUrl: 'http://localhost:4004', // @TODO: change this to come from a setting
+      newPassRequestUrl: 'http://localhost:4004', // @TODO: change this to come from a setting
+    },
+  });
 
   return res.status(200).send({ ok: true });
 };

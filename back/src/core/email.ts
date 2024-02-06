@@ -79,10 +79,10 @@ export const sendEmail = async ({ to, templateId, templateVars }: SendEmailParam
     return;
   }
   if (templateWrapper) {
-    const wrapperVarsValidationError = validateTemplateVars(
-      templateWrapper?.templateVarKeys,
-      templateVars
-    );
+    const wrapperVarsValidationError = validateTemplateVars(templateWrapper?.templateVarKeys, {
+      ...templateVars,
+      wrapperContent: 'empty', // Add wrapperContent temporarily here to pass validation
+    });
     if (wrapperVarsValidationError.length) {
       logger.error(
         `Email sending failed, missing templateVars params for wrapper (${wrapperVarsValidationError.join(
@@ -93,13 +93,13 @@ export const sendEmail = async ({ to, templateId, templateVars }: SendEmailParam
     }
   }
 
-  let rawTemplate = template.template;
-  if (templateWrapper) {
-    rawTemplate = replaceTemplateVars(templateWrapper.template, { wrapperContent: rawTemplate });
-  }
-
   const readySubject = replaceTemplateVars(template.subject, templateVars);
-  const readyTemplate = replaceTemplateVars(rawTemplate, templateVars);
+  const readyTemplateText = replaceTemplateVars(template.template, templateVars);
+  let readyTemplate = await marked.parse(readyTemplateText);
+  if (templateWrapper) {
+    const wrapper = replaceTemplateVars(templateWrapper.template, templateVars);
+    readyTemplate = replaceTemplateVars(wrapper, { wrapperContent: readyTemplate });
+  }
 
   const emailUser = (await getSysSetting<string>('emailUser')) || '';
 
@@ -107,8 +107,8 @@ export const sendEmail = async ({ to, templateId, templateVars }: SendEmailParam
     from: emailUser,
     to,
     subject: readySubject,
-    text: readyTemplate,
-    html: await marked.parse(readyTemplate),
+    text: readyTemplateText,
+    html: readyTemplate,
   };
 
   try {

@@ -78,13 +78,8 @@ const getEmails = () => {
       name: { langKey: 'Welcome email' },
       description: { langKey: 'Welcome email for newly registered users.' },
       systemDocument: true,
-      templateVarKeys: [
-        'appName',
-        'username',
-        'verifyEmailUrl',
-        'sysLoginUrl',
-        'newPassRequestUrl',
-      ],
+      wrapperTemplateId: 'mainSysEmailWrapper',
+      templateVarKeys: ['appName', 'username', 'sysLoginUrl', 'newPassRequestUrl'],
       subject: 'Welcome to {{appName}}',
       template: `
 Welcome
@@ -93,15 +88,10 @@ Welcome
 Your new account has been registered:
 - Username: {{username}}
 
-Please verify your email address by following this link:
-[verify email]({{verifyEmailUrl}})
-
 You can either [login]({{sysLoginUrl}}) or if you don't have a password,  
 you can [create a new password]({{newPassRequestUrl}}) for you.
 
 Do not reply to this email, thank you.
-
-/Council
       `,
     },
     // Welcome email [/END]
