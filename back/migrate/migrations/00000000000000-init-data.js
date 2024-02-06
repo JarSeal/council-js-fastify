@@ -135,6 +135,12 @@ module.exports = {
   // DOWN (in reverse order)
   // **********************************************
   async down(db) {
+    // Remove system emails
+    const emails = getEmails();
+    for (let i = 0; i < emails.length; i++) {
+      await db.collection('emails').deleteOne({ simpleId: emails[i].simpleId });
+    }
+
     // Remove system forms
     let privileges = [];
     const systemForms = await getSystemForms(db);
