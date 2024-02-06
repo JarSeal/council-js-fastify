@@ -7,7 +7,8 @@ const systemSettingsFormElems = [
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.sessionMaxAge || 3600,
+      defaultValue:
+        config?.security?.sessionMaxAge >= 30 ? Number(config.security.sessionMaxAge) : 3600,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
         { label: { langKey: '1 minute' }, value: 60 },
@@ -65,7 +66,7 @@ const systemSettingsFormElems = [
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
-      defaultValue: config?.security?.sessionIsRolling || true,
+      defaultValue: config?.security?.sessionIsRolling === true,
       category: 'security',
       description: {
         langKey:
@@ -79,7 +80,8 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.maxLoginAttempts || 4,
+      defaultValue:
+        config?.security?.maxLoginAttempts >= 1 ? Number(config.security.maxLoginAttempts) : 4,
       minValue: 1,
       category: 'security',
       publicSetting: true,
@@ -95,7 +97,7 @@ const systemSettingsFormElems = [
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.coolDownAge || 240,
+      defaultValue: config?.security?.coolDownAge >= 30 ? Number(config.security.coolDownAge) : 240,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
         { label: { langKey: '1 minute' }, value: 60 },
@@ -135,7 +137,7 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.maxLoginLogs || 5,
+      defaultValue: config?.security?.maxLoginLogs >= 0 ? Number(config.security.maxLoginLogs) : 5,
       minValue: 0,
       category: 'security',
       description: {
@@ -149,7 +151,10 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.maxLoginAttemptLogs || 5,
+      defaultValue:
+        config?.security?.maxLoginAttemptLogs >= 0
+          ? Number(config.security.maxLoginAttemptLogs)
+          : 5,
       minValue: 0,
       category: 'security',
       description: {
@@ -163,7 +168,7 @@ const systemSettingsFormElems = [
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
-      defaultValue: config?.security?.forceEmailVerification || false,
+      defaultValue: config?.security?.forceEmailVerification === true,
       category: 'security',
       description: {
         langKey: 'Whether or not the users are forced to verify their primary email addresses.',
@@ -176,7 +181,7 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.maxEmails || 2,
+      defaultValue: config?.security?.maxEmails >= 1 ? Number(config.security.maxEmails) : 2,
       minValue: 1,
       category: 'security',
       publicSetting: true,
@@ -191,7 +196,15 @@ const systemSettingsFormElems = [
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
-      defaultValue: config?.security?.use2FA || 'DISABLED',
+      defaultValue: [
+        'DISABLED',
+        'ENABLED',
+        'USER_CHOOSES',
+        'USER_CHOOSES_AND_SET_TO_DISABLED',
+        'USER_CHOOSES_AND_SET_TO_ENABLED',
+      ].includes(config?.security?.use2FA)
+        ? config.security.use2FA
+        : 'DISABLED',
       options: [
         { label: { langKey: 'Disabled' }, value: 'DISABLED' },
         { label: { langKey: 'Enabled' }, value: 'ENABLED' },
@@ -219,7 +232,14 @@ const systemSettingsFormElems = [
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
-      defaultValue: config?.security?.loginMethod || 'USERNAME_ONLY',
+      defaultValue: [
+        'USERNAME_ONLY',
+        'EMAIL_ONLY',
+        'USER_CHOOSES_USERNAME_AS_DEFAULT',
+        'USER_CHOOSES_EMAIL_AS_DEFAULT',
+      ].includes(config?.security?.loginMethod)
+        ? config.security.loginMethod
+        : 'USERNAME_ONLY',
       options: [
         { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
         { label: { langKey: 'Email only' }, value: 'EMAIL_ONLY' },
@@ -246,7 +266,7 @@ const systemSettingsFormElems = [
     elemType: 'inputText',
     valueType: 'string',
     elemData: {
-      defaultValue: '',
+      defaultValue: process.env.CLIENT_HOST_NAMES || '',
       category: 'security',
       description: {
         langKey:
@@ -260,7 +280,8 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.defaultEditedLogs || 5,
+      defaultValue:
+        config?.security?.defaultEditedLogs >= 0 ? Number(config.security.defaultEditedLogs) : 5,
       minValue: 0,
       category: 'security',
       description: {
@@ -278,7 +299,8 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.dataItemsMaxLimit || 500,
+      defaultValue:
+        config?.security?.dataItemsMaxLimit >= 1 ? Number(config.security.dataItemsMaxLimit) : 500,
       minValue: 1,
       category: 'data',
       publicSetting: true,
@@ -325,7 +347,10 @@ const systemSettingsFormElems = [
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.userGroupsCacheTime || 180,
+      defaultValue:
+        config?.security?.userGroupsCacheTime >= 30
+          ? Number(config.security.userGroupsCacheTime)
+          : 180,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
         { label: { langKey: '1 minute' }, value: 60 },
