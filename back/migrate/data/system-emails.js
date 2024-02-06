@@ -215,7 +215,7 @@ Goodbye
 Your account and your data has been deleted.
 - Username: {{username}}
 
-You have deleted your own account. Thank you for being a user with us!
+Thank you for being a user with us!
 
 Do not reply to this email, thank you.
       `,
