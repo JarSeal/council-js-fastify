@@ -6,6 +6,7 @@ const {
 const systemGroups = require('../data/system-groups');
 const getSystemForms = require('../data/system-forms');
 const { encryptData } = require('../../dist/back/src/core/config');
+const getEmails = require('../data/system-emails');
 
 module.exports = {
   // UP
@@ -40,7 +41,6 @@ module.exports = {
         lastLogins: [],
       },
     });
-
     // Get superadmin
     const superUser = await db.collection('users').findOne({ simpleId: getSuperAdminUsername() });
 
@@ -115,6 +115,20 @@ module.exports = {
         };
         await db.collection('privileges').insertOne(privileges[i]);
       }
+    }
+
+    // Create system emails
+    const emails = getEmails();
+    for (let i = 0; i < emails.length; i++) {
+      const foundEmail = await db.collection('emails').findOne({ simpleId: emails[i].simpleId });
+      if (foundEmail) continue;
+      emails[i].edited = [];
+      emails[i].systemDocument = [];
+      emails[i].created = {
+        user: superUser._id,
+        date: timeNow,
+      };
+      await db.collection('emails').insertOne(emails[i]);
     }
   },
 

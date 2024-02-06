@@ -1,4 +1,5 @@
 const config = require('../../../CONFIG.json');
+const { getConfig } = require('../../dist/back/src/core/config');
 
 const systemSettingsFormElems = [
   // security CATEGORY [START]
@@ -381,7 +382,7 @@ const systemSettingsFormElems = [
     elemType: 'inputText',
     valueType: 'string',
     elemData: {
-      defaultValue: '',
+      defaultValue: process.env.EMAIL_HOST || '',
       category: 'email',
       description: {
         langKey: 'Email SMTP host name.',
@@ -394,7 +395,7 @@ const systemSettingsFormElems = [
     elemType: 'inputText',
     valueType: 'string',
     elemData: {
-      defaultValue: '',
+      defaultValue: process.env.EMAIL_USER || '',
       category: 'email',
       description: {
         langKey: 'Email SMTP user.',
@@ -407,7 +408,7 @@ const systemSettingsFormElems = [
     elemType: 'inputSecret',
     valueType: 'string',
     elemData: {
-      defaultValue: '',
+      defaultValue: process.env.EMAIL_PASS || '',
       category: 'email',
       password: true,
       description: {

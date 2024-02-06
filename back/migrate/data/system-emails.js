@@ -101,9 +101,11 @@ you can [create a new password]({{newPassRequestUrl}}) for you.
 
 Do not reply to this email, thank you.
 
-/Beacon JS
+/Council
       `,
     },
     // Welcome email [/END]
   ];
 };
+
+module.exports = getEmails;
