@@ -186,11 +186,11 @@ Do not reply to this email, thank you.
 Welcome back!
 -------------
 
-Here is your 2FA Login Code:
+Here is your Two-Factor Authentication (2FA) Code:
 
 ### {{twoFactorCode}}
 
-The Login Code (__{{twoFactorCode}}__) is valid for __{{twoFactorLifeInMinutes}}__ minutes and can be only used once.
+The 2FA Code (__{{twoFactorCode}}__) is valid for __{{twoFactorLifeInMinutes}}__ minutes and can be only used once.
 
 If you are not trying to log in, you can ignore this (only you have this message). If you suspect that someone is trying to access your account, please contact the system administrator.
 

@@ -10,6 +10,7 @@ import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
 import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
 import { getUserData } from '../../utils/userAndPrivilegeChecks';
 import { validateLoginMethod } from '../../utils/validation';
+import { sendEmail } from '../../core/email';
 
 export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const body = req.body;
@@ -23,7 +24,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   }
 
   let username = loginMethod === 'username' ? usernameOrEmail : null;
-  const email = loginMethod === 'email' ? usernameOrEmail : null;
+  let email = loginMethod === 'email' ? usernameOrEmail : null;
   const pass = body.pass.trim();
   const agentId = body.agentId;
 
@@ -31,6 +32,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   let user;
   if (loginMethod === 'username') {
     user = await DBUserModel.findOne<DBUser>({ simpleId: username });
+    email = user ? user.emails[0].email : null;
   } else {
     user = await DBUserModel.findOne<DBUser>({ 'emails.email': email });
     username = user ? user.simpleId : null;
@@ -60,7 +62,59 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
     }
   }
 
-  // @TODO: check 2-factor authentication need here and res.send if it is, when implemented
+  // Get public settings
+  const publicSettings = await getPublicSysSettings();
+
+  // Check user action requirements
+  const userData = await getUserData(req);
+  const requiredActions = await getRequiredActionsFromUser(userData);
+
+  // Check 2FA
+  if (await checkIf2FAEnabled()) {
+    const resetError = await logAndResetLoginAttempts(user, agentId, true);
+    if (resetError) return res.send(resetError);
+
+    // Create code (and date) and save it to user
+    const code = 123456; // @TODO: create actual code
+    let savedUser, error;
+    user.security.twoFA = { code, date: new Date() };
+    try {
+      savedUser = await DBUserModel.findOneAndUpdate<DBUser>(
+        { simpleId: user.simpleId },
+        { security: user.security },
+        { new: true }
+      );
+    } catch (err) {
+      error = `Error while trying to update 2FA code for user login: ${JSON.stringify(err)}`;
+    }
+    if (!savedUser || error) {
+      return new errors.DB_UPDATE_USER(
+        error || 'savedUser returned empty in update 2FA code for user login'
+      );
+    }
+
+    if (email) {
+      await sendEmail({
+        to: email,
+        templateId: '2FACodeEmail',
+        templateVars: {
+          appName: 'Council', // @TODO: change this to come from a setting
+          twoFactorCode: code,
+          twoFactorLifeInMinutes: 5, // @TODO: add setting for twoFactorLifeInMinutes
+        },
+      });
+    } else {
+      return res.send(new errors.GENERAL_ERROR('User primary email not found for 2FA'));
+    }
+
+    // @WIP
+    return res.send({
+      ok: true,
+      twoFactorUser: username as string,
+      requiredActions,
+      publicSettings,
+    });
+  }
 
   // Reset login attempts and log login
   const logAndResetLoginAttemptsError = await logAndResetLoginAttempts(user, agentId);
@@ -73,14 +127,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   req.session.username = user.simpleId;
   req.session.userId = user._id;
   req.session.agentId = agentId;
-
-  // Check user action requirements
-  const userData = await getUserData(req);
-  const requiredActions = await getRequiredActionsFromUser(userData);
   req.session.requiredActions = requiredActions;
-
-  // Get public settings
-  const publicSettings = await getPublicSysSettings();
 
   return res.status(200).send({ ok: true, requiredActions, publicSettings });
 };
@@ -224,4 +271,19 @@ const logAndResetLoginAttempts = async (
     );
   }
   return null;
+};
+
+const checkIf2FAEnabled = async () => {
+  const sysSetting = await getSysSetting<string>('use2FA');
+  let userEnabled = false;
+  if (sysSetting === 'DISABLED') {
+    return false;
+  } else if (sysSetting?.startsWith('USER_CHOOSES')) {
+    // @TODO: get user setting for 2FA
+    userEnabled = false;
+  }
+
+  if (sysSetting === 'ENABLED' || userEnabled) return true;
+
+  return true;
 };

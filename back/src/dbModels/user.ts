@@ -50,6 +50,12 @@ export interface DBUser {
     // Whether the user is under cool down or not
     isUnderCoolDown?: boolean;
 
+    // 2FA code and created date
+    twoFA: {
+      code: number | null;
+      date: Date | null;
+    };
+
     // Login logs
     lastLoginAttempts: {
       date: Date;
@@ -101,6 +107,10 @@ const userSchema = new Schema<DBUser>({
     loginAttempts: { type: Number, default: 0 },
     coolDownStarted: { ...dateDBSchema, required: false, default: null },
     isUnderCoolDown: { type: Boolean, required: true, default: false },
+    twoFA: {
+      code: { type: Number },
+      date: { ...dateDBSchema, required: false, default: null },
+    },
     lastLoginAttempts: [
       {
         _id: false,

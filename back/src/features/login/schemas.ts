@@ -31,6 +31,7 @@ export const replySchema = Type.Object({
   ok: Type.Boolean(),
   requiredActions: requiredActionsSchema,
   publicSettings: Type.Record(Type.String(), Type.Unknown()),
+  twoFactorUser: Type.Optional(Type.String()),
 });
 export type Reply = Static<typeof replySchema>;
 
