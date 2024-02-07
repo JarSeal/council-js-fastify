@@ -91,7 +91,7 @@ Your new account has been registered:
 You can either [login]({{sysLoginUrl}}) or if you don't have a password,  
 you can [create a new password]({{newPassRequestUrl}}) for you.
 
-Login URL: {{sysLoginUrl}}
+Login URL: {{sysLoginUrl}} 
 Create a new password URL: {{newPassRequestUrl}}
 
 Do not reply to this email, thank you.
