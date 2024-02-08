@@ -17,6 +17,7 @@ import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
 import { getUserData } from '../../utils/userAndPrivilegeChecks';
 import { validateLoginMethod } from '../../utils/validation';
 import { sendEmail } from '../../core/email';
+import { logger } from '../../core/app';
 
 // BASIC LOGIN ROUTE
 // ********************************
@@ -77,30 +78,49 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const userData = await getUserData(req);
   const requiredActions = await getRequiredActionsFromUser(userData);
 
-  // Check if still in 2FA session
-  const twoFASessionAge = (await getSysSetting<number>('twoFASessionAgeInMin')) || 30;
-  const timestampNow = new Date().getTime();
-  const expirationTime =
-    user.security.twoFA.date && twoFASessionAge
-      ? twoFASessionAge * 60000 + user.security.twoFA.date.getTime()
-      : 0;
-  if (timestampNow < expirationTime) {
-    return res.send({
-      ok: true,
-      twoFactorUser: username as string,
-      requiredActions,
-      publicSettings,
-    });
-  }
-
   // Check 2FA
   if (await checkIf2FAEnabled()) {
+    // Check if already in a 2FA session
+    const twoFASessionAge = (await getSysSetting<number>('twoFASessionAgeInMin')) || 30;
+    const timestampNow = new Date().getTime();
+    let expirationTime =
+      user.security.twoFA.date && twoFASessionAge
+        ? twoFASessionAge * 60000 + user.security.twoFA.date.getTime()
+        : 0;
+    let twoFASessionOngoing = false;
+    if (timestampNow < expirationTime) {
+      twoFASessionOngoing = true;
+
+      // Check if user is trying to resend for the second time and check interval.
+      // This means that after the initial code is sent the user can request another
+      // code right away, but for the next code the user has to wait RESEND_INTERVAL_IN_MINUTES
+      // before another code can be sent. Note, if the code cannot be sent, the user is not notified.
+      const RESEND_INTERVAL_IN_MINUTES = 2;
+      expirationTime = user.security.twoFA.resendDate
+        ? RESEND_INTERVAL_IN_MINUTES * 60000 + user.security.twoFA.resendDate.getTime()
+        : 0;
+      if (timestampNow < expirationTime) {
+        const resetError = await logAndResetLoginAttempts(user, agentId, true);
+        if (resetError) return res.send(resetError);
+        return res.send({
+          ok: true,
+          twoFactorUser: username as string,
+          requiredActions,
+          publicSettings,
+        });
+      }
+    }
+
     const resetError = await logAndResetLoginAttempts(user, agentId, true);
     if (resetError) return res.send(resetError);
 
     // Create code (and date) and save it to user
     const code = generate2FACode();
-    user.security.twoFA = { code, date: new Date() };
+    user.security.twoFA = {
+      code,
+      date: new Date(),
+      resendDate: twoFASessionOngoing ? new Date() : null,
+    };
     const updateError = await updateDBUser(
       { simpleId: user.simpleId },
       { security: user.security }
@@ -172,15 +192,20 @@ export const twoFALogin: RouteHandler<TwoFactorLoginRoute> = async (req, res) =>
 
     const isUnderCoolDown = await checkCoolDown(user, agentId);
     if (isUnderCoolDown) {
-      user.security.twoFA = { code: null, date: null };
+      user.security.twoFA = { code: null, date: null, resendDate: null };
       await updateDBUser({ simpleId: user.simpleId }, { security: user.security });
       return res.send(isUnderCoolDown);
     }
+
+    if (user.security.twoFA.code && !twoFASessionExpired && code !== user.security.twoFA.code) {
+      return res.send(new errors.LOGIN_2FA_CODE_WRONG());
+    }
+
     return res.send(new errors.LOGIN_2FA_SESSION_EXPIRED_OR_MISSING());
   } else {
     const isUnderCoolDown = await checkCoolDown(user, agentId);
     if (isUnderCoolDown) {
-      user.security.twoFA = { code: null, date: null };
+      user.security.twoFA = { code: null, date: null, resendDate: null };
       await updateDBUser({ simpleId: user.simpleId }, { security: user.security });
       return res.send(isUnderCoolDown);
     }
@@ -199,8 +224,11 @@ export const twoFALogin: RouteHandler<TwoFactorLoginRoute> = async (req, res) =>
   const userData = await getUserData(req);
   const requiredActions = await getRequiredActionsFromUser(userData);
 
-  // Create session
+  // Create session and empty 2FA security data
   createSession(req, user, agentId, requiredActions);
+  user.security.twoFA = { code: null, date: null, resendDate: null };
+  const updateError = await updateDBUser({ simpleId: user.simpleId }, { security: user.security });
+  if (updateError) return updateError;
 
   return res.send({ ok: true, requiredActions, publicSettings });
 };
@@ -377,6 +405,7 @@ const createSession = (
   agentId: string,
   requiredActions: RequiredActions
 ) => {
+  logger.info(`User logged in (id: '${user._id ? user._id?.toString() : '-'}'). Session created.`);
   if (!user._id) return;
   req.session.isSignedIn = true;
   req.session.username = user.simpleId;

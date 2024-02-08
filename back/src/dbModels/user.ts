@@ -54,6 +54,7 @@ export interface DBUser {
     twoFA: {
       code: string | null;
       date: Date | null;
+      resendDate: Date | null;
     };
 
     // Login logs
@@ -110,6 +111,7 @@ const userSchema = new Schema<DBUser>({
     twoFA: {
       code: { type: String },
       date: { ...dateDBSchema, required: false, default: null },
+      resendDate: { ...dateDBSchema, required: false, default: null },
     },
     lastLoginAttempts: [
       {

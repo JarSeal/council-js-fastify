@@ -86,7 +86,11 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
       date: dateNow,
     },
     edited: [],
-    security: { lastLogins: [], lastLoginAttempts: [], twoFA: { code: null, date: null } },
+    security: {
+      lastLogins: [],
+      lastLoginAttempts: [],
+      twoFA: { code: null, date: null, resendDate: null },
+    },
   });
 
   let savedUser, error;
