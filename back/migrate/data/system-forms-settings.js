@@ -8,7 +8,9 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.sessionMaxAge >= 30 ? Number(config.security.sessionMaxAge) : 3600,
+        config?.security?.sessionMaxAge >= 30
+          ? Math.round(Number(config.security.sessionMaxAge))
+          : 3600,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
         { label: { langKey: '1 minute' }, value: 60 },
@@ -56,7 +58,7 @@ const systemSettingsFormElems = [
       category: 'security',
       description: {
         langKey:
-          'How long is the maximum session age (idle age). Editing this setting will restart the app.',
+          'How long is the maximum session age. If "Rolling session" is set ON, then this is the idle time. Editing this setting will restart the app.',
       },
     },
     label: { langKey: 'Session max age' },
@@ -81,8 +83,12 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.maxLoginAttempts >= 1 ? Number(config.security.maxLoginAttempts) : 4,
+        config?.security?.maxLoginAttempts >= 1
+          ? Math.round(Number(config.security.maxLoginAttempts))
+          : 4,
       minValue: 1,
+      precision: 0,
+      step: 1,
       category: 'security',
       publicSetting: true,
       description: {
@@ -97,7 +103,8 @@ const systemSettingsFormElems = [
     elemType: 'inputDropDown',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.coolDownAge >= 30 ? Number(config.security.coolDownAge) : 240,
+      defaultValue:
+        config?.security?.coolDownAge >= 30 ? Math.round(Number(config.security.coolDownAge)) : 240,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
         { label: { langKey: '1 minute' }, value: 60 },
@@ -137,8 +144,11 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.maxLoginLogs >= 0 ? Number(config.security.maxLoginLogs) : 5,
+      defaultValue:
+        config?.security?.maxLoginLogs >= 0 ? Math.round(Number(config.security.maxLoginLogs)) : 5,
       minValue: 0,
+      precision: 0,
+      step: 1,
       category: 'security',
       description: {
         langKey: 'How many successfull logins are logged. 0 is infinite.',
@@ -153,9 +163,11 @@ const systemSettingsFormElems = [
     elemData: {
       defaultValue:
         config?.security?.maxLoginAttemptLogs >= 0
-          ? Number(config.security.maxLoginAttemptLogs)
+          ? Math.round(Number(config.security.maxLoginAttemptLogs))
           : 5,
       minValue: 0,
+      precision: 0,
+      step: 1,
       category: 'security',
       description: {
         langKey: 'How many failed logins are logged. 0 is infinite.',
@@ -181,12 +193,15 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.security?.maxEmails >= 1 ? Number(config.security.maxEmails) : 2,
+      defaultValue:
+        config?.security?.maxEmails >= 1 ? Math.round(Number(config.security.maxEmails)) : 2,
       minValue: 1,
+      precision: 0,
+      step: 1,
       category: 'security',
       publicSetting: true,
       description: {
-        langKey: 'Maximum emails a user can have. Minimum is 1.',
+        langKey: 'Maximum emails a user can have.',
       },
     },
     label: { langKey: 'Max emails per user' },
@@ -222,10 +237,28 @@ const systemSettingsFormElems = [
       publicSetting: true,
       description: {
         langKey:
-          'Whether to enable 2-factor authentication for all users or not, or whether the users can choose to enable 2FA for themselves.',
+          'Whether to enable two-factor authentication for all users or not, or whether the users can choose to enable 2FA for themselves. Requires that the setting "Email enabled" is turned ON and all email settings are configured correctly.',
       },
     },
-    label: { langKey: 'Use 2-factor authentication' },
+    label: { langKey: 'Use two-factor authentication (2FA)' },
+  },
+  {
+    elemId: 'twoFASessionAgeInMin',
+    elemType: 'inputNumber',
+    valueType: 'number',
+    elemData: {
+      defaultValue:
+        config?.security?.twoFASessionAgeInMin >= 0
+          ? Number(config.security.twoFASessionAgeInMin)
+          : 30,
+      minValue: 0.5,
+      unit: { single: { langKey: 'minute' }, multi: { langKey: 'minutes' } },
+      category: 'security',
+      description: {
+        langKey: 'How long is the two-factor authentication session in minutes.',
+      },
+    },
+    label: { langKey: 'Two-factor authentication session age (2FA)' },
   },
   {
     elemId: 'loginMethod',
@@ -281,8 +314,12 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.defaultEditedLogs >= 0 ? Number(config.security.defaultEditedLogs) : 5,
+        config?.security?.defaultEditedLogs >= 0
+          ? Math.round(Number(config.security.defaultEditedLogs))
+          : 5,
       minValue: 0,
+      precision: 0,
+      step: 1,
       category: 'security',
       description: {
         langKey:
@@ -291,7 +328,7 @@ const systemSettingsFormElems = [
     },
     label: { langKey: 'Default Edited History Log Items Count' },
   },
-  // security CATEGORY [END]
+  // security CATEGORY [/END]
 
   // data CATEGORY [START]
   {
@@ -300,8 +337,12 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.dataItemsMaxLimit >= 1 ? Number(config.security.dataItemsMaxLimit) : 500,
+        config?.security?.dataItemsMaxLimit >= 1
+          ? Math.round(Number(config.security.dataItemsMaxLimit))
+          : 500,
       minValue: 1,
+      precision: 0,
+      step: 1,
       category: 'data',
       publicSetting: true,
       description: {
@@ -339,7 +380,7 @@ const systemSettingsFormElems = [
     },
     label: { langKey: 'Data Items Max Limit' },
   },
-  // data CATEGORY [END]
+  // data CATEGORY [/END]
 
   // caches CATEGORY [START]
   {
@@ -349,7 +390,7 @@ const systemSettingsFormElems = [
     elemData: {
       defaultValue:
         config?.security?.userGroupsCacheTime >= 30
-          ? Number(config.security.userGroupsCacheTime)
+          ? Math.round(Number(config.security.userGroupsCacheTime))
           : 180,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
@@ -384,7 +425,7 @@ const systemSettingsFormElems = [
     },
     label: { langKey: 'User Groups Session Cache Time' },
   },
-  // caches CATEGORY [END]
+  // caches CATEGORY [/END]
 
   // email CATEGORY [START]
   {
@@ -447,14 +488,33 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue: 587,
+      precision: 0,
+      step: 1,
       category: 'email',
       description: {
-        langKey: 'Email SMTP port.',
+        langKey: 'Email SMTP port number.',
       },
     },
     label: { langKey: 'Email Port' },
   },
-  // email CATEGORY [END]
+  // email CATEGORY [/END]
+
+  // appGeneral CATEGORY [START]
+  {
+    elemId: 'appName',
+    elemType: 'inputText',
+    valueType: 'string',
+    elemData: {
+      defaultValue: config?.appGeneral?.appName || 'Council',
+      category: 'appGeneral',
+      publicSetting: true,
+      description: {
+        langKey: 'Application name to be shown in different places (eg. emails and page titles).',
+      },
+    },
+    label: { langKey: 'Application name' },
+  },
+  // appGeneral CATEGORY [/END]
 ];
 
 module.exports = systemSettingsFormElems;

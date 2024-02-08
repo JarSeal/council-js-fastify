@@ -10,6 +10,7 @@
     "forceEmailVerification": false,
     "maxEmails": 2,
     "use2FA": "DISABLED",
+    "twoFASessionAgeInMin": 30,
     "loginMethod": "USER_CHOOSES_USERNAME_AS_DEFAULT"
   },
   "data": {
@@ -18,5 +19,8 @@
   },
   "caches": {
     "userGroupsCacheTime": 180
+  },
+  "appGeneral": {
+    "appName": "Council"
   }
 }

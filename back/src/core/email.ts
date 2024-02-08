@@ -1,7 +1,7 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 import { marked } from 'marked';
 
-import { decryptData, getSysSetting } from './config';
+import { IS_TEST, decryptData, getSysSetting } from './config';
 import { logger } from './app';
 import DBEmailModel, { type DBEmail } from '../dbModels/email';
 
@@ -38,7 +38,7 @@ type SendEmailParams = {
 
 export const sendEmail = async ({ to, templateId, templateVars }: SendEmailParams) => {
   const emailEnabled = (await getSysSetting<boolean>('useEmail')) || false;
-  if (!emailEnabled) return;
+  if (!emailEnabled || IS_TEST) return;
 
   if (!to) {
     logger.error("Email sending failed, 'to' param was empty.");

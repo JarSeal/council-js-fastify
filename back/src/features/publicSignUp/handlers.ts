@@ -6,7 +6,7 @@ import { validateFormDataInput } from '../../utils/validation';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
-import { HASH_SALT_ROUNDS } from '../../core/config';
+import { HASH_SALT_ROUNDS, getAppName } from '../../core/config';
 import { createUrlTokenAndId } from '../../utils/token';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import { sendEmail } from '../../core/email';
@@ -104,7 +104,7 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
     to: email,
     templateId: 'welcomeEmail',
     templateVars: {
-      appName: 'Council', // @TODO: change this to come from a setting
+      appName: await getAppName(),
       username,
       sysLoginUrl: 'http://localhost:4004', // @TODO: change this to come from a setting
       newPassRequestUrl: 'http://localhost:4004', // @TODO: change this to come from a setting

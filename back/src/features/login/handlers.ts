@@ -1,17 +1,25 @@
-import type { FastifyError, RouteHandler } from 'fastify';
+import type { FastifyError, FastifyRequest, RouteHandler } from 'fastify';
 import bcrypt from 'bcrypt';
 
-import type { LoginRoute } from './schemas';
+import type { LoginRoute, RequiredActions, TwoFactorLoginRoute } from './schemas';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import { errors } from '../../core/errors';
-import { getConfig, getPublicSysSettings, getSysSetting } from '../../core/config';
+import {
+  IS_TEST,
+  getAppName,
+  getConfig,
+  getPublicSysSettings,
+  getSysSetting,
+} from '../../core/config';
 import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
 import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
 import { getUserData } from '../../utils/userAndPrivilegeChecks';
 import { validateLoginMethod } from '../../utils/validation';
 import { sendEmail } from '../../core/email';
 
+// BASIC LOGIN ROUTE
+// ********************************
 export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const body = req.body;
   const usernameOrEmail = body.usernameOrEmail.trim();
@@ -69,45 +77,50 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const userData = await getUserData(req);
   const requiredActions = await getRequiredActionsFromUser(userData);
 
+  // Check if still in 2FA session
+  const twoFASessionAge = (await getSysSetting<number>('twoFASessionAgeInMin')) || 30;
+  const timestampNow = new Date().getTime();
+  const expirationTime =
+    user.security.twoFA.date && twoFASessionAge
+      ? twoFASessionAge * 60000 + user.security.twoFA.date.getTime()
+      : 0;
+  if (timestampNow < expirationTime) {
+    return res.send({
+      ok: true,
+      twoFactorUser: username as string,
+      requiredActions,
+      publicSettings,
+    });
+  }
+
   // Check 2FA
   if (await checkIf2FAEnabled()) {
     const resetError = await logAndResetLoginAttempts(user, agentId, true);
     if (resetError) return res.send(resetError);
 
     // Create code (and date) and save it to user
-    const code = 123456; // @TODO: create actual code
-    let savedUser, error;
+    const code = generate2FACode();
     user.security.twoFA = { code, date: new Date() };
-    try {
-      savedUser = await DBUserModel.findOneAndUpdate<DBUser>(
-        { simpleId: user.simpleId },
-        { security: user.security },
-        { new: true }
-      );
-    } catch (err) {
-      error = `Error while trying to update 2FA code for user login: ${JSON.stringify(err)}`;
-    }
-    if (!savedUser || error) {
-      return new errors.DB_UPDATE_USER(
-        error || 'savedUser returned empty in update 2FA code for user login'
-      );
-    }
+    const updateError = await updateDBUser(
+      { simpleId: user.simpleId },
+      { security: user.security }
+    );
+    if (updateError) return res.send(updateError);
 
     if (email) {
       await sendEmail({
         to: email,
         templateId: '2FACodeEmail',
         templateVars: {
-          appName: 'Council', // @TODO: change this to come from a setting
+          appName: await getAppName(),
           twoFactorCode: code,
-          twoFactorLifeInMinutes: 5, // @TODO: add setting for twoFactorLifeInMinutes
+          twoFactorLifeInMinutes: (await getSysSetting<number>('twoFASessionAgeInMin')) || '~30',
         },
       });
     } else {
       return res.send(new errors.GENERAL_ERROR('User primary email not found for 2FA'));
     }
 
-    // @WIP
     return res.send({
       ok: true,
       twoFactorUser: username as string,
@@ -123,14 +136,77 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   }
 
   // Create session
-  req.session.isSignedIn = true;
-  req.session.username = user.simpleId;
-  req.session.userId = user._id;
-  req.session.agentId = agentId;
-  req.session.requiredActions = requiredActions;
+  createSession(req, user, agentId, requiredActions);
 
   return res.status(200).send({ ok: true, requiredActions, publicSettings });
 };
+
+// TWO-FACTOR AUTHENTICATION ROUTE:
+// ********************************
+export const twoFALogin: RouteHandler<TwoFactorLoginRoute> = async (req, res) => {
+  const body = req.body;
+  const username = body.username;
+  const code = body.code;
+  const agentId = body.agentId;
+
+  // Find user
+  const user = await DBUserModel.findOne<DBUser>({ simpleId: username });
+  if (!user) {
+    return res.send(new errors.LOGIN_2FA_SESSION_EXPIRED_OR_MISSING());
+  }
+
+  // Check 2FA session and code
+  const twoFASessionAge = (await getSysSetting<number>('twoFASessionAgeInMin')) || 30;
+  const timestampNow = new Date().getTime();
+  const expirationTime =
+    user.security.twoFA.date && twoFASessionAge
+      ? twoFASessionAge * 60000 + user.security.twoFA.date.getTime()
+      : 0;
+  const twoFASessionExpired = timestampNow > expirationTime;
+  if (!user.security.twoFA.code || twoFASessionExpired || code !== user.security.twoFA.code) {
+    // Add loginAttempt and set isUnderCoolDown if max attempts
+    const error = await setInvalidLoginAttempt(user, agentId);
+    if (error) {
+      return res.send(error);
+    }
+
+    const isUnderCoolDown = await checkCoolDown(user, agentId);
+    if (isUnderCoolDown) {
+      user.security.twoFA = { code: null, date: null };
+      await updateDBUser({ simpleId: user.simpleId }, { security: user.security });
+      return res.send(isUnderCoolDown);
+    }
+    return res.send(new errors.LOGIN_2FA_SESSION_EXPIRED_OR_MISSING());
+  } else {
+    const isUnderCoolDown = await checkCoolDown(user, agentId);
+    if (isUnderCoolDown) {
+      user.security.twoFA = { code: null, date: null };
+      await updateDBUser({ simpleId: user.simpleId }, { security: user.security });
+      return res.send(isUnderCoolDown);
+    }
+  }
+
+  // Reset login attempts and log login
+  const logAndResetLoginAttemptsError = await logAndResetLoginAttempts(user, agentId);
+  if (logAndResetLoginAttemptsError) {
+    return res.send(logAndResetLoginAttemptsError);
+  }
+
+  // Get public settings
+  const publicSettings = await getPublicSysSettings();
+
+  // Check user action requirements
+  const userData = await getUserData(req);
+  const requiredActions = await getRequiredActionsFromUser(userData);
+
+  // Create session
+  createSession(req, user, agentId, requiredActions);
+
+  return res.send({ ok: true, requiredActions, publicSettings });
+};
+
+// UTILS:
+// ********************************
 
 // Check cool down
 const checkCoolDown = async (user: DBUser, agentId: string): Promise<null | FastifyError> => {
@@ -140,24 +216,12 @@ const checkCoolDown = async (user: DBUser, agentId: string): Promise<null | Fast
 
   if (!user.security.coolDownStarted) {
     // coolDownStarted was empty, reset it (shouldn't happen)
-    let error, savedUser;
     user.security.coolDownStarted = new Date();
-    try {
-      savedUser = await DBUserModel.findOneAndUpdate<DBUser>(
-        { simpleId: user.simpleId },
-        { security: user.security },
-        { new: true }
-      );
-    } catch (err) {
-      error = `Error while trying to update coolDownStarted (coolDownStarted was 'null'): ${JSON.stringify(
-        err
-      )}`;
-    }
-    if (!savedUser || error) {
-      return new errors.DB_UPDATE_USER(
-        error || 'savedUser returned empty in update coolDownStarted because it was null'
-      );
-    }
+    const updateError = await updateDBUser(
+      { simpleId: user.simpleId },
+      { security: user.security }
+    );
+    if (updateError) return updateError;
   }
 
   // Check if user is still under cool down period
@@ -190,7 +254,6 @@ const setInvalidLoginAttempt = async (
   agentId: string
 ): Promise<null | FastifyError> => {
   if (!user.security.isUnderCoolDown) {
-    let error, savedUser;
     const maxLoginAttempts =
       (await getSysSetting<number>('maxLoginAttempts')) ||
       getConfig<number>('security.maxLoginAttempts', 4);
@@ -206,31 +269,15 @@ const setInvalidLoginAttempt = async (
             maxLoginAttemptLogs
           )
         : [{ date: new Date(), agentId }, ...user.security.lastLoginAttempts];
-    let maxLoginsAttempted = false;
     if (maxLoginAttempts <= loginAttempts) {
       user.security.coolDownStarted = new Date();
       user.security.isUnderCoolDown = true;
-      maxLoginsAttempted = true;
     }
-    try {
-      savedUser = await DBUserModel.findOneAndUpdate<DBUser>(
-        { simpleId: user.simpleId },
-        { security: user.security },
-        { new: true }
-      );
-    } catch (err) {
-      error = `Error while trying to update loginAttempts${
-        maxLoginsAttempted ? ' (maxLoginAttempts reached)' : ''
-      }: ${JSON.stringify(err)}`;
-    }
-    if (!savedUser || error) {
-      return new errors.DB_UPDATE_USER(
-        error ||
-          `savedUser returned empty in update loginAttempts${
-            maxLoginsAttempted ? ' (maxLoginAttempts reached)' : ''
-          }`
-      );
-    }
+    const updateError = await updateDBUser(
+      { simpleId: user.simpleId },
+      { security: user.security }
+    );
+    if (updateError) return updateError;
   }
   return null;
 };
@@ -241,7 +288,6 @@ const logAndResetLoginAttempts = async (
   agentId: string,
   doNotLog?: boolean
 ): Promise<null | FastifyError> => {
-  let error, savedUser;
   user.security.loginAttempts = 0;
   user.security.coolDownStarted = null;
   user.security.isUnderCoolDown = false;
@@ -253,37 +299,88 @@ const logAndResetLoginAttempts = async (
         ? [{ date: new Date(), agentId }, ...user.security.lastLogins].splice(0, maxLoginLogs)
         : [{ date: new Date(), agentId }, ...user.security.lastLogins];
   }
-  try {
-    savedUser = await DBUserModel.findOneAndUpdate<DBUser>(
-      { simpleId: user.simpleId },
-      { security: user.security },
-      { new: true }
-    );
-  } catch (err) {
-    error = `Error while trying to reset loginAttempts, coolDownStarted, and isUnderCoolDown: ${JSON.stringify(
-      err
-    )}`;
-  }
-  if (!savedUser || error) {
-    return new errors.DB_UPDATE_USER(
-      error ||
-        'savedUser returned empty in reset loginAttempts, coolDownStarted, and isUnderCoolDown'
-    );
-  }
+  const updateError = await updateDBUser({ simpleId: user.simpleId }, { security: user.security });
+  if (updateError) return updateError;
+
   return null;
 };
 
 const checkIf2FAEnabled = async () => {
-  const sysSetting = await getSysSetting<string>('use2FA');
+  const use2FA = await getSysSetting<string>('use2FA');
+  const useEmail = await getSysSetting<boolean>('useEmail');
+  const hasEmailHost = Boolean(await getSysSetting<string>('emailHost'));
+  const hasEmailUser = Boolean(await getSysSetting<string>('emailUser'));
+  const hasEmailPass = Boolean(await getSysSetting<string>('emailPass'));
+  const hasEmailPort = Boolean(await getSysSetting<string>('emailPort'));
   let userEnabled = false;
-  if (sysSetting === 'DISABLED') {
+  if (
+    use2FA === 'DISABLED' ||
+    !useEmail ||
+    !hasEmailHost ||
+    !hasEmailUser ||
+    !hasEmailPass ||
+    !hasEmailPort
+  ) {
     return false;
-  } else if (sysSetting?.startsWith('USER_CHOOSES')) {
+  } else if (use2FA?.startsWith('USER_CHOOSES')) {
     // @TODO: get user setting for 2FA
     userEnabled = false;
   }
 
-  if (sysSetting === 'ENABLED' || userEnabled) return true;
+  if (use2FA === 'ENABLED' || userEnabled) return true;
 
-  return true;
+  return false;
+};
+
+export const updateDBUser = async (
+  find: { [key: string]: unknown },
+  update: { [key: string]: unknown },
+  errMsg?: string
+): Promise<null | FastifyError> => {
+  let savedUser, error;
+  try {
+    savedUser = await DBUserModel.findOneAndUpdate<DBUser>(find, update, { new: true });
+  } catch (err) {
+    error = errMsg
+      ? `${errMsg}: : ${JSON.stringify(err)}`
+      : `Error while trying to update user (updateUser util in login): ${JSON.stringify(err)}`;
+  }
+  if (!savedUser || error) {
+    return new errors.DB_UPDATE_USER(
+      error || 'savedUser returned empty (updateUser util in login)'
+    );
+  }
+
+  return null;
+};
+
+export const generate2FACode = () => {
+  const CODE_LENGTH = 6;
+  const CODE_SOURCE_CHARS = '0123456789QWERTY';
+  let result = '';
+  if (IS_TEST) {
+    for (let i = 0; i < CODE_LENGTH; i++) {
+      result += CODE_SOURCE_CHARS.charAt(i);
+    }
+  } else {
+    const charactersLength = CODE_SOURCE_CHARS.length;
+    for (let i = 0; i < CODE_LENGTH; i++) {
+      result += CODE_SOURCE_CHARS.charAt(Math.floor(Math.random() * charactersLength));
+    }
+  }
+  return result;
+};
+
+const createSession = (
+  req: FastifyRequest,
+  user: DBUser,
+  agentId: string,
+  requiredActions: RequiredActions
+) => {
+  if (!user._id) return;
+  req.session.isSignedIn = true;
+  req.session.username = user.simpleId;
+  req.session.userId = user._id;
+  req.session.agentId = agentId;
+  req.session.requiredActions = requiredActions;
 };

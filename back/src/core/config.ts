@@ -11,6 +11,8 @@ export type Environment = 'development' | 'production' | 'test';
 export const ENVIRONMENT =
   ['development', 'production', 'test'].find((env) => env === process.env.NODE_ENV) || 'production';
 export const IS_PRODUCTION = ENVIRONMENT === 'production';
+export const IS_TEST = ENVIRONMENT === 'test';
+export const IS_DEVELOPMENT = ENVIRONMENT === 'development';
 
 export const HOST = process.env.HOST || '127.0.0.1';
 export const PORT = parseInt(process.env.PORT || '4000');
@@ -158,3 +160,5 @@ export function decryptData(encryptedData: string) {
   // Decrypts data and converts to utf8
   return decipher.update(buff.toString('utf8'), 'hex', 'utf8') + decipher.final('utf8');
 }
+
+export const getAppName = async () => (await getSysSetting<string>('appName')) || 'Council';

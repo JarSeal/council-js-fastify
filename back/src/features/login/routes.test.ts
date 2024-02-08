@@ -6,6 +6,7 @@ import { SESSION_COOKIE_NAME, getConfig } from '../../core/config';
 import type { Reply } from './schemas';
 import type { LogoutRoute } from '../logout/schemas';
 import { createUser, csrfHeader, validAgentId } from '../../test/utils';
+import { generate2FACode } from './handlers';
 
 describe('login', () => {
   let app: FastifyInstance;
@@ -317,4 +318,16 @@ describe('login', () => {
     expect(response?.statusCode).toBe(200);
     expect(body).toStrictEqual({ ok: true });
   });
+
+  it('generate2FACode', () => {
+    const result = generate2FACode();
+    expect(result).toHaveLength(6);
+    expect(typeof result).toBe('string');
+  });
+
+  // @TODO: should fail when no 2FA session
+
+  // @TODO: should go to cooldown when too many failed 2FA attempts
+
+  // @TODO: should successfully login with 2FA
 });

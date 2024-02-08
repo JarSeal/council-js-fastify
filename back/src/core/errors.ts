@@ -7,6 +7,7 @@ export enum ErrorCodes {
   BAD_REQUEST = 'BAD_REQUEST',
   LOGIN_USER_OR_PASS_WRONG = 'LOGIN_USER_OR_PASS_WRONG',
   LOGIN_USER_UNDER_COOLDOWN = 'LOGIN_USER_UNDER_COOLDOWN',
+  LOGIN_2FA_SESSION_EXPIRED_OR_MISSING = 'LOGIN_2FA_SESSION_EXPIRED_OR_MISSING',
   USERNAME_TAKEN = 'USERNAME_TAKEN',
   EMAIL_TAKEN = 'EMAIL_TAKEN',
   COUNCL_ERR_VALIDATE = 'COUNCL_ERR_VALIDATE',
@@ -43,6 +44,11 @@ const errors = {
   LOGIN_USER_UNDER_COOLDOWN: createError(
     ErrorCodes.LOGIN_USER_UNDER_COOLDOWN,
     'User is under cooldown, login denied (%s)',
+    401
+  ),
+  LOGIN_2FA_SESSION_EXPIRED_OR_MISSING: createError(
+    ErrorCodes.LOGIN_2FA_SESSION_EXPIRED_OR_MISSING,
+    'Two-factor authentication session has either expired or is missing',
     401
   ),
   USERNAME_TAKEN: createError(ErrorCodes.USERNAME_TAKEN, "Username '%s' is taken", 400),

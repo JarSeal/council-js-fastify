@@ -52,7 +52,7 @@ export interface DBUser {
 
     // 2FA code and created date
     twoFA: {
-      code: number | null;
+      code: string | null;
       date: Date | null;
     };
 
@@ -108,7 +108,7 @@ const userSchema = new Schema<DBUser>({
     coolDownStarted: { ...dateDBSchema, required: false, default: null },
     isUnderCoolDown: { type: Boolean, required: true, default: false },
     twoFA: {
-      code: { type: Number },
+      code: { type: String },
       date: { ...dateDBSchema, required: false, default: null },
     },
     lastLoginAttempts: [
