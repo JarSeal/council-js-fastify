@@ -61,7 +61,7 @@ const systemSettingsFormElems = [
           'How long is the maximum session age. If "Rolling session" is set ON, then this is the idle time. Editing this setting will restart the app.',
       },
     },
-    label: { langKey: 'Session max age' },
+    label: { langKey: 'Session Max Age' },
   },
   {
     elemId: 'sessionIsRolling',
@@ -75,7 +75,7 @@ const systemSettingsFormElems = [
           'Whether the session type is "Rolling" or not. When "Rolling" is turned on, it means that the session expiration time is reset on every session check / api call. It also means that the session is saved to the sessionStore all the time (more calls). Editing this setting will restart the app.',
       },
     },
-    label: { langKey: 'Rolling Session' },
+    label: { langKey: 'Use Rolling Session' },
   },
   {
     elemId: 'maxLoginAttempts',
@@ -96,7 +96,7 @@ const systemSettingsFormElems = [
           'How many failed login attempts can a user make before their account goes under cooldown.',
       },
     },
-    label: { langKey: 'Max login attempts' },
+    label: { langKey: 'Max Login Attempts' },
   },
   {
     elemId: 'coolDownAge',
@@ -137,7 +137,7 @@ const systemSettingsFormElems = [
           'How long must the user cooldown after Max login attempts are used (failed login attempts).',
       },
     },
-    label: { langKey: 'Cooldown time after max login attempts' },
+    label: { langKey: 'Cooldown Time After Max Login Attempts' },
   },
   {
     elemId: 'maxLoginLogs',
@@ -154,7 +154,7 @@ const systemSettingsFormElems = [
         langKey: 'How many successfull logins are logged. 0 is infinite.',
       },
     },
-    label: { langKey: 'Max successfull login logs count' },
+    label: { langKey: 'Max Successfull Login Logs Count' },
   },
   {
     elemId: 'maxLoginAttemptLogs',
@@ -173,38 +173,7 @@ const systemSettingsFormElems = [
         langKey: 'How many failed logins are logged. 0 is infinite.',
       },
     },
-    label: { langKey: 'Max failed login logs count' },
-  },
-  {
-    elemId: 'forceEmailVerification',
-    elemType: 'inputCheckbox',
-    valueType: 'boolean',
-    elemData: {
-      defaultValue: config?.security?.forceEmailVerification === true,
-      category: 'security',
-      description: {
-        langKey: 'Whether or not the users are forced to verify their primary email addresses.',
-      },
-    },
-    label: { langKey: 'Force Email Verification' },
-  },
-  {
-    elemId: 'maxEmails',
-    elemType: 'inputNumber',
-    valueType: 'number',
-    elemData: {
-      defaultValue:
-        config?.security?.maxEmails >= 1 ? Math.round(Number(config.security.maxEmails)) : 2,
-      minValue: 1,
-      precision: 0,
-      step: 1,
-      category: 'security',
-      publicSetting: true,
-      description: {
-        langKey: 'Maximum emails a user can have.',
-      },
-    },
-    label: { langKey: 'Max emails per user' },
+    label: { langKey: 'Max Failed Login Logs Count' },
   },
   {
     elemId: 'use2FA',
@@ -240,7 +209,7 @@ const systemSettingsFormElems = [
           'Whether to enable two-factor authentication for all users or not, or whether the users can choose to enable 2FA for themselves. Requires that the setting "Email enabled" is turned ON and all email settings are configured correctly.',
       },
     },
-    label: { langKey: 'Use two-factor authentication (2FA)' },
+    label: { langKey: 'Use Two-Factor Authentication (2FA)' },
   },
   {
     elemId: 'twoFASessionAgeInMin',
@@ -255,10 +224,11 @@ const systemSettingsFormElems = [
       unit: { single: { langKey: 'minute' }, multi: { langKey: 'minutes' } },
       category: 'security',
       description: {
-        langKey: 'How long is the two-factor authentication session in minutes.',
+        langKey:
+          'How long is the two-factor authentication session in minutes. This is the time the 2FA code is valid. Requires that the setting "Email enabled" is turned ON and all email settings are configured correctly.',
       },
     },
-    label: { langKey: 'Two-factor authentication session age (2FA)' },
+    label: { langKey: 'Two-Factor Authentication (2FA) Code Expiration Time' },
   },
   {
     elemId: 'loginMethod',
@@ -306,7 +276,7 @@ const systemSettingsFormElems = [
           'Allowed host names list, separated by a comma (spaces after the comma are ignored). For example: "https://www.example1.com, http://www.example2.com". There could be other allowed URLs which are defined in the environment variables.',
       },
     },
-    label: { langKey: 'Max emails per user' },
+    label: { langKey: 'Allowed Host Names' },
   },
   {
     elemId: 'defaultEditedLogs',
@@ -346,7 +316,7 @@ const systemSettingsFormElems = [
       category: 'data',
       publicSetting: true,
       description: {
-        langKey: 'Listed data items max limit.',
+        langKey: 'Listed data items max limit per page.',
       },
     },
     label: { langKey: 'Data Items Max Limit' },
@@ -378,7 +348,7 @@ const systemSettingsFormElems = [
         langKey: 'Listed data items max limit.',
       },
     },
-    label: { langKey: 'Data Items Max Limit' },
+    label: { langKey: 'Data Collation Locale' },
   },
   // data CATEGORY [/END]
 
@@ -437,10 +407,11 @@ const systemSettingsFormElems = [
       category: 'email',
       publicSetting: true,
       description: {
-        langKey: 'Whether to enable email sending or not.',
+        langKey:
+          'Whether to enable email sending or not. Requires that the email host, user, pass, and port are configured properly.',
       },
     },
-    label: { langKey: 'Email Enabled' },
+    label: { langKey: 'Use Email Service' },
   },
   {
     elemId: 'emailHost',
@@ -463,10 +434,10 @@ const systemSettingsFormElems = [
       defaultValue: process.env.EMAIL_USER || '',
       category: 'email',
       description: {
-        langKey: 'Email SMTP user.',
+        langKey: 'Email SMTP user / username. Usually it is the email address.',
       },
     },
-    label: { langKey: 'Email User' },
+    label: { langKey: 'Email Username' },
   },
   {
     elemId: 'emailPass',
@@ -477,7 +448,7 @@ const systemSettingsFormElems = [
       category: 'email',
       password: true,
       description: {
-        langKey: 'Email SMTP password (encrypted in the DB).',
+        langKey: 'Email SMTP password. This is stored as an encrypted value in the database.',
       },
     },
     label: { langKey: 'Email Password' },
@@ -497,6 +468,38 @@ const systemSettingsFormElems = [
     },
     label: { langKey: 'Email Port' },
   },
+  {
+    elemId: 'forceEmailVerification',
+    elemType: 'inputCheckbox',
+    valueType: 'boolean',
+    elemData: {
+      defaultValue: config?.security?.forceEmailVerification === true,
+      category: 'email',
+      description: {
+        langKey:
+          'Whether or not the users are forced to verify their primary email addresses. Requires that the setting "Email enabled" is turned ON and all email settings are configured correctly.',
+      },
+    },
+    label: { langKey: 'Force Email Verification' },
+  },
+  {
+    elemId: 'maxEmails',
+    elemType: 'inputNumber',
+    valueType: 'number',
+    elemData: {
+      defaultValue:
+        config?.security?.maxEmails >= 1 ? Math.round(Number(config.security.maxEmails)) : 2,
+      minValue: 1,
+      precision: 0,
+      step: 1,
+      category: 'email',
+      publicSetting: true,
+      description: {
+        langKey: 'Maximum emails a user can have.',
+      },
+    },
+    label: { langKey: 'Max Emails per User' },
+  },
   // email CATEGORY [/END]
 
   // appGeneral CATEGORY [START]
@@ -512,7 +515,7 @@ const systemSettingsFormElems = [
         langKey: 'Application name to be shown in different places (eg. emails and page titles).',
       },
     },
-    label: { langKey: 'Application name' },
+    label: { langKey: 'Application Name' },
   },
   // appGeneral CATEGORY [/END]
 ];

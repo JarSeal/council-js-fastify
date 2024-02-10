@@ -12,9 +12,9 @@ import crypto from 'crypto';
 import { URL_TOKEN_SECRET } from '../core/config';
 
 const ALGORITHM = 'HS512';
-const ISSUER = 'Council-Fastify';
-const AUDIENCE = 'Council-Fastify users';
-const SUBJECT_URL_TOKEN = 'Signed Council-Fastify URL token';
+export const ISSUER = 'Council-Fastify';
+export const AUDIENCE = 'Council-Fastify users';
+export const SUBJECT_URL_TOKEN = 'Signed Council-Fastify URL token';
 
 // CREATE URL ID TOKEN
 export const createUrlTokenAndId = async (

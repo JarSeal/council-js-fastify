@@ -102,6 +102,9 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
       if (timestampNow < expirationTime) {
         const resetError = await logAndResetLoginAttempts(user, agentId, true);
         if (resetError) return res.send(resetError);
+        req.log.info(
+          `User (id: ${user._id.toString()}) tried to get a new 2FA code while in session, but has to wait ${RESEND_INTERVAL_IN_MINUTES} minutes before another one can be sent.`
+        );
         return res.send({
           ok: true,
           twoFactorUser: username as string,
