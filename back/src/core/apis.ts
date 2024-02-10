@@ -9,7 +9,7 @@ import systemSettingsRoutes from '../features/systemSettings/routes';
 import { signedInHook } from '../hooks/signedIn';
 import { notSignedInHook } from '../hooks/notSignedIn';
 import { csrfHook } from '../hooks/csrf';
-import { userPublicRoutes } from '../features/user/routes';
+import { userPublicRoutes, userSignedInRoutes } from '../features/user/routes';
 
 export const apiVersion = '/v1';
 const sysPrefixObj = { prefix: apiVersion + '/sys' };
@@ -47,6 +47,7 @@ const notSignedInSystemRoutes: FastifyPluginAsync = async (instance) => {
 const signedInSystemRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', signedInHook);
   await instance.register(systemSettingsRoutes, sysPrefixObj);
+  await instance.register(userSignedInRoutes, sysPrefixObj);
 };
 
 export default apis;
