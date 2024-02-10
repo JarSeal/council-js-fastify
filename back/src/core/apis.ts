@@ -25,6 +25,7 @@ const publicRoutes: FastifyPluginAsync = async (instance) => {
   await instance.register(formDataRoutes);
   await instance.register(healthCheckRoutes, sysPrefixObj);
   await instance.register(logoutRoute, sysPrefixObj);
+  await instance.register(userPublicRoutes, sysPrefixObj);
 };
 
 // All state altering system API routes (check CSRF header)
@@ -39,7 +40,6 @@ const notSignedInSystemRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', notSignedInHook);
   await instance.register(publicSignUpRoute, sysPrefixObj);
   await instance.register(loginRoutes, sysPrefixObj);
-  await instance.register(userPublicRoutes, sysPrefixObj);
 };
 
 // Signed in system API routes:
