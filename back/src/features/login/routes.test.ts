@@ -330,12 +330,8 @@ describe('login', () => {
   // LOGIN UTILS [/END]
 
   // 2FA LOGIN [START]
-
   // @TODO: should fail when no 2FA session
-
   // @TODO: should go to cooldown when too many failed 2FA attempts
-
   // @TODO: should successfully login with 2FA
-
   // 2FA LOGIN [/END]
 });
