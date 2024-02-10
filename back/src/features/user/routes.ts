@@ -1,7 +1,7 @@
 import { type Static, Type } from '@sinclair/typebox';
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 
-import { verifyEmail } from './handlers';
+import { sendVerificationEmail, verifyEmail } from './handlers';
 
 const verifyEmailQuerystringSchema = Type.Object({
   token: Type.String(),
@@ -29,9 +29,31 @@ const userPublicRoutes: FastifyPluginAsync = (instance) => {
     },
   });
 
-  // @TODO: GET /get-verification-email
+  return Promise.resolve();
+};
+
+const sendVerificationEmailParamsSchema = Type.Object({
+  emailIndex: Type.Number(),
+});
+type SendVerificationEmailParams = Static<typeof sendVerificationEmailParamsSchema>;
+
+export interface SendVerificationEmailRoute extends RouteGenericInterface {
+  readonly Params: SendVerificationEmailParams;
+  readonly Reply: VerifyEmailReply | FastifyError;
+}
+
+const userSignedInRoutes: FastifyPluginAsync = (instance) => {
+  instance.route<SendVerificationEmailRoute>({
+    method: 'GET',
+    url: '/user/send-verification-email/:emailIndex',
+    handler: sendVerificationEmail,
+    schema: {
+      params: sendVerificationEmailParamsSchema,
+      response: { 200: verifyEmailReplySchema },
+    },
+  });
 
   return Promise.resolve();
 };
 
-export { userPublicRoutes };
+export { userPublicRoutes, userSignedInRoutes };
