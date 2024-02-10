@@ -4,7 +4,7 @@ import { hash } from 'bcrypt';
 import DBGroupModel, { type DBGroup } from '../dbModels/group';
 import DBUserModel from '../dbModels/user';
 import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../core/config';
-import DBFormModel from '../dbModels/form';
+import DBFormModel, { type DBForm } from '../dbModels/form';
 import type {
   AllPrivilegeProps,
   BasicPrivilegeProps,
@@ -15,6 +15,8 @@ import type {
 import DBFormDataModel from '../dbModels/formData';
 import DBPrivilegeModel from '../dbModels/privilege';
 import { emptyFormDataPrivileges, emptyPrivilege } from '../utils/userAndPrivilegeChecks';
+import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting';
+import { createUrlTokenAndId } from '../utils/token';
 
 export const csrfHeader = { headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE } };
 export const validAgentId = '726616f4bb878fab94f1f1dbc8c6ed79';
@@ -66,13 +68,14 @@ export const createUser = async (
   if (foundUser) return foundUser._id;
   const passwordHash = await hash(opts?.password || 'password', 10);
   const dateNow = new Date();
+  const tokenAndId = await createUrlTokenAndId('EMAIL_VERIFICATION');
   const newUser = new DBUserModel({
     simpleId,
     emails: [
       {
         email: opts?.email || simpleId + '@council.fastify',
         verified: opts?.verified || false,
-        token: null,
+        token: !opts?.verified ? { token: tokenAndId.token, tokenId: tokenAndId.tokenId } : null,
         added: dateNow,
       },
     ],
@@ -502,4 +505,30 @@ export const createSysSettings = async () => {
     ],
     { systemDocument: true }
   );
+};
+
+export const updateSystemSetting = async (simpleId: string, value: unknown) => {
+  const savedSetting = await DBSystemSettingModel.findOne<DBSystemSetting>({ simpleId });
+  if (savedSetting) {
+    await DBSystemSettingModel.findOneAndUpdate({ simpleId }, { value });
+    return savedSetting._id;
+  }
+
+  const settingsForm = await DBFormModel.findOne<DBForm>({ simpleId: 'systemSettings' });
+  if (!settingsForm?.form?.formElems) throw new Error(`System setting form does not exist!`);
+
+  const setting = settingsForm.form.formElems.find((item) => item.elemId === simpleId);
+  if (!setting) throw new Error(`System setting formElem does not exist (simpleId: ${simpleId})!`);
+
+  const newSetting = new DBSystemSettingModel({
+    simpleId,
+    systemDocument: true,
+    edited: [],
+    value,
+    category: setting.elemData?.category,
+  });
+  const newSavedSetting = await newSetting.save();
+  if (!newSavedSetting) throw new Error(`Could not save system setting (simpleId: ${simpleId})!`);
+
+  return newSavedSetting._id;
 };

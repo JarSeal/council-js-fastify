@@ -48,6 +48,7 @@ export const systemSettingsPutReplySchema = Type.Object({
   form: Type.Optional(Type.Record(Type.String(), Type.Unknown())),
 });
 export type SystemSettingsPutReply = Static<typeof systemSettingsPutReplySchema>;
+
 export interface SystemSettingsPutRoute extends RouteGenericInterface {
   readonly Body: SystemSettingsPutBody;
   readonly Reply: SystemSettingsPutReply | FastifyError;

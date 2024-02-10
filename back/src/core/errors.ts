@@ -27,6 +27,8 @@ export enum ErrorCodes {
   FORM_DATA_BAD_REQUEST = 'FORM_DATA_BAD_REQUEST',
   AFTER_FN_ERR = 'AFTER_FN_ERR',
   REQUIRED_ACTIONS_ERR = 'REQUIRED_ACTIONS_ERR',
+  TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND',
+  TOKEN_INVALID_ERR = 'TOKEN_INVALID_ERR',
 }
 
 const createError = (code: ErrorCodes, message: string, statusCode?: number) =>
@@ -99,6 +101,8 @@ const errors = {
     'User has required actions that need to be fullfilled, %s',
     403
   ),
+  TOKEN_NOT_FOUND: createError(ErrorCodes.TOKEN_NOT_FOUND, 'Token was not found: %s', 404),
+  TOKEN_INVALID_ERR: createError(ErrorCodes.TOKEN_INVALID_ERR, 'Token is invalid: %s', 403),
 };
 
 export { errors };
