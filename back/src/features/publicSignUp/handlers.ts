@@ -6,7 +6,7 @@ import { validateFormDataInput } from '../../utils/validation';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
-import { HASH_SALT_ROUNDS, getAppName } from '../../core/config';
+import { HASH_SALT_ROUNDS, getAppName, getSysSetting } from '../../core/config';
 import { createUrlTokenAndId } from '../../utils/token';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import { sendEmail } from '../../core/email';
@@ -114,6 +114,18 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
       newPassRequestUrl: 'http://localhost:4004', // @TODO: change this to come from a setting
     },
   });
+  const forceEmailVerification = await getSysSetting<boolean>('forceEmailVerification');
+  if (forceEmailVerification) {
+    await sendEmail({
+      to: email,
+      templateId: 'verifyEmail',
+      templateVars: {
+        appName: await getAppName(),
+        username,
+        verifyEmailUrl: `http://localhost:4004?token=${tokenAndId.token}`, // @TODO: change this URL to come from a setting
+      },
+    });
+  }
 
   return res.status(200).send({ ok: true });
 };

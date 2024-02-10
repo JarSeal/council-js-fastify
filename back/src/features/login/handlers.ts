@@ -363,6 +363,7 @@ const checkIf2FAEnabled = async () => {
   return false;
 };
 
+// @CONSIDER: maybe move this to some util file
 export const updateDBUser = async (
   find: { [key: string]: unknown },
   update: { [key: string]: unknown },
