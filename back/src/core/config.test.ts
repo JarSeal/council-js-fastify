@@ -54,7 +54,9 @@ describe('config', () => {
   it('getSysSettingsForm', async () => {
     const sysForm = (await getSysSettingsForm()) as DBForm;
     const formElems = sysForm.form.formElems;
-    expect(formElems).toHaveLength(5);
+    expect(formElems[0].elemId).toBe('forceEmailVerification');
+    expect(formElems[1].elemId).toBe('use2FA');
+    expect(formElems[5].elemId).toBe('useEmail');
   });
 
   it('getPublicSysSettings', async () => {

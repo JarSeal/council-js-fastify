@@ -452,6 +452,21 @@ export const createSysSettings = async () => {
         },
         label: { langKey: 'User Groups Session Cache Time' },
       },
+      {
+        elemId: 'useEmail',
+        orderNr: 5,
+        elemType: 'inputCheckbox',
+        valueType: 'boolean',
+        elemData: {
+          defaultValue: false,
+          category: 'email',
+          description: {
+            langKey:
+              'Whether to enable email sending or not. Requires that the email host, user, pass, and port are configured properly.',
+          },
+        },
+        label: { langKey: 'Use Email Service' },
+      },
     ],
     [
       {

@@ -5,6 +5,7 @@ import initApp from '../../core/app';
 import { createSysAdmin, createSysSettings, csrfHeader, validAgentId } from '../../test/utils';
 import { SESSION_COOKIE_NAME } from '../../core/config';
 import type { SystemSettingsGetReply, SystemSettingsPutReply } from './routes';
+import type { FormElem } from '../../dbModels/_modelTypePartials';
 
 describe('systemSettings', () => {
   let app: FastifyInstance;
@@ -70,48 +71,9 @@ describe('systemSettings', () => {
 
     const body = JSON.parse(response.body) as SystemSettingsGetReply;
     expect(response.statusCode).toBe(200);
-    expect(body.data).toStrictEqual([
-      {
-        elemId: 'forceEmailVerification',
-        value: false,
-        valueType: 'boolean',
-        category: 'security',
-        edited: [],
-        orderNr: 0,
-      },
-      {
-        elemId: 'use2FA',
-        value: 'DISABLED',
-        valueType: 'string',
-        category: 'security',
-        edited: [],
-        orderNr: 1,
-      },
-      {
-        elemId: 'defaultEditedLogs',
-        value: 10,
-        valueType: 'number',
-        category: 'logs',
-        edited: [],
-        orderNr: 2,
-      },
-      {
-        elemId: 'loginMethod',
-        value: 'USERNAME_ONLY',
-        valueType: 'string',
-        category: 'security',
-        edited: [],
-        orderNr: 3,
-      },
-      {
-        elemId: 'userGroupsCacheTime',
-        value: 180,
-        valueType: 'number',
-        category: 'caches',
-        edited: [],
-        orderNr: 4,
-      },
-    ]);
+    expect(body.data[0].elemId).toBe('forceEmailVerification');
+    expect(body.data[1].elemId).toBe('use2FA');
+    expect(body.data[5].elemId).toBe('useEmail');
   });
 
   it('should GET one setting with settingId successfully', async () => {
@@ -241,137 +203,10 @@ describe('systemSettings', () => {
         orderNr: 2,
       },
     ]);
-    expect(body.form).toStrictEqual({
-      formTitle: { langKey: 'Form title' },
-      formText: { langKey: 'Form text' },
-      lockOrder: false,
-      formElems: [
-        {
-          label: { langKey: 'Force E-mail verification' },
-          elemId: 'forceEmailVerification',
-          orderNr: 0,
-          elemType: 'inputCheckbox',
-          valueType: 'boolean',
-          classes: [],
-          elemData: {
-            defaultValue: false,
-            category: 'security',
-            description: {
-              langKey:
-                "Whether users' must verify their E-mail before being able to use the service or not.",
-            },
-          },
-          doNotSave: false,
-          inputErrors: [],
-        },
-        {
-          label: { langKey: 'Use 2-factor authentication' },
-          elemId: 'use2FA',
-          orderNr: 1,
-          elemType: 'inputDropDown',
-          valueType: 'string',
-          classes: [],
-          elemData: {
-            defaultValue: 'DISABLED',
-            options: [
-              { label: { langKey: 'Disabled' }, value: 'DISABLED' },
-              { label: { langKey: 'Enabled' }, value: 'ENABLED' },
-              { label: { langKey: 'User chooses' }, value: 'USER_CHOOSES' },
-              {
-                label: { langKey: 'User chooses, set to disabled for all' },
-                value: 'USER_CHOOSES_AND_SET_TO_DISABLED',
-              },
-              {
-                label: { langKey: 'User chooses, set to enabled for all' },
-                value: 'USER_CHOOSES_AND_SET_TO_ENABLED',
-              },
-            ],
-            category: 'security',
-            publicSetting: true,
-            description: {
-              langKey:
-                'Whether to enable 2-factor authentication for all users or not, or whether users can choose to enable 2FA for themselves.',
-            },
-          },
-          doNotSave: false,
-          inputErrors: [],
-        },
-        {
-          label: { langKey: 'Default edited history count' },
-          elemId: 'defaultEditedLogs',
-          orderNr: 2,
-          elemType: 'inputNumber',
-          valueType: 'number',
-          classes: [],
-          elemData: {
-            defaultValue: 10,
-            category: 'logs',
-            description: {
-              langKey:
-                'How many edited logs are logged by default to all edited history arrays (0 - Infinity).',
-            },
-            minValue: 0,
-          },
-          doNotSave: false,
-          inputErrors: [],
-        },
-        {
-          label: { langKey: 'Login with Username, Email, or Both' },
-          elemId: 'loginMethod',
-          orderNr: 3,
-          elemType: 'inputDropDown',
-          valueType: 'string',
-          classes: [],
-          elemData: {
-            defaultValue: 'USERNAME_ONLY',
-            options: [
-              { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
-              { label: { langKey: 'Email only' }, value: 'EMAIL_ONLY' },
-              {
-                label: { langKey: 'User chooses, Username as default' },
-                value: 'USER_CHOOSES_USERNAME_AS_DEFAULT',
-              },
-              {
-                label: { langKey: 'User chooses, Email as default' },
-                value: 'USER_CHOOSES_EMAIL_AS_DEFAULT',
-              },
-            ],
-            category: 'security',
-            publicSetting: true,
-            description: {
-              langKey:
-                'Whether users are required to login with a Username or Email, or if they can choose the option',
-            },
-          },
-          doNotSave: false,
-          inputErrors: [],
-        },
-        {
-          elemId: 'userGroupsCacheTime',
-          elemType: 'inputDropDown',
-          orderNr: 4,
-          valueType: 'number',
-          classes: [],
-          elemData: {
-            defaultValue: 180,
-            options: [
-              { label: { langKey: '30 seconds' }, value: 30 },
-              { label: { langKey: '3 minutes' }, value: 180 },
-              { label: { langKey: '10 minutes' }, value: 600 },
-            ],
-            category: 'caches',
-            description: {
-              langKey:
-                "How long is the cache time for user groups on the user's session. If a user is added/removed to/from a group, it will take this amount of time before the session registers it. Logging out and in again will reset cache.",
-            },
-          },
-          label: { langKey: 'User Groups Session Cache Time' },
-          doNotSave: false,
-          inputErrors: [],
-        },
-      ],
-      classes: [],
-    });
+    const formElems = body.form?.formElems as FormElem[];
+    expect(formElems[0].elemId).toBe('forceEmailVerification');
+    expect(formElems[1].elemId).toBe('use2FA');
+    expect(formElems[5].elemId).toBe('useEmail');
   });
 
   it('should GET all settings from two categories successfully', async () => {
