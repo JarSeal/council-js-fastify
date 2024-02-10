@@ -21,6 +21,7 @@ describe('login', () => {
     await mongoose.connection.close();
   });
 
+  // BASIC LOGIN [START]
   it('should fail without the CSRF header', async () => {
     await createUser('csrfUser', { password: 'csrfPassword' });
     const response = await app.inject({
@@ -318,16 +319,23 @@ describe('login', () => {
     expect(response?.statusCode).toBe(200);
     expect(body).toStrictEqual({ ok: true });
   });
+  // BASIC LOGIN [/END]
 
+  // LOGIN UTILS [START]
   it('generate2FACode', () => {
     const result = generate2FACode();
     expect(result).toHaveLength(6);
     expect(typeof result).toBe('string');
   });
+  // LOGIN UTILS [/END]
+
+  // 2FA LOGIN [START]
 
   // @TODO: should fail when no 2FA session
 
   // @TODO: should go to cooldown when too many failed 2FA attempts
 
   // @TODO: should successfully login with 2FA
+
+  // 2FA LOGIN [/END]
 });
