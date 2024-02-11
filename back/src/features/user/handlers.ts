@@ -146,6 +146,9 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
 // SEND NEW PASSWORD LINK EMAIL ROUTE
 // ********************************
 export const sendNewPasswordLink: RouteHandler<SendNewPasswordRoute> = async (req, res) => {
+  // Check if email is enabled
+  // Check the password link requirements @TODO: create password link requirements sys setting (DISABLED, USERNAME_ONLY, EMAIL_ONLY, EITHER, BOTH_REQUIRED)
+
   const email = req.body.email;
   email;
 

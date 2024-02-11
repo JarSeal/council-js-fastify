@@ -18,6 +18,7 @@ import { getUserData } from '../../utils/userAndPrivilegeChecks';
 import { validateLoginMethod } from '../../utils/validation';
 import { sendEmail } from '../../core/email';
 import { logger } from '../../core/app';
+import { is2FAEnabled } from '../../utils/common';
 
 // BASIC LOGIN ROUTE
 // ********************************
@@ -79,7 +80,7 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
   const requiredActions = await getRequiredActionsFromUser(userData);
 
   // Check 2FA
-  if (await checkIf2FAEnabled()) {
+  if (await is2FAEnabled()) {
     // Check if already in a 2FA session
     const twoFASessionAge = (await getSysSetting<number>('twoFASessionAgeInMin')) || 30;
     const timestampNow = new Date().getTime();
@@ -334,33 +335,6 @@ const logAndResetLoginAttempts = async (
   if (updateError) return updateError;
 
   return null;
-};
-
-const checkIf2FAEnabled = async () => {
-  const use2FA = await getSysSetting<string>('use2FA');
-  const useEmail = await getSysSetting<boolean>('useEmail');
-  const hasEmailHost = IS_TEST || Boolean(await getSysSetting<string>('emailHost'));
-  const hasEmailUser = IS_TEST || Boolean(await getSysSetting<string>('emailUser'));
-  const hasEmailPass = IS_TEST || Boolean(await getSysSetting<string>('emailPass'));
-  const hasEmailPort = IS_TEST || Boolean(await getSysSetting<string>('emailPort'));
-  let userEnabled = false;
-  if (
-    use2FA === 'DISABLED' ||
-    !useEmail ||
-    !hasEmailHost ||
-    !hasEmailUser ||
-    !hasEmailPass ||
-    !hasEmailPort
-  ) {
-    return false;
-  } else if (use2FA?.startsWith('USER_CHOOSES')) {
-    // @TODO: get user setting for 2FA
-    userEnabled = false;
-  }
-
-  if (use2FA === 'ENABLED' || userEnabled) return true;
-
-  return false;
 };
 
 // @CONSIDER: maybe move this to some util file

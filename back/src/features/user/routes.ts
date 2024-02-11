@@ -17,7 +17,10 @@ export interface VerifyEmailRoute extends RouteGenericInterface {
   readonly Reply: JustOkReply | FastifyError;
 }
 
-const sendNewPasswordLinkBodySchema = Type.Object({ email: Type.String({ format: 'email' }) });
+const sendNewPasswordLinkBodySchema = Type.Object({
+  email: Type.Optional(Type.String({ format: 'email' })),
+  username: Type.Optional(Type.String()),
+});
 type SendNewPasswordLinkBody = Static<typeof sendNewPasswordLinkBodySchema>;
 export interface SendNewPasswordRoute extends RouteGenericInterface {
   readonly Body: SendNewPasswordLinkBody;
