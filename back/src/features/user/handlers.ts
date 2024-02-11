@@ -13,10 +13,16 @@ import {
 import { updateDBUser } from '../login/handlers';
 import { getAppName, getSysSetting } from '../../core/config';
 import { sendEmail } from '../../core/email';
+import { csrfCheck } from '../../hooks/csrf';
 
 // VERIFY EMAIL ROUTE
 // ********************************
 export const verifyEmail: RouteHandler<VerifyEmailRoute> = async (req, res) => {
+  const csrfError = csrfCheck(req);
+  if (csrfError) {
+    return res.send(csrfError);
+  }
+
   const token = req.query.token;
   if (!token) {
     return res.send(new errors.TOKEN_NOT_FOUND('Verification token cannot be empty'));
