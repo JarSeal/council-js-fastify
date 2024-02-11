@@ -3,7 +3,7 @@ import { hash } from 'bcrypt';
 
 import DBGroupModel, { type DBGroup } from '../dbModels/group';
 import DBUserModel from '../dbModels/user';
-import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../core/config';
+import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE, setCachedSysSettings } from '../core/config';
 import DBFormModel, { type DBForm } from '../dbModels/form';
 import type {
   AllPrivilegeProps,
@@ -255,6 +255,8 @@ export const createForm = async (
       privilege.privilegeAccess
     );
   }
+
+  if (formId === 'systemSettings') await setCachedSysSettings();
 
   return createdForm._id;
 };
@@ -526,6 +528,7 @@ export const updateSystemSetting = async (simpleId: string, value: unknown) => {
   const savedSetting = await DBSystemSettingModel.findOne<DBSystemSetting>({ simpleId });
   if (savedSetting) {
     await DBSystemSettingModel.findOneAndUpdate({ simpleId }, { value });
+    await setCachedSysSettings();
     return savedSetting._id;
   }
 
@@ -544,6 +547,8 @@ export const updateSystemSetting = async (simpleId: string, value: unknown) => {
   });
   const newSavedSetting = await newSetting.save();
   if (!newSavedSetting) throw new Error(`Could not save system setting (simpleId: ${simpleId})!`);
+
+  await setCachedSysSettings();
 
   return newSavedSetting._id;
 };

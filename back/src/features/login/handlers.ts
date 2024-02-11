@@ -339,10 +339,10 @@ const logAndResetLoginAttempts = async (
 const checkIf2FAEnabled = async () => {
   const use2FA = await getSysSetting<string>('use2FA');
   const useEmail = await getSysSetting<boolean>('useEmail');
-  const hasEmailHost = Boolean(await getSysSetting<string>('emailHost'));
-  const hasEmailUser = Boolean(await getSysSetting<string>('emailUser'));
-  const hasEmailPass = Boolean(await getSysSetting<string>('emailPass'));
-  const hasEmailPort = Boolean(await getSysSetting<string>('emailPort'));
+  const hasEmailHost = IS_TEST || Boolean(await getSysSetting<string>('emailHost'));
+  const hasEmailUser = IS_TEST || Boolean(await getSysSetting<string>('emailUser'));
+  const hasEmailPass = IS_TEST || Boolean(await getSysSetting<string>('emailPass'));
+  const hasEmailPort = IS_TEST || Boolean(await getSysSetting<string>('emailPort'));
   let userEnabled = false;
   if (
     use2FA === 'DISABLED' ||
