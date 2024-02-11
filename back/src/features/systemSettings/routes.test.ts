@@ -2,8 +2,14 @@ import type { FastifyError, FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
-import { createSysAdmin, createSysSettings, csrfHeader, validAgentId } from '../../test/utils';
-import { SESSION_COOKIE_NAME } from '../../core/config';
+import {
+  createSysAdmin,
+  createSysSettings,
+  csrfHeader,
+  updateSystemSetting,
+  validAgentId,
+} from '../../test/utils';
+import { SESSION_COOKIE_NAME, setCachedSysSettings } from '../../core/config';
 import type { SystemSettingsGetReply, SystemSettingsPutReply } from './routes';
 import type { FormElem } from '../../dbModels/_modelTypePartials';
 
@@ -14,6 +20,8 @@ describe('systemSettings', () => {
     app = await initApp();
     await createSysAdmin(true);
     await createSysSettings();
+    await updateSystemSetting('use2FA', 'DISABLED');
+    await setCachedSysSettings();
   });
 
   afterAll(async () => {
@@ -381,6 +389,9 @@ describe('systemSettings', () => {
     const body = JSON.parse(response.body) as SystemSettingsPutReply;
     expect(response.statusCode).toBe(200);
     expect(body.ok).toBeTruthy();
+
+    await updateSystemSetting('use2FA', 'DISABLED');
+    await setCachedSysSettings();
   });
 
   it('should successfully PUT and create multiple settings docs', async () => {
@@ -413,6 +424,9 @@ describe('systemSettings', () => {
     const body = JSON.parse(response.body) as SystemSettingsPutReply;
     expect(response.statusCode).toBe(200);
     expect(body.ok).toBeTruthy();
+
+    await updateSystemSetting('use2FA', 'DISABLED');
+    await setCachedSysSettings();
   });
 
   it('should successfully PUT and edit one settings doc and get data', async () => {

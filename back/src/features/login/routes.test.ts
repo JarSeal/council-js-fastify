@@ -2,7 +2,7 @@ import type { FastifyError, FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
-import { SESSION_COOKIE_NAME, getConfig } from '../../core/config';
+import { SESSION_COOKIE_NAME, getConfig, setCachedSysSettings } from '../../core/config';
 import type { Reply } from './schemas';
 import type { LogoutRoute } from '../logout/schemas';
 import {
@@ -374,17 +374,18 @@ describe('login', () => {
     expect(body.code).toBe('LOGIN_USER_UNDER_COOLDOWN');
   });
 
-  // @TODO: should successfully login with 2FA
   it('should successfully login with 2FA (and have one wrong code) and then logout', async () => {
-    await createUser('myusername3', { email: 'cc@cc.cc', verified: true });
     await createSysSettings();
     await updateSystemSetting('use2FA', 'ENABLED');
     await updateSystemSetting('useEmail', true);
+    await setCachedSysSettings();
+    await createUser('myusername2fa', { email: '2fa@2fa.fa', verified: true });
+
     let response = await app.inject({
       method: 'POST',
       path: '/api/v1/sys/login',
       body: {
-        usernameOrEmail: 'myusername3',
+        usernameOrEmail: 'myusername2fa',
         pass: 'password',
         loginMethod: 'username',
         agentId: validAgentId,
@@ -396,13 +397,13 @@ describe('login', () => {
     expect(loginBody.ok).toBeTruthy();
     expect(loginBody.requiredActions).toBe(null);
     expect(loginBody.publicSettings).toBeTruthy();
-    expect(loginBody.twoFactorUser).toBe('myusername3');
+    expect(loginBody.twoFactorUser).toBe('myusername2fa');
 
     response = await app.inject({
       method: 'POST',
       path: '/api/v1/sys/login/2fa',
       body: {
-        username: 'myusername3',
+        username: 'myusername2fa',
         code: 'wrong',
         agentId: validAgentId,
       },
@@ -416,7 +417,7 @@ describe('login', () => {
       method: 'POST',
       path: '/api/v1/sys/login/2fa',
       body: {
-        username: 'myusername3',
+        username: 'myusername2fa',
         code: '012345',
         agentId: validAgentId,
       },
