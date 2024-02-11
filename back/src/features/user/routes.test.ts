@@ -11,7 +11,7 @@ import {
   validAgentId,
 } from '../../test/utils';
 import DBUserModel, { type DBUser } from '../../dbModels/user';
-import type { VerifyEmailReply } from './routes';
+import type { JustOkReply } from './routes';
 import { SESSION_COOKIE_NAME } from '../../core/config';
 
 describe('user routes', () => {
@@ -102,7 +102,7 @@ describe('user routes', () => {
       path: `/api/v1/sys/user/verify-email?token=${token}`,
       ...csrfHeader,
     });
-    const body = JSON.parse(response.body) as VerifyEmailReply;
+    const body = JSON.parse(response.body) as JustOkReply;
     expect(body.ok).toBeTruthy();
 
     user = await DBUserModel.findById<DBUser>(userId);
@@ -201,7 +201,7 @@ describe('user routes', () => {
       cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
       ...csrfHeader,
     });
-    const body = JSON.parse(response.body) as VerifyEmailReply;
+    const body = JSON.parse(response.body) as JustOkReply;
     expect(body.ok).toBeTruthy();
   });
   // Send verification email route [/END]

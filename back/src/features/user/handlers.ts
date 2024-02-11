@@ -1,6 +1,6 @@
 import type { RouteHandler } from 'fastify';
 
-import type { SendVerificationEmailRoute, VerifyEmailRoute } from './routes';
+import type { SendNewPasswordRoute, SendVerificationEmailRoute, VerifyEmailRoute } from './routes';
 import DBUserModel, { type DBUser } from '../../dbModels/user';
 import { errors } from '../../core/errors';
 import {
@@ -72,7 +72,7 @@ export const verifyEmail: RouteHandler<VerifyEmailRoute> = async (req, res) => {
   return res.send({ ok: true });
 };
 
-// SEND VERIFICATION EMAIL ROUTE
+// SEND NEW VERIFICATION EMAIL ROUTE
 // ********************************
 export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = async (req, res) => {
   const emailIndex = req.params.emailIndex;
@@ -139,6 +139,15 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
       verifyEmailUrl: `http://localhost:4004?token=${tokenAndId.token}`, // @TODO: change this URL to come from a setting
     },
   });
+
+  return res.send({ ok: true });
+};
+
+// SEND NEW PASSWORD LINK EMAIL ROUTE
+// ********************************
+export const sendNewPasswordLink: RouteHandler<SendNewPasswordRoute> = async (req, res) => {
+  const email = req.body.email;
+  email;
 
   return res.send({ ok: true });
 };
