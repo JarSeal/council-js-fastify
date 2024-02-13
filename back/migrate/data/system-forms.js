@@ -218,6 +218,56 @@ const getForms = async (db) => {
       ],
     },
 
+    // Forgot password
+    {
+      simpleId: 'forgotPassword',
+      name: 'Forgot password',
+      description: 'Council forgot password form.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/user/forgot-password',
+      form: {
+        formTitle: { langKey: 'Forgot password' },
+        formElems: [
+          {
+            elemId: 'username',
+            elemType: 'inputText',
+            label: { langKey: 'Username' },
+          },
+          {
+            elemId: 'email',
+            elemType: 'inputText',
+            label: { langKey: 'E-mail' },
+          },
+        ],
+      },
+      privileges: [
+        // will be deleted from the form and set to privileges
+        {
+          simpleId: 'form__forgotPassword__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'forgotPassword',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Forgot password',
+          description: 'Who can use the "Forgot password" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'onlyPublic',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
     // Logout
     {
       simpleId: 'logout',
@@ -305,13 +355,6 @@ const getForms = async (db) => {
             },
           },
           {
-            elemId: 'fullName',
-            elemType: 'inputText',
-            valueType: 'string',
-            elemData: { maxLength: 200, category: { langKey: 'General' } },
-            label: { langKey: 'Full name' },
-          },
-          {
             elemId: 'description',
             elemType: 'inputText',
             valueType: 'string',
@@ -322,14 +365,6 @@ const getForms = async (db) => {
               category: { langKey: 'General' },
             },
             label: { langKey: 'Profile description' },
-          },
-          {
-            elemId: 'phonenumber',
-            elemType: 'inputText',
-            valueType: 'string',
-            elemData: { maxLength: 20, category: { langKey: 'General' } },
-            label: { langKey: 'Phone number' },
-            validationFn: 'phoneWithExtra',
           },
         ],
       },

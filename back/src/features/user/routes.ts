@@ -1,7 +1,7 @@
 import { type Static, Type } from '@sinclair/typebox';
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 
-import { sendNewPasswordLink, sendVerificationEmail, verifyEmail } from './handlers';
+import { forgotPassword, sendVerificationEmail, verifyEmail } from './handlers';
 
 const justOkReplySchema = Type.Object({
   ok: Type.Boolean(),
@@ -40,8 +40,8 @@ const userPublicRoutes: FastifyPluginAsync = (instance) => {
 
   instance.route<SendNewPasswordRoute>({
     method: 'POST',
-    url: '/user/send-new-password-link',
-    handler: sendNewPasswordLink,
+    url: '/user/forgot-password',
+    handler: forgotPassword,
     schema: {
       body: sendNewPasswordLinkBodySchema,
       response: { 200: justOkReplySchema },

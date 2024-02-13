@@ -147,7 +147,8 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
 
 // SEND NEW PASSWORD LINK EMAIL ROUTE
 // ********************************
-export const sendNewPasswordLink: RouteHandler<SendNewPasswordRoute> = async (req, res) => {
+export const forgotPassword: RouteHandler<SendNewPasswordRoute> = async (req, res) => {
+  // @TODO or @CONSIDER: get csrf from the form and check if it needed and present
   const csrfError = csrfCheck(req);
   if (csrfError) {
     return res.send(csrfError);
