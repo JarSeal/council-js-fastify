@@ -4,6 +4,7 @@ import { marked } from 'marked';
 import { IS_TEST, decryptData, getSysSetting } from './config';
 import { logger } from './app';
 import DBEmailModel, { type DBEmail } from '../dbModels/email';
+import { isEmailEnabled } from '../utils/common';
 
 let transporter: Transporter;
 const createTransport = async () => {
@@ -37,7 +38,7 @@ type SendEmailParams = {
 };
 
 export const sendEmail = async ({ to, templateId, templateVars }: SendEmailParams) => {
-  const emailEnabled = (await getSysSetting<boolean>('useEmail')) || false;
+  const emailEnabled = await isEmailEnabled();
   if (!emailEnabled || IS_TEST) return;
 
   if (!to) {

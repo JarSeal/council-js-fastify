@@ -205,4 +205,23 @@ describe('user routes', () => {
     expect(body.ok).toBeTruthy();
   });
   // Send verification email route [/END]
+
+  // Forgot password route [START]
+
+  // should fail without the csrf header
+  // should fail when email is turned off
+  // should fail when forgot password feature is turned off
+  // should fail when forgotPassIdMethod is EMAIL_ONLY and no email
+  // should fail when forgotPassIdMethod is USERNAME_ONLY and no username
+  // should fail when forgotPassIdMethod is BOTH_REQUIRED and no email
+  // should fail when forgotPassIdMethod is BOTH_REQUIRED and no username
+  // should fail without email and username
+  // should return ok with non-existing username (fails silently)
+  // should return ok with non-existing email (fails silently)
+  // should return ok with when MAX_RESENDS are NOT full
+  // should return ok with when MAX_RESENDS are full
+  // should return ok with forgotPassIdMethod is EITHER and proper username is sent
+  // should return ok with forgotPassIdMethod is EITHER and proper email is sent
+
+  // Forgot password route [/END]
 });

@@ -14,6 +14,8 @@ import { updateDBUser } from '../login/handlers';
 import { getAppName, getSysSetting } from '../../core/config';
 import { sendEmail } from '../../core/email';
 import { csrfCheck } from '../../hooks/csrf';
+import { isEmailEnabled } from '../../utils/common';
+import { getTimestampFromDate } from '../../utils/timeAndDate';
 
 // VERIFY EMAIL ROUTE
 // ********************************
@@ -90,10 +92,10 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
     );
   }
 
-  const emailIsTurnedOn = await getSysSetting<boolean>('useEmail');
+  const emailIsTurnedOn = await isEmailEnabled();
   if (!emailIsTurnedOn) {
     return res.send(
-      new errors.BAD_REQUEST(
+      new errors.FEATURE_DISABLED(
         'Email sending is turned off in the system settings (send verification email).'
       )
     );
@@ -146,11 +148,118 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
 // SEND NEW PASSWORD LINK EMAIL ROUTE
 // ********************************
 export const sendNewPasswordLink: RouteHandler<SendNewPasswordRoute> = async (req, res) => {
+  const csrfError = csrfCheck(req);
+  if (csrfError) {
+    return res.send(csrfError);
+  }
+
   // Check if email is enabled
-  // Check the password link requirements @TODO: create password link requirements sys setting (DISABLED, USERNAME_ONLY, EMAIL_ONLY, EITHER, BOTH_REQUIRED)
+  const emailIsTurnedOn = await isEmailEnabled();
+  if (!emailIsTurnedOn) {
+    return res.send(
+      new errors.FEATURE_DISABLED(
+        'Email sending is turned off in the system settings (send new password link email).'
+      )
+    );
+  }
 
+  const defaultReturnBody = { ok: true };
   const email = req.body.email;
-  email;
+  const username = req.body.username;
+  const method = (await getSysSetting<string>('forgotPassIdMethod')) || 'DISABLED';
+  const emailRequired = method === 'EMAIL_ONLY' || method === 'BOTH_REQUIRED';
+  const usernameRequired = method === 'USERNAME_ONLY' || method === 'BOTH_REQUIRED';
 
-  return res.send({ ok: true });
+  // Check the password link requirements
+  if (method === 'DISABLED') {
+    return res.send(new errors.FEATURE_DISABLED('Forgot password feature is disabled.'));
+  } else if (emailRequired && !email) {
+    return res.send(
+      new errors.BAD_REQUEST('Email is missing from forgot password request (email is required)')
+    );
+  } else if (usernameRequired && !username) {
+    return res.send(
+      new errors.BAD_REQUEST(
+        'Username is missing from forgot password request (username is required)'
+      )
+    );
+  } else if (!username && !email) {
+    return res.send(
+      new errors.BAD_REQUEST('Username an/or email are missing from forgot password request')
+    );
+  }
+
+  // Find user
+  const user = await DBUserModel.findOne<DBUser>(
+    username ? { simpleId: username } : { 'emails.0.email': email }
+  );
+  if (
+    !user ||
+    (emailRequired && user?.emails[0].email !== email) ||
+    (usernameRequired && user?.simpleId !== username)
+  ) {
+    // Log attempts
+    if (!user) {
+      req.log.info('User not found in forgot pass request.');
+    } else {
+      if (emailRequired && user?.emails[0].email !== email) {
+        req.log.info('Email not found in forgot pass request.');
+      }
+      if (usernameRequired && user?.simpleId !== username) {
+        req.log.info('Username not found in forgot pass request.');
+      }
+    }
+    // Do not tell if the user, username, or email is found or not, just return default
+    return res.send(defaultReturnBody);
+  }
+
+  // Check possible current token and if it is still valid
+  const MAX_RESENDS = 4;
+  let sentCount = 1;
+  if (user.security.newPassToken?.token) {
+    const oldToken = await verifyUrlToken(user.security.newPassToken.token);
+    const expires = oldToken.expires as number | undefined;
+    if (getTimestampFromDate(new Date()) < (expires || 0)) {
+      const curSentCount = (oldToken.sentCount as number | undefined) || 1;
+      if (curSentCount >= MAX_RESENDS) {
+        req.log.info(`Forgot password max resends full (${MAX_RESENDS}).`);
+        return res.send(defaultReturnBody);
+      }
+      sentCount = curSentCount + 1;
+    }
+  }
+
+  // Create new password URL ID token
+  const linkLifeInMinutes = (await getSysSetting<number>('forgotPassSessionAgeInMin')) || 30;
+  const expires = getTimestampFromDate(new Date()) + linkLifeInMinutes * 60;
+  const tokenAndId = await createUrlTokenAndId('RESET_PASSWORD', { expires, sentCount });
+  if (tokenAndId.error) {
+    return res.send(
+      new errors.FAST_JWT_ERR(`${tokenAndId.error.code}: ${tokenAndId.error.message}`)
+    );
+  }
+
+  // Update user
+  const security = user.security;
+  security.newPassToken = tokenAndId;
+  const updateError = await updateDBUser(
+    { simpleId: user.simpleId },
+    { security },
+    `Forgot password updateDBUser failed, update security.newPassToken.`
+  );
+  if (updateError) return updateError;
+
+  // Send email
+  await sendEmail({
+    to: user.emails[0].email,
+    templateId: 'newPassLinkEmail',
+    templateVars: {
+      appName: await getAppName(),
+      username: user.simpleId,
+      newPassUrl: `http://localhost:4004?token=${tokenAndId.token}`, // @TODO: change this URL to come from a setting
+      linkLifeInMinutes,
+    },
+  });
+
+  return res.send(defaultReturnBody);
 };

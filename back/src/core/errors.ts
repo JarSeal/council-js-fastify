@@ -29,6 +29,7 @@ export enum ErrorCodes {
   REQUIRED_ACTIONS_ERR = 'REQUIRED_ACTIONS_ERR',
   TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND',
   TOKEN_INVALID_ERR = 'TOKEN_INVALID_ERR',
+  FEATURE_DISABLED = 'FEATURE_DISABLED',
 }
 
 const createError = (code: ErrorCodes, message: string, statusCode?: number) =>
@@ -103,6 +104,7 @@ const errors = {
   ),
   TOKEN_NOT_FOUND: createError(ErrorCodes.TOKEN_NOT_FOUND, 'Token was not found: %s', 404),
   TOKEN_INVALID_ERR: createError(ErrorCodes.TOKEN_INVALID_ERR, 'Token is invalid: %s', 403),
+  FEATURE_DISABLED: createError(ErrorCodes.FEATURE_DISABLED, '%s', 403),
 };
 
 export { errors };

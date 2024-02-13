@@ -176,6 +176,26 @@ const systemSettingsFormElems = [
     label: { langKey: 'Max Failed Login Logs Count' },
   },
   {
+    elemId: 'defaultEditedLogs',
+    elemType: 'inputNumber',
+    valueType: 'number',
+    elemData: {
+      defaultValue:
+        config?.security?.defaultEditedLogs >= 0
+          ? Math.round(Number(config.security.defaultEditedLogs))
+          : 5,
+      minValue: 0,
+      precision: 0,
+      step: 1,
+      category: 'security',
+      description: {
+        langKey:
+          'How many edited history log items are saved to a document as default. This number can be overridden, if a form has a "editedHistoryCount" defined.',
+      },
+    },
+    label: { langKey: 'Default Edited History Log Items Count' },
+  },
+  {
     elemId: 'use2FA',
     elemType: 'inputDropDown',
     valueType: 'string',
@@ -265,6 +285,51 @@ const systemSettingsFormElems = [
     label: { langKey: 'Login with Username, Email, or Both' },
   },
   {
+    elemId: 'forgotPassIdMethod',
+    elemType: 'inputDropDown',
+    valueType: 'string',
+    elemData: {
+      defaultValue: ['DISABLED', 'EMAIL_ONLY', 'USERNAME_ONLY', 'EITHER', 'BOTH_REQUIRED'].includes(
+        config?.security?.forgotPassIdMethod
+      )
+        ? config.security.forgotPassIdMethod
+        : 'USERNAME_ONLY',
+      options: [
+        { label: { langKey: 'Forgot password is disabled' }, value: 'DISABLED' },
+        { label: { langKey: 'Email only' }, value: 'EMAIL_ONLY' },
+        { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
+        { label: { langKey: 'Either username or email' }, value: 'EITHER' },
+        { label: { langKey: 'Username and email required' }, value: 'BOTH_REQUIRED' },
+      ],
+      category: 'security',
+      publicSetting: true,
+      description: {
+        langKey: 'How are the users required to identify when requiring a forgot password.',
+      },
+    },
+    label: { langKey: 'Forgot password identification method' },
+  },
+  {
+    elemId: 'forgotPassSessionAgeInMin',
+    elemType: 'inputNumber',
+    valueType: 'number',
+    elemData: {
+      defaultValue:
+        config?.security?.forgotPassSessionAgeInMin >= 0
+          ? Number(config.security.forgotPassSessionAgeInMin)
+          : 30,
+      minValue: 0.5,
+      unit: { single: { langKey: 'minute' }, multi: { langKey: 'minutes' } },
+      category: 'security',
+      publicSetting: true,
+      description: {
+        langKey:
+          'How long is the two-factor authentication session in minutes. This is the time the 2FA code is valid. Requires that the setting "Email enabled" is turned ON and all email settings are configured correctly.',
+      },
+    },
+    label: { langKey: 'Two-Factor Authentication (2FA) Code Expiration Time' },
+  },
+  {
     elemId: 'allowedHostNames',
     elemType: 'inputText',
     valueType: 'string',
@@ -277,26 +342,6 @@ const systemSettingsFormElems = [
       },
     },
     label: { langKey: 'Allowed Host Names' },
-  },
-  {
-    elemId: 'defaultEditedLogs',
-    elemType: 'inputNumber',
-    valueType: 'number',
-    elemData: {
-      defaultValue:
-        config?.security?.defaultEditedLogs >= 0
-          ? Math.round(Number(config.security.defaultEditedLogs))
-          : 5,
-      minValue: 0,
-      precision: 0,
-      step: 1,
-      category: 'security',
-      description: {
-        langKey:
-          'How many edited history log items are saved to a document as default. This number can be overridden, if a form has a "editedHistoryCount" defined.',
-      },
-    },
-    label: { langKey: 'Default Edited History Log Items Count' },
   },
   // security CATEGORY [/END]
 
@@ -473,7 +518,7 @@ const systemSettingsFormElems = [
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
-      defaultValue: config?.security?.forceEmailVerification === true,
+      defaultValue: config?.email?.forceEmailVerification === true,
       category: 'email',
       description: {
         langKey:
@@ -487,8 +532,7 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue:
-        config?.security?.maxEmails >= 1 ? Math.round(Number(config.security.maxEmails)) : 2,
+      defaultValue: config?.email?.maxEmails >= 1 ? Math.round(Number(config.email.maxEmails)) : 2,
       minValue: 1,
       precision: 0,
       step: 1,
