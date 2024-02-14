@@ -7,6 +7,7 @@ import type { DBUser } from '../../dbModels/user';
 import { errors } from '../../core/errors';
 import {
   IS_TEST,
+  TWOFA_RESEND_INTERVAL_IN_MINUTES,
   getAppName,
   getConfig,
   getPublicSysSettings,
@@ -94,17 +95,16 @@ export const login: RouteHandler<LoginRoute> = async (req, res) => {
 
       // Check if user is trying to resend for the second time and check interval.
       // This means that after the initial code is sent the user can request another
-      // code right away, but for the next code the user has to wait RESEND_INTERVAL_IN_MINUTES
+      // code right away, but for the next code the user has to wait TWOFA_RESEND_INTERVAL_IN_MINUTES
       // before another code can be sent. Note, if the code cannot be sent, the user is not notified.
-      const RESEND_INTERVAL_IN_MINUTES = 2;
       expirationTime = user.security.twoFA.resendDate
-        ? RESEND_INTERVAL_IN_MINUTES * 60000 + user.security.twoFA.resendDate.getTime()
+        ? TWOFA_RESEND_INTERVAL_IN_MINUTES * 60000 + user.security.twoFA.resendDate.getTime()
         : 0;
       if (timestampNow < expirationTime) {
         const resetError = await logAndResetLoginAttempts(user, agentId, true);
         if (resetError) return res.send(resetError);
         req.log.info(
-          `User (id: ${user._id.toString()}) tried to get a new 2FA code while in session, but has to wait ${RESEND_INTERVAL_IN_MINUTES} minutes before another one can be sent.`
+          `User (id: ${user._id.toString()}) tried to get a new 2FA code while in session, but has to wait ${TWOFA_RESEND_INTERVAL_IN_MINUTES} minutes before another one can be sent.`
         );
         return res.send({
           ok: true,
