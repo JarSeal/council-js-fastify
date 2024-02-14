@@ -34,6 +34,9 @@ export const SESSION_SECRET =
   process.env.SESSION_SECRET || 'a secret with minimum length of 32 characters';
 export const SESSION_COOKIE_NAME = IS_PRODUCTION ? `__Host-${'counclSess'}` : 'counclSess';
 
+export const TWOFA_RESEND_INTERVAL_IN_MINUTES = 2;
+export const MAX_FORGOT_PASSWORD_RESENDS = 4;
+
 export const getConfig = <T>(path?: string, defaultValue?: unknown): T => {
   const conf = CONFIG || {};
   const returnWrapper = (returnConf: unknown) => {

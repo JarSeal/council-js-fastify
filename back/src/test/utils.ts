@@ -469,6 +469,28 @@ export const createSysSettings = async () => {
         },
         label: { langKey: 'Use Email Service' },
       },
+      {
+        elemId: 'forgotPassIdMethod',
+        orderNr: 6,
+        elemType: 'inputDropDown',
+        valueType: 'string',
+        elemData: {
+          defaultValue: 'USERNAME_ONLY',
+          options: [
+            { label: { langKey: 'Forgot password is disabled' }, value: 'DISABLED' },
+            { label: { langKey: 'Email only' }, value: 'EMAIL_ONLY' },
+            { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
+            { label: { langKey: 'Either username or email' }, value: 'EITHER' },
+            { label: { langKey: 'Username and email required' }, value: 'BOTH_REQUIRED' },
+          ],
+          category: 'security',
+          publicSetting: true,
+          description: {
+            langKey: 'How are the users required to identify when requiring a forgot password.',
+          },
+        },
+        label: { langKey: 'Forgot password identification method' },
+      },
     ],
     [
       {

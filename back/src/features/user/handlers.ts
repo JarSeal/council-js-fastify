@@ -11,7 +11,7 @@ import {
   verifyUrlToken,
 } from '../../utils/token';
 import { updateDBUser } from '../login/handlers';
-import { getAppName, getSysSetting } from '../../core/config';
+import { MAX_FORGOT_PASSWORD_RESENDS, getAppName, getSysSetting } from '../../core/config';
 import { sendEmail } from '../../core/email';
 import { csrfCheck } from '../../hooks/csrf';
 import { isEmailEnabled } from '../../utils/common';
@@ -215,15 +215,14 @@ export const forgotPassword: RouteHandler<SendNewPasswordRoute> = async (req, re
   }
 
   // Check possible current token and if it is still valid
-  const MAX_RESENDS = 4;
   let sentCount = 1;
   if (user.security.newPassToken?.token) {
     const oldToken = await verifyUrlToken(user.security.newPassToken.token);
     const expires = oldToken.expires as number | undefined;
     if (getTimestampFromDate(new Date()) < (expires || 0)) {
       const curSentCount = (oldToken.sentCount as number | undefined) || 1;
-      if (curSentCount >= MAX_RESENDS) {
-        req.log.info(`Forgot password max resends full (${MAX_RESENDS}).`);
+      if (curSentCount >= MAX_FORGOT_PASSWORD_RESENDS) {
+        req.log.info(`Forgot password max resends full (${MAX_FORGOT_PASSWORD_RESENDS}).`);
         return res.send(defaultReturnBody);
       }
       sentCount = curSentCount + 1;

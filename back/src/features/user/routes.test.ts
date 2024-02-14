@@ -12,7 +12,7 @@ import {
 } from '../../test/utils';
 import DBUserModel, { type DBUser } from '../../dbModels/user';
 import type { JustOkReply } from './routes';
-import { SESSION_COOKIE_NAME } from '../../core/config';
+import { MAX_FORGOT_PASSWORD_RESENDS, SESSION_COOKIE_NAME } from '../../core/config';
 
 describe('user routes', () => {
   let app: FastifyInstance;
@@ -207,21 +207,206 @@ describe('user routes', () => {
   // Send verification email route [/END]
 
   // Forgot password route [START]
+  it('should fail "Forgot password" without CSRF header', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: {},
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(401);
+    expect(body.code).toBe('UNAUTHORIZED');
+  });
 
-  // should fail without the csrf header
-  // should fail when email is turned off
-  // should fail when forgot password feature is turned off
-  // should fail when forgotPassIdMethod is EMAIL_ONLY and no email
-  // should fail when forgotPassIdMethod is USERNAME_ONLY and no username
-  // should fail when forgotPassIdMethod is BOTH_REQUIRED and no email
-  // should fail when forgotPassIdMethod is BOTH_REQUIRED and no username
-  // should fail without email and username
-  // should return ok with non-existing username (fails silently)
-  // should return ok with non-existing email (fails silently)
-  // should return ok with when MAX_RESENDS are NOT full
-  // should return ok with when MAX_RESENDS are full
-  // should return ok with forgotPassIdMethod is EITHER and proper username is sent
-  // should return ok with forgotPassIdMethod is EITHER and proper email is sent
+  it('should fail when "Forgot password" feature is turned off', async () => {
+    await updateSystemSetting('forgotPassIdMethod', 'DISABLED');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: {},
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(403);
+    expect(body.code).toBe('FEATURE_DISABLED');
+  });
 
+  it('should fail when "Forgot password" forgotPassIdMethod is EMAIL_ONLY and no email', async () => {
+    await updateSystemSetting('forgotPassIdMethod', 'EMAIL_ONLY');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: {},
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(400);
+    expect(body.code).toBe('BAD_REQUEST');
+  });
+
+  it('should fail when "Forgot password" forgotPassIdMethod is USERNAME_ONLY and no username', async () => {
+    await updateSystemSetting('forgotPassIdMethod', 'USERNAME_ONLY');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: {},
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(400);
+    expect(body.code).toBe('BAD_REQUEST');
+  });
+
+  it('should fail when "Forgot password" forgotPassIdMethod is BOTH_REQUIRED and no email', async () => {
+    await updateSystemSetting('forgotPassIdMethod', 'BOTH_REQUIRED');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: { username: 'myusername' },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(400);
+    expect(body.code).toBe('BAD_REQUEST');
+  });
+
+  it('should fail when "Forgot password" forgotPassIdMethod is BOTH_REQUIRED and no username', async () => {
+    await updateSystemSetting('forgotPassIdMethod', 'BOTH_REQUIRED');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: { email: 'email@dd.dd' },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(400);
+    expect(body.code).toBe('BAD_REQUEST');
+  });
+
+  it('should fail when "Forgot password" forgotPassIdMethod is EITHER and no username nor email', async () => {
+    await updateSystemSetting('forgotPassIdMethod', 'EITHER');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: {},
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(400);
+    expect(body.code).toBe('BAD_REQUEST');
+  });
+
+  it('should fail "Forgot password" when email feature is turned off', async () => {
+    await updateSystemSetting('useEmail', false);
+    await updateSystemSetting('forgotPassIdMethod', 'EITHER');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: {},
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(403);
+    expect(body.code).toBe('FEATURE_DISABLED');
+  });
+
+  it('should return ok for "Forgot password" with a non-existing username (fails silently)', async () => {
+    await updateSystemSetting('useEmail', true);
+    await updateSystemSetting('forgotPassIdMethod', 'EITHER');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: { username: 'anonexiting' },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as JustOkReply;
+    expect(response.statusCode).toBe(200);
+    expect(body.ok).toBeTruthy();
+  });
+
+  it('should return ok for "Forgot password" with a non-existing email (fails silently)', async () => {
+    await updateSystemSetting('useEmail', true);
+    await updateSystemSetting('forgotPassIdMethod', 'EITHER');
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: { email: 'anonexiting@email.dd' },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as JustOkReply;
+    expect(response.statusCode).toBe(200);
+    expect(body.ok).toBeTruthy();
+  });
+
+  it('should return ok for "Forgot password" when MAX_RESENDS are NOT full', async () => {
+    await updateSystemSetting('useEmail', true);
+    await updateSystemSetting('forgotPassIdMethod', 'EITHER');
+    await createUser('myusername', { verified: true });
+    const response1 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: { username: 'myusername' },
+      ...csrfHeader,
+    });
+    const body1 = JSON.parse(response1.body) as JustOkReply;
+    expect(response1.statusCode).toBe(200);
+    expect(body1.ok).toBeTruthy();
+
+    const newPassToken1 = (await DBUserModel.findOne<DBUser>({ simpleId: 'myusername' }))?.security
+      .newPassToken;
+
+    const response2 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: { username: 'myusername' },
+      ...csrfHeader,
+    });
+    const body2 = JSON.parse(response2.body) as JustOkReply;
+    expect(response2.statusCode).toBe(200);
+    expect(body2.ok).toBeTruthy();
+
+    const newPassToken2 = (await DBUserModel.findOne<DBUser>({ simpleId: 'myusername' }))?.security
+      .newPassToken;
+
+    expect(newPassToken1?.token !== newPassToken2?.token).toBeTruthy();
+    expect(newPassToken1?.tokenId !== newPassToken2?.tokenId).toBeTruthy();
+  });
+
+  it('should return ok for "Forgot password" when MAX_RESENDS are full', async () => {
+    await updateSystemSetting('useEmail', true);
+    await updateSystemSetting('forgotPassIdMethod', 'EITHER');
+    await createUser('myusername', { verified: true });
+    let response1;
+    for (let i = 0; i < MAX_FORGOT_PASSWORD_RESENDS; i++) {
+      response1 = await app.inject({
+        method: 'POST',
+        path: '/api/v1/sys/user/forgot-password',
+        body: { username: 'myusername' },
+        ...csrfHeader,
+      });
+    }
+    const body1 = response1 && (JSON.parse(response1.body) as JustOkReply);
+    expect(response1?.statusCode).toBe(200);
+    expect(body1?.ok).toBeTruthy();
+
+    const newPassToken1 = (await DBUserModel.findOne<DBUser>({ simpleId: 'myusername' }))?.security
+      .newPassToken;
+
+    const response2 = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/user/forgot-password',
+      body: { username: 'myusername' },
+      ...csrfHeader,
+    });
+    const body2 = JSON.parse(response2.body) as JustOkReply;
+    expect(response2.statusCode).toBe(200);
+    expect(body2.ok).toBeTruthy();
+
+    const newPassToken2 = (await DBUserModel.findOne<DBUser>({ simpleId: 'myusername' }))?.security
+      .newPassToken;
+
+    expect(newPassToken1?.token === newPassToken2?.token).toBeTruthy();
+    expect(newPassToken1?.tokenId === newPassToken2?.tokenId).toBeTruthy();
+  });
   // Forgot password route [/END]
 });
