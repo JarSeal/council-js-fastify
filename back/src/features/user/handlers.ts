@@ -1,6 +1,11 @@
 import type { RouteHandler } from 'fastify';
 
-import type { SendNewPasswordRoute, SendVerificationEmailRoute, VerifyEmailRoute } from './routes';
+import type {
+  ResetPasswordRoute,
+  SendNewPasswordRoute,
+  SendVerificationEmailRoute,
+  VerifyEmailRoute,
+} from './routes';
 import DBUserModel, { type DBUser } from '../../dbModels/user';
 import { errors } from '../../core/errors';
 import {
@@ -145,7 +150,7 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
   return res.send({ ok: true });
 };
 
-// SEND NEW PASSWORD LINK EMAIL ROUTE
+// FORGOT PASSWORD ROUTE
 // ********************************
 export const forgotPassword: RouteHandler<SendNewPasswordRoute> = async (req, res) => {
   // @TODO or @CONSIDER: get csrf from the form and check if it needed and present
@@ -262,4 +267,12 @@ export const forgotPassword: RouteHandler<SendNewPasswordRoute> = async (req, re
   });
 
   return res.send(defaultReturnBody);
+};
+
+// RESET PASSWORD ROUTE
+// ********************************
+export const resetPassword: RouteHandler<ResetPasswordRoute> = async (req, res) => {
+  req;
+
+  return res.send({ ok: true });
 };

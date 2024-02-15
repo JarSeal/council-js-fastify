@@ -268,6 +268,93 @@ const getForms = async (db) => {
       ],
     },
 
+    // Reset password
+    {
+      simpleId: 'resetPassword',
+      name: 'Reset password',
+      description:
+        'Council reset password form. This works with the token received from the "Forgot password" email.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/user/reset-password',
+      form: {
+        formTitle: { langKey: 'Reset password' },
+        formElems: [
+          {
+            elemId: 'pass',
+            elemType: 'inputText',
+            elemData: {
+              password: true,
+              minLength: 8,
+              maxLength: 128,
+            },
+            label: { langKey: 'New password' },
+            required: true,
+            validationRegExp: {
+              pattern: '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})',
+            },
+            mustMatchValue: 'passAgain',
+            errors: [
+              {
+                errorId: 'validationRegExp',
+                message: {
+                  langKey:
+                    'Password must contain at least: lower and upper case, number, special character (!#$%&?@* )',
+                },
+              },
+              {
+                errorId: 'mustMatchValue',
+                message: { langKey: 'Passwords do not match' },
+              },
+            ],
+          },
+          {
+            elemId: 'passAgain',
+            elemType: 'inputText',
+            elemData: { password: true },
+            label: { langKey: 'New password again' },
+            required: true,
+            mustMatchValue: 'pass',
+            errors: [
+              {
+                errorId: 'mustMatchValue',
+              },
+            ],
+          },
+          {
+            elemId: 'token',
+            elemType: 'hidden',
+            required: true,
+          },
+        ],
+      },
+      privileges: [
+        // will be deleted from the form and set to privileges
+        {
+          simpleId: 'form__resetPassword__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'resetPassword',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Reset password',
+          description: 'Who can use the "Reset password" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'onlyPublic',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
     // Logout
     {
       simpleId: 'logout',

@@ -1,7 +1,7 @@
 import { type Static, Type } from '@sinclair/typebox';
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 
-import { forgotPassword, sendVerificationEmail, verifyEmail } from './handlers';
+import { forgotPassword, resetPassword, sendVerificationEmail, verifyEmail } from './handlers';
 
 const justOkReplySchema = Type.Object({
   ok: Type.Boolean(),
@@ -27,6 +27,20 @@ export interface SendNewPasswordRoute extends RouteGenericInterface {
   readonly Reply: JustOkReply | FastifyError;
 }
 
+const resetPasswordBodySchema = Type.Object({
+  pass: Type.String(),
+  passAgain: Type.String(),
+  token: Type.String(),
+});
+type ResetPasswordBody = Static<typeof resetPasswordBodySchema>;
+const resetPassQuerystringSchema = Type.Object({
+  token: Type.String(),
+});
+export interface ResetPasswordRoute extends RouteGenericInterface {
+  readonly Body: ResetPasswordBody;
+  readonly Reply: JustOkReply | FastifyError;
+}
+
 const userPublicRoutes: FastifyPluginAsync = (instance) => {
   instance.route<VerifyEmailRoute>({
     method: 'GET',
@@ -44,6 +58,17 @@ const userPublicRoutes: FastifyPluginAsync = (instance) => {
     handler: forgotPassword,
     schema: {
       body: sendNewPasswordLinkBodySchema,
+      response: { 200: justOkReplySchema },
+    },
+  });
+
+  instance.route<ResetPasswordRoute>({
+    method: 'POST',
+    url: '/user/reset-password',
+    handler: resetPassword,
+    schema: {
+      body: resetPasswordBodySchema,
+      querystring: resetPassQuerystringSchema,
       response: { 200: justOkReplySchema },
     },
   });
