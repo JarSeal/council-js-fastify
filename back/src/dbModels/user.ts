@@ -40,6 +40,9 @@ export interface DBUser {
     // Force a pass change after next login
     forcePassChange?: boolean;
 
+    // Forgot pass / new pass token
+    newPassToken?: Token;
+
     // Failed login attempts count, this is reset after a successfull
     // login or when the cool down period has ended
     loginAttempts?: number;
@@ -49,6 +52,13 @@ export interface DBUser {
 
     // Whether the user is under cool down or not
     isUnderCoolDown?: boolean;
+
+    // 2FA code and created date
+    twoFA: {
+      code: string | null;
+      date: Date | null;
+      resendDate: Date | null;
+    };
 
     // Login logs
     lastLoginAttempts: {
@@ -98,9 +108,15 @@ const userSchema = new Schema<DBUser>({
   systemDocument: { type: Boolean, default: false },
   security: {
     forcePassChange: { type: Boolean, required: true, default: false },
+    newPassToken: tokenDbSchema,
     loginAttempts: { type: Number, default: 0 },
     coolDownStarted: { ...dateDBSchema, required: false, default: null },
     isUnderCoolDown: { type: Boolean, required: true, default: false },
+    twoFA: {
+      code: { type: String },
+      date: { ...dateDBSchema, required: false, default: null },
+      resendDate: { ...dateDBSchema, required: false, default: null },
+    },
     lastLoginAttempts: [
       {
         _id: false,

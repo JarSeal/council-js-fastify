@@ -9,7 +9,7 @@ import DBFormModel, { type DBForm } from '../../dbModels/form';
 import DBSystemSettingModel, { type DBSystemSetting } from '../../dbModels/systemSetting';
 import { validateFormDataInput } from '../../utils/validation';
 import { createNewEditedArray } from '../../utils/parsingAndConverting';
-import { setCachedSysSettings } from '../../core/config';
+import { decryptData, encryptData, setCachedSysSettings } from '../../core/config';
 import { restartApp } from '../../core/app';
 
 // Read (GET)
@@ -138,6 +138,8 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
       const formElem = sysSettingsForm.form.formElems.find(
         (elem) => elem.elemId === data[i].elemId
       );
+      let value = data[i].value;
+      if (formElem?.elemType === 'inputSecret') value = encryptData(String(value));
       bulkWrite.push({
         updateOne: {
           filter: { simpleId: data[i].elemId },
@@ -153,7 +155,7 @@ export const systemSettingsPutRoute: RouteHandler<SystemSettingsPutRoute> = asyn
                     ),
                   }
                 : { edited: [] }),
-              value: data[i].value,
+              value,
               category: formElem?.elemData?.category,
               systemDocument: true,
             },
@@ -252,6 +254,7 @@ export const getSystemSettings = async (props: {
       if (value === undefined) {
         value = elem.elemData?.defaultValue === undefined ? undefined : elem.elemData?.defaultValue;
       }
+      if (elem.elemType === 'inputSecret') value = decryptData(String(value));
       const edited = setting?.edited
         ? setting.edited.map((edit) => {
             if (edit.user?._id && 'simpleId' in edit.user) {

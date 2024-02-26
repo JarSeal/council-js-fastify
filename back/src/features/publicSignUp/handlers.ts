@@ -6,9 +6,10 @@ import { validateFormDataInput } from '../../utils/validation';
 import DBUserModel from '../../dbModels/user';
 import type { DBUser } from '../../dbModels/user';
 import type { PublicSignUpRoute } from './schemas';
-import { HASH_SALT_ROUNDS } from '../../core/config';
+import { HASH_SALT_ROUNDS, getAppName, getSysSetting } from '../../core/config';
 import { createUrlTokenAndId } from '../../utils/token';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
+import { sendEmail } from '../../core/email';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;
@@ -85,7 +86,11 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
       date: dateNow,
     },
     edited: [],
-    security: { lastLogins: [], lastLoginAttempts: [] },
+    security: {
+      lastLogins: [],
+      lastLoginAttempts: [],
+      twoFA: { code: null, date: null, resendDate: null },
+    },
   });
 
   let savedUser, error;
@@ -97,6 +102,29 @@ export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) =>
   if (!savedUser || error) {
     const createUserError = new errors.DB_CREATE_NEW_USER(error || 'savedUser returned empty');
     return res.send(createUserError);
+  }
+
+  await sendEmail({
+    to: email,
+    templateId: 'welcomeEmail',
+    templateVars: {
+      appName: await getAppName(),
+      username,
+      sysLoginUrl: 'http://localhost:4004', // @TODO: change this to come from a setting
+      newPassRequestUrl: 'http://localhost:4004', // @TODO: change this to come from a setting
+    },
+  });
+  const forceEmailVerification = await getSysSetting<boolean>('forceEmailVerification');
+  if (forceEmailVerification) {
+    await sendEmail({
+      to: email,
+      templateId: 'verifyEmail',
+      templateVars: {
+        appName: await getAppName(),
+        username,
+        verifyEmailUrl: `http://localhost:4004?token=${tokenAndId.token}`, // @TODO: change this URL to come from a setting
+      },
+    });
   }
 
   return res.status(200).send({ ok: true });

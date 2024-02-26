@@ -1,7 +1,7 @@
 // FORMS:
 const timeNow = new Date();
 const { simpleIdRegExp } = require('../../dist/back/src/utils/validation');
-const systemSettingsFormElems = require('./_system-settings');
+const systemSettingsFormElems = require('./system-forms-settings');
 
 if (!simpleIdRegExp) {
   console.error(
@@ -218,6 +218,213 @@ const getForms = async (db) => {
       ],
     },
 
+    // Verify email
+    {
+      simpleId: 'verifyEmail',
+      name: 'Verify email',
+      description: 'Council verify email form.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/user/verify-email',
+      privileges: [
+        // will be deleted from the form and set to privileges
+        {
+          simpleId: 'form__verifyEmail__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'verifyEmail',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Verify email',
+          description: 'Who can use the "Verify email" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
+    // Send verification email
+    {
+      simpleId: 'sendVerificationEmail',
+      name: 'Send verification email',
+      description: 'Council send verification email form.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/user/send-verification-email/:emailIndex',
+      privileges: [
+        // will be deleted from the form and set to privileges
+        {
+          simpleId: 'form__sendVerificationEmail__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'sendVerificationEmail',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Send verification email',
+          description: 'Who can use the "Send verification email" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [basicUsersId],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
+    // Forgot password
+    {
+      simpleId: 'forgotPassword',
+      name: 'Forgot password',
+      description: 'Council forgot password form.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/user/forgot-password',
+      form: {
+        formTitle: { langKey: 'Forgot password' },
+        formElems: [
+          {
+            elemId: 'username',
+            elemType: 'inputText',
+            label: { langKey: 'Username' },
+          },
+          {
+            elemId: 'email',
+            elemType: 'inputText',
+            label: { langKey: 'E-mail' },
+          },
+        ],
+      },
+      privileges: [
+        // will be deleted from the form and set to privileges
+        {
+          simpleId: 'form__forgotPassword__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'forgotPassword',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Forgot password',
+          description: 'Who can use the "Forgot password" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'onlyPublic',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
+    // Reset password
+    {
+      simpleId: 'resetPassword',
+      name: 'Reset password',
+      description:
+        'Council reset password form. This works with the token received from the "Forgot password" email.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/user/reset-password',
+      form: {
+        formTitle: { langKey: 'Reset password' },
+        formElems: [
+          {
+            elemId: 'pass',
+            elemType: 'inputText',
+            elemData: {
+              password: true,
+              minLength: 8,
+              maxLength: 128,
+            },
+            label: { langKey: 'New password' },
+            required: true,
+            validationRegExp: {
+              pattern: '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})',
+            },
+            mustMatchValue: 'passAgain',
+            errors: [
+              {
+                errorId: 'validationRegExp',
+                message: {
+                  langKey:
+                    'Password must contain at least: lower and upper case, number, special character (!#$%&?@* )',
+                },
+              },
+              {
+                errorId: 'mustMatchValue',
+                message: { langKey: 'Passwords do not match' },
+              },
+            ],
+          },
+          {
+            elemId: 'passAgain',
+            elemType: 'inputText',
+            elemData: { password: true },
+            label: { langKey: 'New password again' },
+            required: true,
+            mustMatchValue: 'pass',
+            errors: [
+              {
+                errorId: 'mustMatchValue',
+              },
+            ],
+          },
+          {
+            elemId: 'token',
+            elemType: 'hidden',
+            required: true,
+          },
+        ],
+      },
+      privileges: [
+        // will be deleted from the form and set to privileges
+        {
+          simpleId: 'form__resetPassword__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'resetPassword',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Reset password',
+          description: 'Who can use the "Reset password" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
     // Logout
     {
       simpleId: 'logout',
@@ -305,13 +512,6 @@ const getForms = async (db) => {
             },
           },
           {
-            elemId: 'fullName',
-            elemType: 'inputText',
-            valueType: 'string',
-            elemData: { maxLength: 200, category: { langKey: 'General' } },
-            label: { langKey: 'Full name' },
-          },
-          {
             elemId: 'description',
             elemType: 'inputText',
             valueType: 'string',
@@ -322,14 +522,6 @@ const getForms = async (db) => {
               category: { langKey: 'General' },
             },
             label: { langKey: 'Profile description' },
-          },
-          {
-            elemId: 'phonenumber',
-            elemType: 'inputText',
-            valueType: 'string',
-            elemData: { maxLength: 20, category: { langKey: 'General' } },
-            label: { langKey: 'Phone number' },
-            validationFn: 'phoneWithExtra',
           },
         ],
       },

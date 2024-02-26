@@ -9,6 +9,7 @@ import systemSettingsRoutes from '../features/systemSettings/routes';
 import { signedInHook } from '../hooks/signedIn';
 import { notSignedInHook } from '../hooks/notSignedIn';
 import { csrfHook } from '../hooks/csrf';
+import { userPublicRoutes, userSignedInRoutes } from '../features/user/routes';
 
 export const apiVersion = '/v1';
 const sysPrefixObj = { prefix: apiVersion + '/sys' };
@@ -24,6 +25,7 @@ const publicRoutes: FastifyPluginAsync = async (instance) => {
   await instance.register(formDataRoutes);
   await instance.register(healthCheckRoutes, sysPrefixObj);
   await instance.register(logoutRoute, sysPrefixObj);
+  await instance.register(userPublicRoutes, sysPrefixObj);
 };
 
 // All state altering system API routes (check CSRF header)
@@ -45,6 +47,7 @@ const notSignedInSystemRoutes: FastifyPluginAsync = async (instance) => {
 const signedInSystemRoutes: FastifyPluginAsync = async (instance) => {
   instance.addHook('onRequest', signedInHook);
   await instance.register(systemSettingsRoutes, sysPrefixObj);
+  await instance.register(userSignedInRoutes, sysPrefixObj);
 };
 
 export default apis;

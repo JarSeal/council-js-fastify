@@ -7,6 +7,8 @@ export enum ErrorCodes {
   BAD_REQUEST = 'BAD_REQUEST',
   LOGIN_USER_OR_PASS_WRONG = 'LOGIN_USER_OR_PASS_WRONG',
   LOGIN_USER_UNDER_COOLDOWN = 'LOGIN_USER_UNDER_COOLDOWN',
+  LOGIN_2FA_CODE_WRONG = 'LOGIN_2FA_CODE_WRONG',
+  LOGIN_2FA_SESSION_EXPIRED_OR_MISSING = 'LOGIN_2FA_SESSION_EXPIRED_OR_MISSING',
   USERNAME_TAKEN = 'USERNAME_TAKEN',
   EMAIL_TAKEN = 'EMAIL_TAKEN',
   COUNCL_ERR_VALIDATE = 'COUNCL_ERR_VALIDATE',
@@ -25,6 +27,9 @@ export enum ErrorCodes {
   FORM_DATA_BAD_REQUEST = 'FORM_DATA_BAD_REQUEST',
   AFTER_FN_ERR = 'AFTER_FN_ERR',
   REQUIRED_ACTIONS_ERR = 'REQUIRED_ACTIONS_ERR',
+  TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND',
+  TOKEN_INVALID_ERR = 'TOKEN_INVALID_ERR',
+  FEATURE_DISABLED = 'FEATURE_DISABLED',
 }
 
 const createError = (code: ErrorCodes, message: string, statusCode?: number) =>
@@ -43,6 +48,16 @@ const errors = {
   LOGIN_USER_UNDER_COOLDOWN: createError(
     ErrorCodes.LOGIN_USER_UNDER_COOLDOWN,
     'User is under cooldown, login denied (%s)',
+    401
+  ),
+  LOGIN_2FA_CODE_WRONG: createError(
+    ErrorCodes.LOGIN_2FA_CODE_WRONG,
+    'Two-factor authentication code is wrong',
+    401
+  ),
+  LOGIN_2FA_SESSION_EXPIRED_OR_MISSING: createError(
+    ErrorCodes.LOGIN_2FA_SESSION_EXPIRED_OR_MISSING,
+    'Two-factor authentication session has either expired or is missing',
     401
   ),
   USERNAME_TAKEN: createError(ErrorCodes.USERNAME_TAKEN, "Username '%s' is taken", 400),
@@ -87,6 +102,9 @@ const errors = {
     'User has required actions that need to be fullfilled, %s',
     403
   ),
+  TOKEN_NOT_FOUND: createError(ErrorCodes.TOKEN_NOT_FOUND, 'Token was not found: %s', 404),
+  TOKEN_INVALID_ERR: createError(ErrorCodes.TOKEN_INVALID_ERR, 'Token is invalid: %s', 403),
+  FEATURE_DISABLED: createError(ErrorCodes.FEATURE_DISABLED, '%s', 403),
 };
 
 export { errors };

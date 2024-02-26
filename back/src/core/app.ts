@@ -32,6 +32,8 @@ export const apiRoot = '/api';
 
 type _Fastify = typeof _fastify;
 
+export let logger: FastifyBaseLogger;
+
 const envToLogger = {
   development: {
     transport: {
@@ -100,7 +102,7 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
   await app.register(apis, { prefix: apiRoot });
 
   // Static files
-  let publicPath = path.join(__dirname, '../public');
+  let publicPath = path.join(__dirname, '../../../public');
   if (!fs.existsSync(publicPath)) {
     // For development
     publicPath = path.join(__dirname, '../../../shared/public');
@@ -112,6 +114,9 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
 
   // Client routes (all GET routes, except the GET API routes)
   app.get('*', (_, res) => res.sendFile('index.html'));
+
+  // Export logger
+  logger = app.log;
 
   return app;
 };

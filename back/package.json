@@ -6,7 +6,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "cross-env node ./dist/server.js",
+    "start": "cross-env node ./dist/back/src/server.js",
     "dev": "yarn migrate && cross-env ts-node-dev --files ./src/server.ts",
     "build": "rm -rf dist && tsc -p tsconfig.json && yarn build:public",
     "build:public": "cp -a ./../shared/public/. ./dist/public",
@@ -55,13 +55,16 @@
     "fast-jwt": "3.2.0",
     "fastify": "4.18.0",
     "fastify-static": "4.7.0",
+    "marked": "12.0.0",
     "mongoose": "7.3.1",
-    "mongoose-paginate-v2": "1.7.4"
+    "mongoose-paginate-v2": "1.7.4",
+    "nodemailer": "6.9.9"
   },
   "devDependencies": {
     "@types/bcrypt": "5.0.0",
     "@types/jest": "29.5.2",
     "@types/node": "20.3.1",
+    "@types/nodemailer": "6.4.14",
     "@typescript-eslint/eslint-plugin": "5.60.0",
     "@typescript-eslint/parser": "5.60.0",
     "cross-env": "7.0.3",

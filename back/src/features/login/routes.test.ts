@@ -2,10 +2,17 @@ import type { FastifyError, FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
-import { SESSION_COOKIE_NAME, getConfig } from '../../core/config';
+import { SESSION_COOKIE_NAME, getConfig, setCachedSysSettings } from '../../core/config';
 import type { Reply } from './schemas';
 import type { LogoutRoute } from '../logout/schemas';
-import { createUser, csrfHeader, validAgentId } from '../../test/utils';
+import {
+  createSysSettings,
+  createUser,
+  csrfHeader,
+  updateSystemSetting,
+  validAgentId,
+} from '../../test/utils';
+import { generate2FACode } from './handlers';
 
 describe('login', () => {
   let app: FastifyInstance;
@@ -20,6 +27,7 @@ describe('login', () => {
     await mongoose.connection.close();
   });
 
+  // BASIC LOGIN [START]
   it('should fail without the CSRF header', async () => {
     await createUser('csrfUser', { password: 'csrfPassword' });
     const response = await app.inject({
@@ -317,4 +325,122 @@ describe('login', () => {
     expect(response?.statusCode).toBe(200);
     expect(body).toStrictEqual({ ok: true });
   });
+  // BASIC LOGIN [/END]
+
+  // LOGIN UTILS [START]
+  it('generate2FACode', () => {
+    const result = generate2FACode();
+    expect(result).toHaveLength(6);
+    expect(typeof result).toBe('string');
+  });
+  // LOGIN UTILS [/END]
+
+  // 2FA LOGIN [START]
+  it('should fail when no 2FA session is found', async () => {
+    await createUser('myusername4', { email: 'dd@dd.dd', verified: true });
+    const response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/login/2fa',
+      body: {
+        username: 'myusername4',
+        code: '01234',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(401);
+    expect(body.code).toBe('LOGIN_2FA_SESSION_EXPIRED_OR_MISSING');
+  });
+
+  it('should go to cooldown when too many failed 2FA attempts', async () => {
+    await createUser('myusername4', { email: 'dd@dd.dd', verified: true });
+    let response;
+    for (let i = 0; i < 5; i++) {
+      response = await app.inject({
+        method: 'POST',
+        path: '/api/v1/sys/login/2fa',
+        body: {
+          username: 'myusername4',
+          code: '01234',
+          agentId: validAgentId,
+        },
+        ...csrfHeader,
+      });
+    }
+    if (!response) response = { statusCode: 0, body: '[]' };
+    const body = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(401);
+    expect(body.code).toBe('LOGIN_USER_UNDER_COOLDOWN');
+  });
+
+  it('should successfully login with 2FA (and have one wrong code) and then logout', async () => {
+    await createSysSettings();
+    await updateSystemSetting('use2FA', 'ENABLED');
+    await updateSystemSetting('useEmail', true);
+    await setCachedSysSettings();
+    await createUser('myusername2fa', { email: '2fa@2fa.fa', verified: true });
+
+    let response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/login',
+      body: {
+        usernameOrEmail: 'myusername2fa',
+        pass: 'password',
+        loginMethod: 'username',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const loginBody = JSON.parse(response.body) as Reply;
+    expect(response?.statusCode).toBe(200);
+    expect(loginBody.ok).toBeTruthy();
+    expect(loginBody.requiredActions).toBe(null);
+    expect(loginBody.publicSettings).toBeTruthy();
+    expect(loginBody.twoFactorUser).toBe('myusername2fa');
+
+    response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/login/2fa',
+      body: {
+        username: 'myusername2fa',
+        code: 'wrong',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const failedLoginBody = JSON.parse(response.body) as FastifyError;
+    expect(response.statusCode).toBe(401);
+    expect(failedLoginBody.code).toBe('LOGIN_2FA_CODE_WRONG');
+
+    response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/login/2fa',
+      body: {
+        username: 'myusername2fa',
+        code: '012345',
+        agentId: validAgentId,
+      },
+      ...csrfHeader,
+    });
+    const sessionCookie = response.cookies.find((c) => c.name === SESSION_COOKIE_NAME);
+    const successLoginBody = JSON.parse(response.body) as Reply;
+    expect(response?.statusCode).toBe(200);
+    expect(successLoginBody.ok).toBeTruthy();
+    expect(successLoginBody.requiredActions).toBe(null);
+    expect(successLoginBody.publicSettings).toBeTruthy();
+    expect(successLoginBody.twoFactorUser).toBe(undefined);
+
+    response = await app.inject({
+      method: 'POST',
+      path: '/api/v1/sys/logout',
+      body: {},
+      cookies: { [SESSION_COOKIE_NAME]: String(sessionCookie?.value) },
+      ...csrfHeader,
+    });
+    const logoutBody = JSON.parse(response.body) as LogoutRoute['Reply'];
+    expect(response?.statusCode).toBe(200);
+    expect(logoutBody).toStrictEqual({ ok: true });
+  });
+  // 2FA LOGIN [/END]
 });

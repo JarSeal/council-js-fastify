@@ -7,10 +7,11 @@
     "maxLoginLogs": 5,
     "maxLoginAttemptLogs": 5,
     "defaultEditedLogs": 10,
-    "forceEmailVerification": false,
-    "maxEmails": 2,
     "use2FA": "DISABLED",
-    "loginMethod": "USER_CHOOSES_USERNAME_AS_DEFAULT"
+    "twoFASessionAgeInMin": 30,
+    "loginMethod": "USER_CHOOSES_USERNAME_AS_DEFAULT",
+    "forgotPassIdMethod": "EITHER",
+    "forgotPassSessionAgeInMin": 30
   },
   "data": {
     "dataItemsMaxLimit": 500,
@@ -18,5 +19,12 @@
   },
   "caches": {
     "userGroupsCacheTime": 180
+  },
+  "email": {
+    "forceEmailVerification": false,
+    "maxEmails": 2
+  },
+  "appGeneral": {
+    "appName": "Council"
   }
 }

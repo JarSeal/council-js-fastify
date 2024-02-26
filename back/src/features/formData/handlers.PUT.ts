@@ -23,6 +23,7 @@ import { validateFormDataInput } from '../../utils/validation';
 import { getFormData } from './handlers.GET';
 import { afterFns } from '../../customFunctions/afterFn';
 import { getRequiredActions } from '../../utils/requiredLoginChecks';
+import { encryptData } from '../../core/config';
 
 // Edit (PUT)
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
@@ -232,6 +233,9 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
           privileges = oldElem.privileges;
         }
         if (newElem) {
+          if (formElems[j].elemType === 'inputSecret') {
+            newElem.value = encryptData(String(newElem.value));
+          }
           updatedData.push({ ...newElem, ...(privileges ? { privileges } : {}) });
           if (newElem.privileges) hasElemPrivileges = true;
           continue;

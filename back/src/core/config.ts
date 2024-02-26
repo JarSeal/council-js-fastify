@@ -1,4 +1,5 @@
 import { config } from 'dotenv';
+import crypto from 'crypto';
 
 import * as CONFIG from '../../../CONFIG.json';
 import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting';
@@ -10,9 +11,12 @@ export type Environment = 'development' | 'production' | 'test';
 export const ENVIRONMENT =
   ['development', 'production', 'test'].find((env) => env === process.env.NODE_ENV) || 'production';
 export const IS_PRODUCTION = ENVIRONMENT === 'production';
+export const IS_TEST = ENVIRONMENT === 'test';
+export const IS_DEVELOPMENT = ENVIRONMENT === 'development';
 
-export const HOST = process.env.HOST || '127.0.0.1';
+export const HOST = process.env.HOST || 'http://127.0.0.1';
 export const PORT = parseInt(process.env.PORT || '4000');
+export const CLIENT_BASE_URL = process.env.CLIENT_BASE_URL || `${HOST}${PORT ? ':' : ''}${PORT}`;
 
 // comma separated host names
 export const CLIENT_HOST_NAMES = process.env.CLIENT_HOST_NAMES || '';
@@ -30,6 +34,9 @@ export const URL_TOKEN_SECRET =
 export const SESSION_SECRET =
   process.env.SESSION_SECRET || 'a secret with minimum length of 32 characters';
 export const SESSION_COOKIE_NAME = IS_PRODUCTION ? `__Host-${'counclSess'}` : 'counclSess';
+
+export const TWOFA_RESEND_INTERVAL_IN_MINUTES = 2;
+export const MAX_FORGOT_PASSWORD_RESENDS = 4;
 
 export const getConfig = <T>(path?: string, defaultValue?: unknown): T => {
   const conf = CONFIG || {};
@@ -127,3 +134,35 @@ export const getPublicSysSettings = async (): Promise<PublicSysSettings> => {
 
   return publicSettings;
 };
+
+// DB value/secret encryption
+let dbPassSecretKey: string;
+let dbPassSecretIv: string;
+const generateDBHashes = () => {
+  if (dbPassSecretKey && dbPassSecretIv) return;
+  dbPassSecretKey = crypto
+    .createHash('sha512')
+    .update(process.env.DB_SECRETS_KEY || 'dummyKeySecret')
+    .digest('hex')
+    .substring(0, 32);
+  dbPassSecretIv = crypto
+    .createHash('sha512')
+    .update(process.env.DB_SECRETS_IV || 'dummyIvSecret')
+    .digest('hex')
+    .substring(0, 16);
+};
+export const encryptData = (data: string) => {
+  generateDBHashes();
+  const cipher = crypto.createCipheriv('aes-256-cbc', dbPassSecretKey, dbPassSecretIv);
+  // Encrypts data and converts to hex and base64
+  return Buffer.from(cipher.update(data, 'utf8', 'hex') + cipher.final('hex')).toString('base64');
+};
+export function decryptData(encryptedData: string) {
+  generateDBHashes();
+  const buff = Buffer.from(encryptedData, 'base64');
+  const decipher = crypto.createDecipheriv('aes-256-cbc', dbPassSecretKey, dbPassSecretIv);
+  // Decrypts data and converts to utf8
+  return decipher.update(buff.toString('utf8'), 'hex', 'utf8') + decipher.final('utf8');
+}
+
+export const getAppName = async () => (await getSysSetting<string>('appName')) || 'Council';
