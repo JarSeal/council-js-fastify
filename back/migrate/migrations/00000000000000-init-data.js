@@ -71,17 +71,19 @@ module.exports = {
         privileges = [...privileges, ...systemForms[i].privileges];
         delete systemForms[i].privileges;
 
-        const elems = systemForms[i].form.formElems;
-        for (let j = 0; j < elems.length; j++) {
-          // Set orderNr
-          elems[j].orderNr = j;
+        if (systemForms[i].form?.formElems) {
+          const elems = systemForms[i].form.formElems;
+          for (let j = 0; j < elems.length; j++) {
+            // Set orderNr
+            elems[j].orderNr = j;
 
-          // @TODO: add a check to compare formElem options and default value (throw error if defaultValue not in options)
+            // @TODO: add a check to compare formElem options and default value (throw error if defaultValue not in options)
 
-          // Encrypt secrets
-          if (elems[j].elemType === 'inputSecret') {
-            if (!elems[j].elemData) elems[j].elemData = {};
-            elems[j].elemData.defaultValue = encryptData(elems[j].elemData.defaultValue);
+            // Encrypt secrets
+            if (elems[j].elemType === 'inputSecret') {
+              if (!elems[j].elemData) elems[j].elemData = {};
+              elems[j].elemData.defaultValue = encryptData(elems[j].elemData.defaultValue);
+            }
           }
         }
 

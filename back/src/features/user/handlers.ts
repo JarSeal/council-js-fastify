@@ -18,16 +18,24 @@ import {
 import { updateDBUser } from '../login/handlers';
 import { MAX_FORGOT_PASSWORD_RESENDS, getAppName, getSysSetting } from '../../core/config';
 import { sendEmail } from '../../core/email';
-import { csrfCheck } from '../../hooks/csrf';
+import { isCsrfGood } from '../../hooks/csrf';
 import { isEmailEnabled } from '../../utils/common';
 import { getTimestampFromDate } from '../../utils/timeAndDate';
+import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
+import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
 
 // VERIFY EMAIL ROUTE
 // ********************************
 export const verifyEmail: RouteHandler<VerifyEmailRoute> = async (req, res) => {
-  const csrfError = csrfCheck(req);
-  if (csrfError) {
-    return res.send(csrfError);
+  // Get and check privileges
+  const dbPrivs = await DBPrivilegeModel.findOne<DBPrivilege>({
+    simpleId: 'form__verifyEmail__canUseForm',
+  });
+  const userData = await getUserData(req);
+  const csrfIsGood = isCsrfGood(req);
+  const verifyEmailPrivError = isPrivBlocked(dbPrivs?.privilegeAccess, userData, csrfIsGood);
+  if (verifyEmailPrivError) {
+    return verifyEmailPrivError;
   }
 
   const token = req.query.token;
@@ -82,8 +90,20 @@ export const verifyEmail: RouteHandler<VerifyEmailRoute> = async (req, res) => {
 // SEND NEW VERIFICATION EMAIL ROUTE
 // ********************************
 export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = async (req, res) => {
+  // Get and check privileges
+  const dbPrivs = await DBPrivilegeModel.findOne<DBPrivilege>({
+    simpleId: 'form__sendVerificationEmail__canUseForm',
+  });
+  const userData = await getUserData(req);
+  const csrfIsGood = isCsrfGood(req);
+  const sendVerEmailPrivError = isPrivBlocked(dbPrivs?.privilegeAccess, userData, csrfIsGood);
+  if (sendVerEmailPrivError) {
+    return sendVerEmailPrivError;
+  }
+
   const emailIndex = req.params.emailIndex;
 
+  // Check that emailIndex is a proper index
   if (
     emailIndex === undefined ||
     isNaN(emailIndex) ||
@@ -92,11 +112,12 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
   ) {
     return res.send(
       new errors.NOT_FOUND(
-        'Either emailIndex is not specified or is not a number, or user is not in a session (send verification email).'
+        'Either emailIndex is not specified or is not a number, or user is not in a session/signed in (send verification email).'
       )
     );
   }
 
+  // Check that email is configured and turned on
   const emailIsTurnedOn = await isEmailEnabled();
   if (!emailIsTurnedOn) {
     return res.send(
@@ -112,6 +133,7 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
     return res.send(new errors.NOT_FOUND('User not found for "send verification email".'));
   }
 
+  // Check that user has an email in that emailIndex
   if (!user.emails[emailIndex]) {
     return res.send(
       new errors.BAD_REQUEST(`Could not find an email with emailIndex ${emailIndex}.`)
@@ -153,10 +175,15 @@ export const sendVerificationEmail: RouteHandler<SendVerificationEmailRoute> = a
 // FORGOT PASSWORD ROUTE
 // ********************************
 export const forgotPassword: RouteHandler<SendNewPasswordRoute> = async (req, res) => {
-  // @TODO or @CONSIDER: get csrf from the form and check if it needed and present
-  const csrfError = csrfCheck(req);
-  if (csrfError) {
-    return res.send(csrfError);
+  // Get and check privileges
+  const dbPrivs = await DBPrivilegeModel.findOne<DBPrivilege>({
+    simpleId: 'form__forgotPassword__canUseForm',
+  });
+  const userData = await getUserData(req);
+  const csrfIsGood = isCsrfGood(req);
+  const forgotPasswordPrivError = isPrivBlocked(dbPrivs?.privilegeAccess, userData, csrfIsGood);
+  if (forgotPasswordPrivError) {
+    return forgotPasswordPrivError;
   }
 
   // Check if email is enabled
@@ -272,7 +299,16 @@ export const forgotPassword: RouteHandler<SendNewPasswordRoute> = async (req, re
 // RESET PASSWORD ROUTE
 // ********************************
 export const resetPassword: RouteHandler<ResetPasswordRoute> = async (req, res) => {
-  req;
+  // Get and check privileges
+  const dbPrivs = await DBPrivilegeModel.findOne<DBPrivilege>({
+    simpleId: 'form__resetPassword__canUseForm',
+  });
+  const userData = await getUserData(req);
+  const csrfIsGood = isCsrfGood(req);
+  const resetPasswordPrivError = isPrivBlocked(dbPrivs?.privilegeAccess, userData, csrfIsGood);
+  if (resetPasswordPrivError) {
+    return resetPasswordPrivError;
+  }
 
   return res.send({ ok: true });
 };

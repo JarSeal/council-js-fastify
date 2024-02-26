@@ -210,6 +210,14 @@ describe('systemSettings', () => {
         edited: [],
         orderNr: 2,
       },
+      {
+        elemId: 'forgotPassIdMethod',
+        value: 'USERNAME_ONLY',
+        valueType: 'string',
+        category: 'security',
+        edited: [],
+        orderNr: 3,
+      },
     ]);
     const formElems = body.form?.formElems as FormElem[];
     expect(formElems[0].elemId).toBe('forceEmailVerification');
@@ -272,6 +280,14 @@ describe('systemSettings', () => {
         category: 'security',
         edited: [],
         orderNr: 3,
+      },
+      {
+        elemId: 'forgotPassIdMethod',
+        value: 'USERNAME_ONLY',
+        valueType: 'string',
+        category: 'security',
+        edited: [],
+        orderNr: 4,
       },
     ]);
   });

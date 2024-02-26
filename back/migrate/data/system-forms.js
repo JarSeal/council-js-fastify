@@ -218,6 +218,76 @@ const getForms = async (db) => {
       ],
     },
 
+    // Verify email
+    {
+      simpleId: 'verifyEmail',
+      name: 'Verify email',
+      description: 'Council verify email form.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/user/verify-email',
+      privileges: [
+        // will be deleted from the form and set to privileges
+        {
+          simpleId: 'form__verifyEmail__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'verifyEmail',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Verify email',
+          description: 'Who can use the "Verify email" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'true',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
+    // Send verification email
+    {
+      simpleId: 'sendVerificationEmail',
+      name: 'Send verification email',
+      description: 'Council send verification email form.',
+      created: {
+        user: null,
+        date: timeNow,
+      },
+      edited: [],
+      systemDocument: true,
+      owner: null,
+      url: '/api/v1/sys/user/send-verification-email/:emailIndex',
+      privileges: [
+        // will be deleted from the form and set to privileges
+        {
+          simpleId: 'form__sendVerificationEmail__canUseForm',
+          priCategoryId: 'form',
+          priTargetId: 'sendVerificationEmail',
+          priAccessId: 'canUseForm',
+          name: 'Use form: Send verification email',
+          description: 'Who can use the "Send verification email" form.',
+          created: timeNow,
+          privilegeAccess: {
+            public: 'false',
+            requireCsrfHeader: true,
+            users: [],
+            groups: [basicUsersId],
+            excludeUsers: [],
+            excludeGroups: [],
+          },
+        },
+      ],
+    },
+
     // Forgot password
     {
       simpleId: 'forgotPassword',
@@ -344,7 +414,7 @@ const getForms = async (db) => {
           description: 'Who can use the "Reset password" form.',
           created: timeNow,
           privilegeAccess: {
-            public: 'onlyPublic',
+            public: 'true',
             requireCsrfHeader: true,
             users: [],
             groups: [],

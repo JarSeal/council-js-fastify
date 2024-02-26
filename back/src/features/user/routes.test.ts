@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 
 import initApp from '../../core/app';
 import {
+  createGroup,
+  createPrivilege,
   createSysAdmin,
   createSysSettings,
   createUser,
@@ -22,6 +24,39 @@ describe('user routes', () => {
     await createSysAdmin(true);
     await createSysSettings();
     await updateSystemSetting('useEmail', true);
+    const basicUsersGroupId = await createGroup('basicUsers');
+    await createPrivilege('form', 'sendVerificationEmail', 'canUseForm', {
+      public: 'false',
+      requireCsrfHeader: true,
+      users: [],
+      groups: [basicUsersGroupId],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    await createPrivilege('form', 'verifyEmail', 'canUseForm', {
+      public: 'true',
+      requireCsrfHeader: true,
+      users: [],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    await createPrivilege('form', 'forgotPassword', 'canUseForm', {
+      public: 'onlyPublic',
+      requireCsrfHeader: true,
+      users: [],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
+    await createPrivilege('form', 'resetPassword', 'canUseForm', {
+      public: 'true',
+      requireCsrfHeader: true,
+      users: [],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    });
   });
 
   afterAll(async () => {
@@ -135,7 +170,8 @@ describe('user routes', () => {
   });
 
   it('should fail "Send verification email" without emailIndex in query params or it is invalid', async () => {
-    await createUser('myusername4', { email: 'dd@dd.dd' });
+    const basicUsersGroupId = await createGroup('basicUsers');
+    await createUser('myusername4', { email: 'dd@dd.dd', groupIds: [basicUsersGroupId] });
     const loginResponse = await app.inject({
       method: 'POST',
       path: '/api/v1/sys/login',
@@ -181,7 +217,8 @@ describe('user routes', () => {
   });
 
   it('should send verification email successfully', async () => {
-    await createUser('myusername5', { email: 'ee@ee.ee' });
+    const basicUsersGroupId = await createGroup('basicUsers');
+    await createUser('myusername5', { email: 'ee@ee.ee', groupIds: [basicUsersGroupId] });
     const loginResponse = await app.inject({
       method: 'POST',
       path: '/api/v1/sys/login',

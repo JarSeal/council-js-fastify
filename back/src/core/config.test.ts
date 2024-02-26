@@ -61,7 +61,11 @@ describe('config', () => {
 
   it('getPublicSysSettings', async () => {
     const publicSettings = await getPublicSysSettings();
-    expect(publicSettings).toStrictEqual({ use2FA: 'DISABLED', loginMethod: 'USERNAME_ONLY' });
+    expect(publicSettings).toStrictEqual({
+      forgotPassIdMethod: 'USERNAME_ONLY',
+      use2FA: 'DISABLED',
+      loginMethod: 'USERNAME_ONLY',
+    });
   });
 
   it('encryption', () => {
