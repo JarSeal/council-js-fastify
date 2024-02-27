@@ -8,7 +8,7 @@
   "private": false,
   "scripts": {
     "start": "yarn --cwd ./back/ start",
-    "setup": "yarn && oneenv && cd back && yarn && cd migrate && yarn && cd .. && yarn migrate",
+    "setup": "yarn && oneenv && cd back && yarn && cd migrate && yarn && cd .. && yarn build && yarn migrate",
     "oneenv": "oneenv",
     "dev": "yarn dev:back",
     "dev:back": "yarn --cwd ./back/ dev",
