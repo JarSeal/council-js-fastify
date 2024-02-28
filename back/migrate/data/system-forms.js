@@ -33,6 +33,7 @@ const getForms = async (db) => {
           {
             elemId: 'loginMethod',
             elemType: 'inputRadioGroup',
+            valueType: 'string',
             elemData: {
               defaultValue: 'username',
               options: [
@@ -52,12 +53,14 @@ const getForms = async (db) => {
           {
             elemId: 'usernameOrEmail',
             elemType: 'inputText',
+            valueType: 'string',
             label: { langKey: 'Username or Email' },
             required: true,
           },
           {
             elemId: 'pass',
             elemType: 'inputText',
+            valueType: 'string',
             elemData: { password: true },
             label: { langKey: 'Password' },
             required: true,
@@ -65,6 +68,7 @@ const getForms = async (db) => {
           {
             elemId: 'agentId',
             elemType: 'hidden',
+            valueType: 'string',
             required: true,
           },
         ],
@@ -110,6 +114,7 @@ const getForms = async (db) => {
           {
             elemId: 'username',
             elemType: 'inputText',
+            valueType: 'string',
             elemData: {
               minLength: 2,
               maxLength: 32,
@@ -117,7 +122,7 @@ const getForms = async (db) => {
             label: { langKey: 'Username' },
             required: true,
             validationRegExp: { pattern: simpleIdRegExp[0], flags: simpleIdRegExp[1] },
-            errors: [
+            inputErrors: [
               {
                 errorId: 'validationRegExp',
                 message: {
@@ -129,11 +134,12 @@ const getForms = async (db) => {
           {
             elemId: 'email',
             elemType: 'inputText',
+            valueType: 'string',
             elemData: { email: true },
             label: { langKey: 'E-mail' },
             required: true,
             mustMatchValue: 'emailAgain',
-            errors: [
+            inputErrors: [
               {
                 errorId: 'mustMatchValue',
                 message: { langKey: 'E-mails do not match' },
@@ -143,11 +149,12 @@ const getForms = async (db) => {
           {
             elemId: 'emailAgain',
             elemType: 'inputText',
+            valueType: 'string',
             elemData: { email: true },
             label: { langKey: 'E-mail again' },
             required: true,
             mustMatchValue: 'email',
-            errors: [
+            inputErrors: [
               {
                 errorId: 'mustMatchValue',
               },
@@ -156,6 +163,7 @@ const getForms = async (db) => {
           {
             elemId: 'pass',
             elemType: 'inputText',
+            valueType: 'string',
             elemData: {
               password: true,
               minLength: 8,
@@ -167,7 +175,7 @@ const getForms = async (db) => {
               pattern: '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})',
             },
             mustMatchValue: 'passAgain',
-            errors: [
+            inputErrors: [
               {
                 errorId: 'validationRegExp',
                 message: {
@@ -184,11 +192,12 @@ const getForms = async (db) => {
           {
             elemId: 'passAgain',
             elemType: 'inputText',
+            valueType: 'string',
             elemData: { password: true },
             label: { langKey: 'Password again' },
             required: true,
             mustMatchValue: 'pass',
-            errors: [
+            inputErrors: [
               {
                 errorId: 'mustMatchValue',
               },
@@ -307,11 +316,13 @@ const getForms = async (db) => {
           {
             elemId: 'username',
             elemType: 'inputText',
+            valueType: 'string',
             label: { langKey: 'Username' },
           },
           {
             elemId: 'email',
             elemType: 'inputText',
+            valueType: 'string',
             label: { langKey: 'E-mail' },
           },
         ],
@@ -358,6 +369,7 @@ const getForms = async (db) => {
           {
             elemId: 'pass',
             elemType: 'inputText',
+            valueType: 'string',
             elemData: {
               password: true,
               minLength: 8,
@@ -369,7 +381,7 @@ const getForms = async (db) => {
               pattern: '^(?=.*[a-zäöå])(?=.*[A-ZÄÖÅ])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})',
             },
             mustMatchValue: 'passAgain',
-            errors: [
+            inputErrors: [
               {
                 errorId: 'validationRegExp',
                 message: {
@@ -386,11 +398,12 @@ const getForms = async (db) => {
           {
             elemId: 'passAgain',
             elemType: 'inputText',
+            valueType: 'string',
             elemData: { password: true },
             label: { langKey: 'New password again' },
             required: true,
             mustMatchValue: 'pass',
-            errors: [
+            inputErrors: [
               {
                 errorId: 'mustMatchValue',
               },
@@ -399,6 +412,7 @@ const getForms = async (db) => {
           {
             elemId: 'token',
             elemType: 'hidden',
+            valueType: 'string',
             required: true,
           },
         ],
@@ -443,6 +457,7 @@ const getForms = async (db) => {
           {
             elemId: 'redirectUrl',
             elemType: 'hidden',
+            valueType: 'string',
           },
         ],
       },

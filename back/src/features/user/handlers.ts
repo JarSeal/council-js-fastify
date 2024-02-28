@@ -23,6 +23,8 @@ import { isEmailEnabled } from '../../utils/common';
 import { getTimestampFromDate } from '../../utils/timeAndDate';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
+import DBFormModel, { type DBForm } from '../../dbModels/form';
+import { validateFormDataInput } from '../../utils/validation';
 
 // VERIFY EMAIL ROUTE
 // ********************************
@@ -309,6 +311,23 @@ export const resetPassword: RouteHandler<ResetPasswordRoute> = async (req, res) 
   if (resetPasswordPrivError) {
     return resetPasswordPrivError;
   }
+
+  // Get form and validate
+  const dbForm = await DBFormModel.findOne<DBForm>({ simpleId: 'resetPassword' });
+  if (!dbForm) {
+    return res.send(new errors.NOT_FOUND('Reset password form not found.'));
+  }
+  const inputData = [
+    { elemId: 'pass', value: req.body.pass },
+    { elemId: 'passAgain', value: req.body.passAgain },
+    { elemId: 'token', value: req.body.token },
+  ];
+  const validatorError = validateFormDataInput(dbForm.form.formElems, inputData);
+  if (validatorError) {
+    return { ok: false, error: validatorError };
+  }
+
+  // Get user and check token
 
   return res.send({ ok: true });
 };
