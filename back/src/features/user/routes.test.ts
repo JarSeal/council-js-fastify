@@ -446,4 +446,34 @@ describe('user routes', () => {
     expect(newPassToken1?.tokenId === newPassToken2?.tokenId).toBeTruthy();
   });
   // Forgot password route [/END]
+
+  // Reset password route [/START]
+  it('should fail "Reset password" without CSRF header', async () => {
+    // @TODO
+  });
+
+  it('should fail without the resetPassword form', async () => {
+    // @TODO
+  });
+
+  it('should validate "Reset password" input data correctly', async () => {
+    // @TODO
+  });
+
+  it('should fail when the newPassToken is not found', async () => {
+    // @TODO
+  });
+
+  it('should fail when the token data is invalid', async () => {
+    // @TODO
+  });
+
+  it('should fail when the token has expired', async () => {
+    // @TODO
+  });
+
+  it('should set new password with correct token', async () => {
+    // @TODO
+  });
+  // Reset password route [/END]
 });
