@@ -2,6 +2,7 @@ import { type Static, Type } from '@sinclair/typebox';
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 
 import { forgotPassword, resetPassword, sendVerificationEmail, verifyEmail } from './handlers';
+import { formDataErrorSchema } from '../formData/routes';
 
 const justOkReplySchema = Type.Object({
   ok: Type.Boolean(),
@@ -33,12 +34,14 @@ const resetPasswordBodySchema = Type.Object({
   token: Type.String(),
 });
 type ResetPasswordBody = Static<typeof resetPasswordBodySchema>;
-const resetPassQuerystringSchema = Type.Object({
-  token: Type.String(),
+const resetPasswordResponseSchema = Type.Object({
+  ok: Type.Boolean(),
+  error: Type.Optional(formDataErrorSchema),
 });
+type ResetPasswordResponse = Static<typeof resetPasswordResponseSchema>;
 export interface ResetPasswordRoute extends RouteGenericInterface {
   readonly Body: ResetPasswordBody;
-  readonly Reply: JustOkReply | FastifyError;
+  readonly Reply: ResetPasswordResponse | FastifyError; // @TODO: add error object
 }
 
 const userPublicRoutes: FastifyPluginAsync = (instance) => {
@@ -68,8 +71,7 @@ const userPublicRoutes: FastifyPluginAsync = (instance) => {
     handler: resetPassword,
     schema: {
       body: resetPasswordBodySchema,
-      querystring: resetPassQuerystringSchema,
-      response: { 200: justOkReplySchema },
+      response: { 200: resetPasswordResponseSchema },
     },
   });
 
