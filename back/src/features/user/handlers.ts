@@ -1,4 +1,5 @@
 import type { RouteHandler } from 'fastify';
+import { hash } from 'bcrypt';
 
 import type {
   ResetPasswordRoute,
@@ -16,7 +17,12 @@ import {
   verifyUrlToken,
 } from '../../utils/token';
 import { updateDBUser } from '../login/handlers';
-import { MAX_FORGOT_PASSWORD_RESENDS, getAppName, getSysSetting } from '../../core/config';
+import {
+  HASH_SALT_ROUNDS,
+  MAX_FORGOT_PASSWORD_RESENDS,
+  getAppName,
+  getSysSetting,
+} from '../../core/config';
 import { sendEmail } from '../../core/email';
 import { isCsrfGood } from '../../hooks/csrf';
 import { isEmailEnabled } from '../../utils/common';
@@ -266,7 +272,11 @@ export const forgotPassword: RouteHandler<SendNewPasswordRoute> = async (req, re
   // Create new password URL ID token
   const linkLifeInMinutes = (await getSysSetting<number>('forgotPassSessionAgeInMin')) || 30;
   const expires = getTimestampFromDate(new Date()) + linkLifeInMinutes * 60;
-  const tokenAndId = await createUrlTokenAndId('RESET_PASSWORD', { expires, sentCount });
+  const tokenAndId = await createUrlTokenAndId('RESET_PASSWORD', {
+    expires,
+    sentCount,
+    id: user._id,
+  });
   if (tokenAndId.error) {
     return res.send(
       new errors.FAST_JWT_ERR(`${tokenAndId.error.code}: ${tokenAndId.error.message}`)
@@ -313,21 +323,81 @@ export const resetPassword: RouteHandler<ResetPasswordRoute> = async (req, res) 
   }
 
   // Get form and validate
+  const sentPass = req.body.pass;
+  const sentPassAgain = req.body.passAgain;
+  const sentToken = req.body.token;
   const dbForm = await DBFormModel.findOne<DBForm>({ simpleId: 'resetPassword' });
   if (!dbForm) {
     return res.send(new errors.NOT_FOUND('Reset password form not found.'));
   }
   const inputData = [
-    { elemId: 'pass', value: req.body.pass },
-    { elemId: 'passAgain', value: req.body.passAgain },
-    { elemId: 'token', value: req.body.token },
+    { elemId: 'pass', value: sentPass },
+    { elemId: 'passAgain', value: sentPassAgain },
+    { elemId: 'token', value: sentToken },
   ];
   const validatorError = validateFormDataInput(dbForm.form.formElems, inputData);
   if (validatorError) {
     return { ok: false, error: validatorError };
   }
 
-  // Get user and check token
+  // Get user by token
+  const user = await DBUserModel.findOne<DBUser>({ 'security.newPassToken.token': req.body.token });
+  if (!user) {
+    return res.send(new errors.TOKEN_NOT_FOUND('New pass token (reset password) was not found.'));
+  }
+
+  // Check that token is valid and not expired
+  const curToken = user.security.newPassToken;
+  const verification = await verifyUrlToken(sentToken);
+  const payloadTokenId = verification.tokenId as string | undefined;
+  if (
+    curToken?.tokenId !== payloadTokenId ||
+    verification.iss !== ISSUER ||
+    verification.aud !== AUDIENCE ||
+    verification.sub !== SUBJECT_URL_TOKEN
+  ) {
+    // token verification failed
+    let tokenIdWrong = false;
+    if (curToken?.tokenId !== payloadTokenId) tokenIdWrong = true;
+    return res.send(
+      new errors.TOKEN_INVALID_ERR(
+        `New pass token (reset password) was invalid ${
+          tokenIdWrong ? '(tokenId wrong) ' : ''
+        } iss: ${String(verification.iss)}, aud: ${String(verification.aud)}, sub: ${String(
+          verification.sub
+        )})`
+      )
+    );
+  }
+  const expires = verification.expires as number | undefined;
+  if (getTimestampFromDate(new Date()) > (expires || 0)) {
+    return res.send(new errors.TOKEN_INVALID_ERR('New pass token (reset password) has expired.'));
+  }
+
+  // @CONSIDER: Check if the new password matches the old password or maybe even save
+  // X amount of old passwords in the user model and check that the new pass is really new
+
+  // Hash new password, clear newPassToken, and update user
+  const saltRounds = Number(HASH_SALT_ROUNDS);
+  const passwordHash = await hash(sentPass, saltRounds);
+  const security = user.security;
+  security.newPassToken = { token: null, tokenId: null };
+  const updateError = await updateDBUser(
+    { simpleId: user.simpleId },
+    { security, passwordHash },
+    `Reset password updateDBUser failed, update security.newPassToken and passwordHash.`
+  );
+  if (updateError) return updateError;
+
+  // Send "password changed" email
+  await sendEmail({
+    to: user.emails[0].email,
+    templateId: 'passChangedEmail',
+    templateVars: {
+      appName: await getAppName(),
+      username: user.simpleId,
+    },
+  });
 
   return res.send({ ok: true });
 };
