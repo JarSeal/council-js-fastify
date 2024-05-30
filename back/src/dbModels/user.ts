@@ -91,6 +91,8 @@ const userSchema = new Schema<DBUser>({
   created: {
     user: {
       type: Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
     },
     publicForm: Boolean,
     date: dateDBSchema,

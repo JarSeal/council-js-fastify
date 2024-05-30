@@ -29,10 +29,10 @@ export interface DBGroup {
 
 const groupSchema = new Schema<DBGroup>({
   simpleId: simpleIdDBSchema,
-  name: { type: String, required: true, default: null },
-  description: String,
+  name: { type: String, default: null },
+  description: { type: String, default: null },
   created: {
-    user: { type: Schema.Types.ObjectId, required: true, default: null },
+    user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     date: dateDBSchema,
   },
   edited: [

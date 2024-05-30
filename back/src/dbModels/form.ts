@@ -91,8 +91,8 @@ export interface DBForm {
 
 const formSchema = new Schema<DBForm>({
   simpleId: simpleIdDBSchema,
-  name: { type: String, required: true, default: null },
-  description: { type: String, required: true, default: null },
+  name: { type: String, default: null },
+  description: { type: String, default: null },
   created: {
     user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     date: dateDBSchema,

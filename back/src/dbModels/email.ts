@@ -34,12 +34,12 @@ export interface DBEmail {
   isHtmlTemplateWrapper: boolean;
 }
 
-const groupSchema = new Schema<DBEmail>({
+const emailSchema = new Schema<DBEmail>({
   simpleId: simpleIdDBSchema,
   name: transTextDbSchema,
   description: transTextDbSchema,
   created: {
-    user: { type: Schema.Types.ObjectId, required: true, default: null },
+    user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     date: dateDBSchema,
   },
   edited: [
@@ -61,7 +61,7 @@ const groupSchema = new Schema<DBEmail>({
   isHtmlTemplateWrapper: { type: Boolean, default: false },
 });
 
-groupSchema.set('toJSON', {
+emailSchema.set('toJSON', {
   transform: (_, returnedObject) => {
     returnedObject.id = String(returnedObject._id);
     delete returnedObject._id;
@@ -69,6 +69,6 @@ groupSchema.set('toJSON', {
   },
 });
 
-const DBEmailModel = model<DBEmail>('Email', groupSchema, 'emails');
+const DBEmailModel = model<DBEmail>('Email', emailSchema, 'emails');
 
 export default DBEmailModel;
