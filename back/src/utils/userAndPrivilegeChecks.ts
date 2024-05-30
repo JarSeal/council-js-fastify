@@ -361,8 +361,8 @@ export const getFormDataElemPrivilegesQuery = (
       $and: [
         {
           $or: [
-            { [`${currentElemPrivs}.requireCsrfHeader`]: { $ne: true } },
             { [`${currentElemPrivs}.requireCsrfHeader`]: csrfIsGood },
+            { [`${currentElemPrivs}.requireCsrfHeader`]: { $ne: true } },
           ],
         },
         userData.isSignedIn
