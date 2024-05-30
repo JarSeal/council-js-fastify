@@ -17,6 +17,11 @@ export interface DBClientRoute {
   // Edited history count
   editedHistoryCount?: number;
 
+  created: {
+    user: Types.ObjectId | null;
+    date: Date;
+  };
+
   systemDocument: boolean;
 
   path: string;
@@ -43,6 +48,10 @@ const clientRouteSchema = new Schema<DBClientRoute>({
     },
   ],
   editedHistoryCount: { type: Number },
+  created: {
+    user: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    date: dateDBSchema,
+  },
   systemDocument: { type: Boolean, default: false },
   path: { type: String, required: true },
   name: { type: String },

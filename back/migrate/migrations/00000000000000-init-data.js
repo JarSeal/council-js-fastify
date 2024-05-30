@@ -7,6 +7,7 @@ const systemGroups = require('../data/system-groups');
 const getSystemForms = require('../data/system-forms');
 const { encryptData } = require('../../dist/back/src/core/config');
 const getEmails = require('../data/system-emails');
+const routes = require('../data/system-routes');
 
 module.exports = {
   // UP
@@ -54,6 +55,7 @@ module.exports = {
         systemGroups[i].created.user = superUser._id;
         systemGroups[i].owner = superUser._id;
         systemGroups[i].members = [superUser._id];
+        if (systemGroups[i].systemDocument === undefined) systemGroups[i].systemDocument = true;
         await db.collection('groups').insertOne(systemGroups[i]);
       }
     }
@@ -70,6 +72,8 @@ module.exports = {
 
         privileges = [...privileges, ...systemForms[i].privileges];
         delete systemForms[i].privileges;
+
+        if (systemForms[i].systemDocument === undefined) systemForms[i].systemDocument = true;
 
         if (systemForms[i].form?.formElems) {
           const elems = systemForms[i].form.formElems;
@@ -98,7 +102,7 @@ module.exports = {
         .findOne({ simpleId: privileges[i].simpleId });
       if (!foundCanUseForm) {
         privileges[i].edited = [];
-        privileges[i].systemDocument = true;
+        if (privileges[i].systemDocument === undefined) privileges[i].systemDocument = true;
         privileges[i].privilegeViewAccess = {
           public: 'false',
           requireCsrfHeader: true,
@@ -125,18 +129,42 @@ module.exports = {
       const foundEmail = await db.collection('emails').findOne({ simpleId: emails[i].simpleId });
       if (foundEmail) continue;
       emails[i].edited = [];
-      emails[i].systemDocument = [];
+      if (emails[i].systemDocument === undefined) emails[i].systemDocument = true;
       emails[i].created = {
         user: superUser._id,
         date: timeNow,
       };
       await db.collection('emails').insertOne(emails[i]);
     }
+
+    // Create client routes
+    for (let i = 0; i < routes.length; i++) {
+      if (!routes[i].simpleId || !routes[i].path) {
+        console.warn('Client route items must a simpleId and path defined.');
+        continue;
+      }
+      const foundRoute = await db
+        .collection('clientRoutes')
+        .findOne({ simpleId: routes[i].simpleId });
+      if (foundRoute) continue;
+      routes[i].edited = [];
+      if (routes[i].systemDocument === undefined) routes[i].systemDocument = true;
+      routes[i].created = {
+        user: superUser._id,
+        date: timeNow,
+      };
+      await db.collection('clientRoutes').insertOne(routes[i]);
+    }
   },
 
   // DOWN (in reverse order)
   // **********************************************
   async down(db) {
+    // Remove client routes
+    for (let i = 0; i < routes.length; i++) {
+      await db.collection('clientRoutes').deleteOne({ simpleId: routes[i].simpleId });
+    }
+
     // Remove system emails
     const emails = getEmails();
     for (let i = 0; i < emails.length; i++) {
