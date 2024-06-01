@@ -78,7 +78,7 @@ module.exports = [
     componentId: 'mySettingsView',
   },
 
-  // user management (@TODO add privileges)
+  // user management
   {
     simpleId: 'usersListPath',
     path: '/sys/users-list',
@@ -115,7 +115,7 @@ module.exports = [
     componentId: 'createUserView',
   },
 
-  // group management (@TODO add privileges)
+  // group management
   {
     simpleId: 'groupsListPath',
     path: '/sys/groups-list',
@@ -152,12 +152,12 @@ module.exports = [
     componentId: 'createGroupView',
   },
 
-  // form management (@TODO add privileges)
+  // form management
   {
     simpleId: 'formsListPath',
     path: '/sys/forms-list',
     name: 'Forms List Path',
-    description: 'Forms List view path.',
+    description: 'Forms list view path.',
     privileges: { public: 'false' },
     componentId: 'formsListView',
   },
@@ -170,7 +170,7 @@ module.exports = [
     componentId: 'formView',
   },
   {
-    simpleId: 'editFormath',
+    simpleId: 'editFormPath',
     path: '/sys/edit-form/:formId',
     name: 'Edit Form View Path',
     description: 'Edit one form view path.',
@@ -178,35 +178,109 @@ module.exports = [
     componentId: 'editFormView',
   },
 
-  // formData management (@TODO add privileges)
+  // formData management
   {
     simpleId: 'formDataListPath',
     path: '/sys/form-data-list',
-    name: 'Forms Data List Path',
-    description: 'Forms List view path.',
+    name: 'Form Data List Path',
+    description: 'Form data list view path.',
     privileges: { public: 'false' },
-    componentId: 'formsListView',
+    componentId: 'formDataListView',
   },
   {
     simpleId: 'formViewPath',
     path: '/sys/:formId',
-    name: 'Form View Path',
-    description: 'View one form view path.',
+    name: 'Form Data Item View Path',
+    description: 'View one form data item view path.',
     privileges: { public: 'false' },
-    componentId: 'formView',
+    componentId: 'formDataView',
   },
   {
-    simpleId: 'editFormath',
-    path: '/sys/edit-form/:formId',
-    name: 'Edit Form View Path',
-    description: 'Edit one form view path.',
+    simpleId: 'editFormDataPath',
+    path: '/sys/edit-form-data/:formDataId',
+    name: 'Edit Form Data Item View Path',
+    description: 'Edit one form data item view path.',
     privileges: { public: 'false' },
-    componentId: 'editFormView',
+    componentId: 'editFormDataView',
   },
 
-  // privilege management (@TODO add privileges)
-  // clientRoute management (@TODO add privileges)
-  // email management (@TODO check privileges)
+  // privilege management
+  {
+    simpleId: 'privilegeListPath',
+    path: '/sys/privilege-list',
+    name: 'Privileges List Path',
+    description: 'Privileges list view path.',
+    privileges: { public: 'false' },
+    componentId: 'privilegesListView',
+  },
+  {
+    simpleId: 'privilegeViewPath',
+    path: '/sys/:formId',
+    name: 'Privilege View Path',
+    description: 'View one privilege view path.',
+    privileges: { public: 'false' },
+    componentId: 'privilegeView',
+  },
+  {
+    simpleId: 'editPrivilegePath',
+    path: '/sys/edit-privilege/:privilegeId',
+    name: 'Edit Privilege View Path',
+    description: 'Edit one privilege view path.',
+    privileges: { public: 'false' },
+    componentId: 'editPrivilegeView',
+  },
+
+  // clientRoute management
+  {
+    simpleId: 'clientRoutesListPath',
+    path: '/sys/client-routes-list',
+    name: 'Client Routes List Path',
+    description: 'Client routes list view path.',
+    privileges: { public: 'false' },
+    componentId: 'clientRoutesListView',
+  },
+  {
+    simpleId: 'clientRouteViewPath',
+    path: '/sys/:clientRouteId',
+    name: 'Client Route View Path',
+    description: 'View one client route view path.',
+    privileges: { public: 'false' },
+    componentId: 'clientRouteView',
+  },
+  {
+    simpleId: 'editClientRoutePath',
+    path: '/sys/edit-client-route/:clientRouteId',
+    name: 'Edit Client Route View Path',
+    description: 'Edit one client route view path.',
+    privileges: { public: 'false' },
+    componentId: 'editClientRouteView',
+  },
+
+  // email management
+  {
+    simpleId: 'emailsListPath',
+    path: '/sys/emails-list',
+    name: 'Emails List Path',
+    description: 'Emails list view path.',
+    privileges: { public: 'false' },
+    componentId: 'emailsListView',
+  },
+  {
+    simpleId: 'emailViewPath',
+    path: '/sys/:emailId',
+    name: 'Email View Path',
+    description: 'View one email view path.',
+    privileges: { public: 'false' },
+    componentId: 'emailView',
+  },
+  {
+    simpleId: 'editEmailPath',
+    path: '/sys/edit-email/:emailId',
+    name: 'Edit Email View Path',
+    description: 'Edit one email view path.',
+    privileges: { public: 'false' },
+    componentId: 'editEmailView',
+  },
 
   // system admins
   {
