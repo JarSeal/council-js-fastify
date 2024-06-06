@@ -33,6 +33,13 @@ export interface DBClientRoute {
   privileges?: Partial<AllPrivilegeProps>;
 
   componentId?: string;
+
+  redirectUrl?: string;
+
+  meta?: {
+    title?: string;
+    description?: string;
+  };
 }
 
 const clientRouteSchema = new Schema<DBClientRoute>({
@@ -58,6 +65,11 @@ const clientRouteSchema = new Schema<DBClientRoute>({
   description: { type: String },
   privileges: allPrivilegePropsSchema,
   componentId: { type: String },
+  redirectUrl: { type: String },
+  meta: {
+    title: { type: String },
+    description: { type: String },
+  },
 });
 
 clientRouteSchema.set('toJSON', {

@@ -7,12 +7,14 @@ module.exports = [
     description: 'Council system login view path for signing in.',
     privileges: { public: 'true' },
     componentId: 'sysLoginView',
+    redirectUrl: '/sys',
+    meta: { title: '' },
   },
   {
     simpleId: 'newPassRequestPath',
     path: '/sys/new-pass-request',
     name: 'New Pass Request Path',
-    description: 'New user password request view path.',
+    description: 'New password request view path.',
     privileges: { public: 'true' },
     componentId: 'newPassRequestView',
   },
@@ -20,7 +22,7 @@ module.exports = [
     simpleId: 'newPassPath',
     path: '/sys/new-pass',
     name: 'New Password',
-    description: 'New user password creation view path.',
+    description: 'New password creation view path.',
     privileges: { public: 'true' },
     componentId: 'newPassView',
   },
@@ -60,6 +62,15 @@ module.exports = [
     componentId: 'myAccountView',
   },
   {
+    simpleId: 'editMyAccountPath',
+    path: '/my-account/edit',
+    name: 'Edit My Account Path',
+    description:
+      'Edit "My account" (current signed in user) view path. In this view the user can edit their own account data (emails, password).',
+    privileges: { public: 'false' },
+    componentId: 'EditMyAccountView',
+  },
+  {
     simpleId: 'myProfilePath',
     path: '/my-profile',
     name: 'My Profile Path',
@@ -81,7 +92,7 @@ module.exports = [
   // user management
   {
     simpleId: 'usersListPath',
-    path: '/sys/users-list',
+    path: '/sys/users',
     name: 'Users List Path',
     description: 'This view shows all the users that the current viewer can see.',
     privileges: { public: 'false' },
@@ -91,8 +102,7 @@ module.exports = [
     simpleId: 'userViewPath',
     path: '/user/:usernameOrId',
     name: 'User View Path',
-    description:
-      'This view shows the user data to the current (maybe and usually a privileged) user.',
+    description: 'This view shows the user data.',
     privileges: { public: 'false' },
     componentId: 'userView',
   },
@@ -100,17 +110,15 @@ module.exports = [
     simpleId: 'editUserViewPath',
     path: '/sys/edit-user/:usernameOrId',
     name: 'Edit User View Path',
-    description:
-      'This view is the form to edit a user (the editor must have privileges to edit the user).',
+    description: 'This view is the form to edit a user.',
     privileges: { public: 'false' },
     componentId: 'editUserView',
   },
   {
-    simpleId: 'createUserPath',
+    simpleId: 'createUserViewPath',
     path: '/sys/create-user',
-    name: 'Create User Path',
-    description:
-      'This view is for creating user. This means that the creator will be an admin for the user.',
+    name: 'Create User View Path',
+    description: 'This view is the form to create a user.',
     privileges: { public: 'false' },
     componentId: 'createUserView',
   },
@@ -118,7 +126,7 @@ module.exports = [
   // group management
   {
     simpleId: 'groupsListPath',
-    path: '/sys/groups-list',
+    path: '/sys/groups',
     name: 'Groups List Path',
     description: 'This view shows all the groups that the current viewer can see.',
     privileges: { public: 'false' },
@@ -128,8 +136,7 @@ module.exports = [
     simpleId: 'groupViewPath',
     path: '/sys/group/:groupNameOrId',
     name: 'Group View Path',
-    description:
-      'This view shows the group data to the current (maybe and usually a privileged) user.',
+    description: 'This view shows the group data.',
     privileges: { public: 'false' },
     componentId: 'groupView',
   },
@@ -137,17 +144,15 @@ module.exports = [
     simpleId: 'editGroupViewPath',
     path: '/sys/edit-group/:groupNameOrId',
     name: 'Edit Group View Path',
-    description:
-      'This view is the form to edit a group (the editor must have privileges to edit the user).',
+    description: 'This view is the form to edit a group.',
     privileges: { public: 'false' },
     componentId: 'editGroupView',
   },
   {
-    simpleId: 'createGroupPath',
+    simpleId: 'createGroupViewPath',
     path: '/sys/create-group',
-    name: 'Create Group Path',
-    description:
-      'This view is for creating group. This means that the creator will be an admin for the group.',
+    name: 'Create a Group View Path',
+    description: 'This view is the form to create a group.',
     privileges: { public: 'false' },
     componentId: 'createGroupView',
   },
@@ -155,7 +160,7 @@ module.exports = [
   // form management
   {
     simpleId: 'formsListPath',
-    path: '/sys/forms-list',
+    path: '/sys/forms',
     name: 'Forms List Path',
     description: 'Forms list view path.',
     privileges: { public: 'false' },
@@ -163,7 +168,7 @@ module.exports = [
   },
   {
     simpleId: 'formViewPath',
-    path: '/sys/:formId',
+    path: '/sys/form/:formId',
     name: 'Form View Path',
     description: 'View one form view path.',
     privileges: { public: 'false' },
@@ -177,19 +182,27 @@ module.exports = [
     privileges: { public: 'false' },
     componentId: 'editFormView',
   },
+  {
+    simpleId: 'createFormPath',
+    path: '/sys/create-form/',
+    name: 'Create a Form View Path',
+    description: 'Create a form view path.',
+    privileges: { public: 'false' },
+    componentId: 'createFormView',
+  },
 
   // formData management
   {
     simpleId: 'formDataListPath',
-    path: '/sys/form-data-list',
+    path: '/sys/form-data',
     name: 'Form Data List Path',
     description: 'Form data list view path.',
     privileges: { public: 'false' },
     componentId: 'formDataListView',
   },
   {
-    simpleId: 'formViewPath',
-    path: '/sys/:formId',
+    simpleId: 'formDataViewPath',
+    path: '/sys/form-data/:formId',
     name: 'Form Data Item View Path',
     description: 'View one form data item view path.',
     privileges: { public: 'false' },
@@ -198,16 +211,24 @@ module.exports = [
   {
     simpleId: 'editFormDataPath',
     path: '/sys/edit-form-data/:formDataId',
-    name: 'Edit Form Data Item View Path',
+    name: 'Edit a Form Data Item View Path',
     description: 'Edit one form data item view path.',
     privileges: { public: 'false' },
     componentId: 'editFormDataView',
+  },
+  {
+    simpleId: 'createFormDataPath',
+    path: '/sys/create-form-data/:formDataId',
+    name: 'Create a Form Data Item View Path',
+    description: 'Create one form data item view path.',
+    privileges: { public: 'false' },
+    componentId: 'createFormDataView',
   },
 
   // privilege management
   {
     simpleId: 'privilegeListPath',
-    path: '/sys/privilege-list',
+    path: '/sys/privileges',
     name: 'Privileges List Path',
     description: 'Privileges list view path.',
     privileges: { public: 'false' },
@@ -215,7 +236,7 @@ module.exports = [
   },
   {
     simpleId: 'privilegeViewPath',
-    path: '/sys/:formId',
+    path: '/sys/privilege/:formId',
     name: 'Privilege View Path',
     description: 'View one privilege view path.',
     privileges: { public: 'false' },
@@ -224,16 +245,24 @@ module.exports = [
   {
     simpleId: 'editPrivilegePath',
     path: '/sys/edit-privilege/:privilegeId',
-    name: 'Edit Privilege View Path',
+    name: 'Edit a Privilege View Path',
     description: 'Edit one privilege view path.',
     privileges: { public: 'false' },
     componentId: 'editPrivilegeView',
+  },
+  {
+    simpleId: 'createPrivilegePath',
+    path: '/sys/create-privilege',
+    name: 'Create a Privilege View Path',
+    description: 'Create one privilege view path.',
+    privileges: { public: 'false' },
+    componentId: 'createPrivilegeView',
   },
 
   // clientRoute management
   {
     simpleId: 'clientRoutesListPath',
-    path: '/sys/client-routes-list',
+    path: '/sys/client-routes',
     name: 'Client Routes List Path',
     description: 'Client routes list view path.',
     privileges: { public: 'false' },
@@ -241,7 +270,7 @@ module.exports = [
   },
   {
     simpleId: 'clientRouteViewPath',
-    path: '/sys/:clientRouteId',
+    path: '/sys/client-route/:clientRouteId',
     name: 'Client Route View Path',
     description: 'View one client route view path.',
     privileges: { public: 'false' },
@@ -250,16 +279,24 @@ module.exports = [
   {
     simpleId: 'editClientRoutePath',
     path: '/sys/edit-client-route/:clientRouteId',
-    name: 'Edit Client Route View Path',
+    name: 'Edit a Client Route View Path',
     description: 'Edit one client route view path.',
     privileges: { public: 'false' },
     componentId: 'editClientRouteView',
+  },
+  {
+    simpleId: 'createClientRoutePath',
+    path: '/sys/create-client-route',
+    name: 'Create a Client Route View Path',
+    description: 'Create one client route view path.',
+    privileges: { public: 'false' },
+    componentId: 'createClientRouteView',
   },
 
   // email management
   {
     simpleId: 'emailsListPath',
-    path: '/sys/emails-list',
+    path: '/sys/emails',
     name: 'Emails List Path',
     description: 'Emails list view path.',
     privileges: { public: 'false' },
@@ -267,7 +304,7 @@ module.exports = [
   },
   {
     simpleId: 'emailViewPath',
-    path: '/sys/:emailId',
+    path: '/sys/email/:emailId',
     name: 'Email View Path',
     description: 'View one email view path.',
     privileges: { public: 'false' },
@@ -276,10 +313,52 @@ module.exports = [
   {
     simpleId: 'editEmailPath',
     path: '/sys/edit-email/:emailId',
-    name: 'Edit Email View Path',
+    name: 'Edit an Email View Path',
     description: 'Edit one email view path.',
     privileges: { public: 'false' },
     componentId: 'editEmailView',
+  },
+  {
+    simpleId: 'createEmailPath',
+    path: '/sys/create-email',
+    name: 'Create an Email View Path',
+    description: 'Create one email view path.',
+    privileges: { public: 'false' },
+    componentId: 'createEmailView',
+  },
+
+  // localization management
+  {
+    simpleId: 'localizationsListPath',
+    path: '/sys/localizations',
+    name: 'Localizations List Path',
+    description: 'Localizations list view path.',
+    privileges: { public: 'false' },
+    componentId: 'localizationsListView',
+  },
+  {
+    simpleId: 'emailLocalizationPath',
+    path: '/sys/localization/:localizationsId',
+    name: 'Localization View Path',
+    description: 'View one localization view path.',
+    privileges: { public: 'false' },
+    componentId: 'localizationView',
+  },
+  {
+    simpleId: 'editLocalizationPath',
+    path: '/sys/edit-localization/:emailId',
+    name: 'Edit a Localization View Path',
+    description: 'Edit one localization view path.',
+    privileges: { public: 'false' },
+    componentId: 'editLocalizationView',
+  },
+  {
+    simpleId: 'createLocalizationPath',
+    path: '/sys/create-localization',
+    name: 'Create a Localization View Path',
+    description: 'Create one localization view path.',
+    privileges: { public: 'false' },
+    componentId: 'createLocalizationView',
   },
 
   // system admins
@@ -294,10 +373,18 @@ module.exports = [
   {
     simpleId: 'editSysSettingPath',
     path: '/sys/edit-setting',
-    name: 'Edit System Setting Path',
-    description: 'Council edit system setting view path (one setting).',
+    name: 'Edit a System Setting Path',
+    description: 'Edit a system setting view path.',
     privileges: { public: 'false' },
     componentId: 'editSysSettingView',
+  },
+  {
+    simpleId: 'createSysSettingPath',
+    path: '/sys/create-setting',
+    name: 'Create a System Setting Path',
+    description: 'Create a edit system setting view path.',
+    privileges: { public: 'false' },
+    componentId: 'createSysSettingView',
   },
   {
     simpleId: 'sysMonitorPath',
