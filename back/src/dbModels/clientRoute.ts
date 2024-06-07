@@ -1,7 +1,7 @@
 import { Schema, type Types, model } from 'mongoose';
 
 import { simpleIdDBSchema, dateDBSchema, allPrivilegePropsSchema } from './_schemaPartials';
-import type { AllPrivilegeProps, Edited } from './_modelTypePartials';
+import type { AllPrivilegeProps, Edited, TransText } from './_modelTypePartials';
 
 export interface DBClientRoute {
   // Mongo Id
@@ -37,8 +37,8 @@ export interface DBClientRoute {
   redirectUrl?: string;
 
   meta?: {
-    title?: string;
-    description?: string;
+    title?: TransText;
+    description?: TransText;
   };
 }
 

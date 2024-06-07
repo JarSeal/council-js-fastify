@@ -17,7 +17,6 @@ export type TransText = {
   langs?: { [key: string]: string };
   langKey?: string;
 };
-
 export type FormElemType =
   | 'text'
   | 'button'
