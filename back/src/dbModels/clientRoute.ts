@@ -34,8 +34,6 @@ export interface DBClientRoute {
 
   componentId?: string;
 
-  redirectUrl?: string;
-
   meta?: {
     title?: TransText;
     description?: TransText;
@@ -60,12 +58,11 @@ const clientRouteSchema = new Schema<DBClientRoute>({
     date: dateDBSchema,
   },
   systemDocument: { type: Boolean, default: false },
-  path: { type: String, required: true },
+  path: { type: String, required: true, unique: true },
   name: { type: String },
   description: { type: String },
   privileges: allPrivilegePropsSchema,
   componentId: { type: String },
-  redirectUrl: { type: String },
   meta: {
     title: { type: String },
     description: { type: String },
