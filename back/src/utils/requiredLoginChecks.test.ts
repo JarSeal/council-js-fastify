@@ -29,6 +29,7 @@ describe('requiredLoginChecks', () => {
       userId: userId1,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     const result1 = await getRequiredActionsFromUser(userData1);
@@ -39,6 +40,7 @@ describe('requiredLoginChecks', () => {
       userId: userId2,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     const result2 = await getRequiredActionsFromUser(userData2);
@@ -49,6 +51,7 @@ describe('requiredLoginChecks', () => {
       userId: userId3,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     const result3 = await getRequiredActionsFromUser(userData3);
@@ -59,6 +62,7 @@ describe('requiredLoginChecks', () => {
       userId: userId4,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     const result4 = await getRequiredActionsFromUser(userData4);
@@ -69,6 +73,7 @@ describe('requiredLoginChecks', () => {
       userId: userId2,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     const result5 = await getRequiredActionsFromUser(userData5);
@@ -79,6 +84,7 @@ describe('requiredLoginChecks', () => {
       userId: new Types.ObjectId(),
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     const result6 = await getRequiredActionsFromUser(userData6);

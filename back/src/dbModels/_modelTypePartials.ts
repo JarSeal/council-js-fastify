@@ -13,10 +13,17 @@ export type Token = {
   tokenId?: string | null;
 };
 
-export type TransText = {
-  langs?: { [key: string]: string };
-  langKey?: string;
-};
+export type TransText =
+  | {
+      langs: { [key: string]: string };
+      langKey?: string;
+      params?: { [key: string]: string };
+    }
+  | {
+      langs?: { [key: string]: string };
+      langKey: string;
+      params?: { [key: string]: string };
+    };
 export type FormElemType =
   | 'text'
   | 'button'

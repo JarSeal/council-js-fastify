@@ -130,6 +130,7 @@ describe('parsingAndConverting', () => {
       userId: null,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     const csrfIsGood = true;
@@ -137,6 +138,50 @@ describe('parsingAndConverting', () => {
 
     // search by elemId
     let query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
+    // console.log(JSON.stringify(query));
+    // const queryAsString = JSON.stringify(query);
+    // const answerAsString = JSON.stringify([
+    //   {
+    //     $and: [
+    //       {
+    //         $or: [
+    //           {
+    //             hasElemPrivileges: false,
+    //           },
+    //           {
+    //             hasElemPrivileges: false,
+    //           },
+    //           {
+    //             'data.0.privileges.read': { $exists: false },
+    //           },
+    //           {
+    //             $and: [
+    //               {
+    //                 $or: [
+    //                   { 'data.0.privileges.read.requireCsrfHeader': true },
+    //                   { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
+    //                 ],
+    //               },
+    //               {
+    //                 $or: [
+    //                   { 'data.0.privileges.read.public': 'true' },
+    //                   { 'data.0.privileges.read.public': 'onlyPublic' },
+    //                 ],
+    //               },
+    //             ],
+    //           },
+    //         ],
+    //       },
+    //       {
+    //         'data.0.value': {
+    //           $regex: 'search string',
+    //           $options: 'i',
+    //         },
+    //       },
+    //     ],
+    //   },
+    // ]);
+    // expect(queryAsString).toEqual(answerAsString);
     expect(query).toStrictEqual([
       {
         $and: [
@@ -155,8 +200,8 @@ describe('parsingAndConverting', () => {
                 $and: [
                   {
                     $or: [
-                      { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                       { 'data.0.privileges.read.requireCsrfHeader': true },
+                      { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                     ],
                   },
                   {
@@ -171,8 +216,8 @@ describe('parsingAndConverting', () => {
           },
           {
             'data.0.value': {
-              $options: 'i',
               $regex: 'search string',
+              $options: 'i',
             },
           },
         ],
@@ -217,8 +262,8 @@ describe('parsingAndConverting', () => {
                 $and: [
                   {
                     $or: [
-                      { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                       { 'data.0.privileges.read.requireCsrfHeader': true },
+                      { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                     ],
                   },
                   {
@@ -263,8 +308,8 @@ describe('parsingAndConverting', () => {
                 $and: [
                   {
                     $or: [
-                      { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                       { 'data.0.privileges.read.requireCsrfHeader': true },
+                      { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                     ],
                   },
                   {
@@ -279,8 +324,8 @@ describe('parsingAndConverting', () => {
           },
           {
             'data.0.value': {
-              $options: 'i',
               $regex: 'search string',
+              $options: 'i',
             },
           },
         ],
@@ -302,8 +347,8 @@ describe('parsingAndConverting', () => {
                 $and: [
                   {
                     $or: [
-                      { 'data.1.privileges.read.requireCsrfHeader': { $ne: true } },
                       { 'data.1.privileges.read.requireCsrfHeader': true },
+                      { 'data.1.privileges.read.requireCsrfHeader': { $ne: true } },
                     ],
                   },
                   {
@@ -318,8 +363,8 @@ describe('parsingAndConverting', () => {
           },
           {
             'data.1.value': {
-              $options: 'i',
               $regex: 'another',
+              $options: 'i',
             },
           },
         ],
@@ -349,8 +394,8 @@ describe('parsingAndConverting', () => {
                     $and: [
                       {
                         $or: [
-                          { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                           { 'data.0.privileges.read.requireCsrfHeader': true },
+                          { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                         ],
                       },
                       {
@@ -365,8 +410,8 @@ describe('parsingAndConverting', () => {
               },
               {
                 'data.0.value': {
-                  $options: 'i',
                   $regex: 'search string',
+                  $options: 'i',
                 },
               },
             ],
@@ -388,8 +433,8 @@ describe('parsingAndConverting', () => {
                     $and: [
                       {
                         $or: [
-                          { 'data.1.privileges.read.requireCsrfHeader': { $ne: true } },
                           { 'data.1.privileges.read.requireCsrfHeader': true },
+                          { 'data.1.privileges.read.requireCsrfHeader': { $ne: true } },
                         ],
                       },
                       {
@@ -404,8 +449,8 @@ describe('parsingAndConverting', () => {
               },
               {
                 'data.1.value': {
-                  $options: 'i',
                   $regex: 'another',
+                  $options: 'i',
                 },
               },
             ],
@@ -437,8 +482,8 @@ describe('parsingAndConverting', () => {
                     $and: [
                       {
                         $or: [
-                          { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                           { 'data.0.privileges.read.requireCsrfHeader': true },
+                          { 'data.0.privileges.read.requireCsrfHeader': { $ne: true } },
                         ],
                       },
                       {
@@ -453,8 +498,8 @@ describe('parsingAndConverting', () => {
               },
               {
                 'data.0.value': {
-                  $options: 'i',
                   $regex: 'search string',
+                  $options: 'i',
                 },
               },
             ],
@@ -476,8 +521,8 @@ describe('parsingAndConverting', () => {
                     $and: [
                       {
                         $or: [
-                          { 'data.1.privileges.read.requireCsrfHeader': { $ne: true } },
                           { 'data.1.privileges.read.requireCsrfHeader': true },
+                          { 'data.1.privileges.read.requireCsrfHeader': { $ne: true } },
                         ],
                       },
                       {
@@ -492,8 +537,8 @@ describe('parsingAndConverting', () => {
               },
               {
                 'data.1.value': {
-                  $options: 'i',
                   $regex: 'search string',
+                  $options: 'i',
                 },
               },
             ],
@@ -525,8 +570,8 @@ describe('parsingAndConverting', () => {
                 $and: [
                   {
                     $or: [
-                      { 'data.2.privileges.read.requireCsrfHeader': { $ne: true } },
                       { 'data.2.privileges.read.requireCsrfHeader': true },
+                      { 'data.2.privileges.read.requireCsrfHeader': { $ne: true } },
                     ],
                   },
                   {
@@ -587,6 +632,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, true);
@@ -618,6 +664,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase, undefined, true);
@@ -649,6 +696,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(
@@ -692,6 +740,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
@@ -708,6 +757,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
@@ -724,6 +774,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
@@ -740,6 +791,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
@@ -756,6 +808,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);
@@ -772,6 +825,7 @@ describe('parsingAndConverting', () => {
       userId: objId,
       userGroups: [],
       isSysAdmin: false,
+      lang: 'en',
       requiredActions: null,
     };
     query = await parseSearchQuery(s, sOper, form, userData, csrfIsGood, sCase);

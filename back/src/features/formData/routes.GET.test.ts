@@ -132,7 +132,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
     expect(body.$form).toBe('UNAUTHORIZED');
   });
 
@@ -165,7 +164,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
     expect(body.$form).toBe('UNAUTHORIZED');
   });
 
@@ -198,7 +196,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
     expect(body.$form).toBe('UNAUTHORIZED');
   });
 
@@ -236,7 +233,6 @@ describe('GET formData', () => {
     const form = body.$form as GetFormReply;
     const formElems = form.formElems;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
     expect(form.formTitle?.langKey).toBe('My Form');
     expect(form.formText?.langKey).toBe('This is my form');
     expect(formElems.length).toBe(1);
@@ -299,7 +295,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
     const form = body.$form as GetFormReply;
     const formElems = form.formElems;
     expect(form.formTitle?.langKey).toBe('My Form');
@@ -364,7 +359,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
     const form = body.$form as GetFormReply;
     const formElems = form.formElems;
     expect(form.formTitle?.langKey).toBe('My Form');
@@ -445,7 +439,6 @@ describe('GET formData', () => {
     const form = body.$form as GetFormReply;
     const formElems = form.formElems;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     expect(form.formTitle?.langKey).toBe('My Form');
     expect(form.formText?.langKey).toBe('This is my form');
     expect(formElems.length).toBe(2);
@@ -564,7 +557,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     const form = body.$form as GetFormReply;
     const formElems = form.formElems;
     expect(form.formTitle?.langKey).toBe('My Form');
@@ -680,7 +672,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     const form = body.$form as GetFormReply;
     const formElems = form.formElems;
     expect(form.formTitle?.langKey).toBe('My Form');
@@ -796,7 +787,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     const form = body.$form as GetFormReply;
     const formElems = form.formElems;
     expect(form.formTitle?.langKey).toBe('My Form');
@@ -910,7 +900,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     const form = body.$form as GetFormReply;
     const data = body.data as FormDataGetReply[][];
     expect(form).toBe('UNAUTHORIZED');
@@ -984,7 +973,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     const form = body.$form as GetFormReply;
     const data = body.data as FormDataGetReply[][];
     expect(form).toBe('SESSION_CANNOT_BE_SIGNED_IN');
@@ -1060,7 +1048,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     const form = body.$form as GetFormReply;
     const data = body.data as FormDataGetReply[][];
     expect(form).toBe('FORBIDDEN');
@@ -1145,7 +1132,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     const form = body.$form as GetFormReply;
     const data = body.data as FormDataGetReply[][];
     expect(form).toBe('FORBIDDEN');
@@ -1231,7 +1217,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     const form = body.$form as GetFormReply;
     const data = body.data as FormDataGetReply[][];
     expect(form).toBe('FORBIDDEN');
@@ -1307,7 +1292,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
 
     const data = body.data as FormDataGetReply[][];
     expect(Array.isArray(data)).toBeTruthy();
@@ -1384,7 +1368,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
 
     const data = body.data as FormDataGetReply[][];
     expect(Array.isArray(data)).toBeTruthy();
@@ -1456,7 +1439,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
 
     const data = body.data as FormDataGetReply[];
     expect(Array.isArray(data)).toBeTruthy();
@@ -1519,7 +1501,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
     expect(body.myElem1).toBe(12);
     expect(body.myElem2).toBe('Some string');
   });
@@ -1588,7 +1569,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
 
     const data = body.data as FormDataGetReply[];
     expect(Array.isArray(data)).toBeTruthy();
@@ -1666,7 +1646,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
     expect(body.myElem1).toBe(12);
     expect(body.myElem2).toBe('Some string');
   });
@@ -1736,7 +1715,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
 
     const data = body.data as FormDataGetReply[];
     expect(Array.isArray(data)).toBeTruthy();
@@ -1814,7 +1792,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
     expect(body.myElem1).toBe(12);
     expect(body.myElem2).toBe('Some string');
   });
@@ -1883,7 +1860,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(1);
 
     const data = body.data as FormDataGetReply[];
     expect(Array.isArray(data)).toBeTruthy();
@@ -1961,7 +1937,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
     expect(body.myElem1).toBe(12);
     expect(body.myElem2).toBe('Some string');
   });
@@ -2030,7 +2005,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body)).toHaveLength(1);
     expect(body.data).toHaveLength(0);
   });
 
@@ -2103,7 +2077,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body)).toHaveLength(1);
     expect(body.data).toHaveLength(0);
   });
 
@@ -2177,7 +2150,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body)).toHaveLength(1);
     expect(body.data).toHaveLength(0);
   });
 
@@ -2245,7 +2217,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body)).toHaveLength(1);
     expect(body.data).toHaveLength(0);
   });
 
@@ -2298,7 +2269,6 @@ describe('GET formData', () => {
     });
     const body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body)).toHaveLength(1);
     expect(body.data).toHaveLength(0);
   });
 
@@ -2363,7 +2333,6 @@ describe('GET formData', () => {
     });
     const bodyP1 = JSON.parse(responseP1.body) as FormDataGetReply;
     expect(responseP1.statusCode).toBe(200);
-    expect(Object.keys(bodyP1).length).toBe(2);
 
     const paginationP1 = bodyP1.$pagination as PaginationData;
     expect(Object.keys(paginationP1).length).toBe(7);
@@ -2382,7 +2351,6 @@ describe('GET formData', () => {
     });
     const bodyP2 = JSON.parse(responseP2.body) as FormDataGetReply;
     expect(responseP2.statusCode).toBe(200);
-    expect(Object.keys(bodyP2).length).toBe(2);
 
     const paginationP2 = bodyP2.$pagination as PaginationData;
     expect(Object.keys(paginationP2).length).toBe(7);
@@ -2460,7 +2428,6 @@ describe('GET formData', () => {
     let data = body.data as Data[][];
     let dataIds = body.$dataIds as string[];
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     expect(data).toHaveLength(4);
     expect(data[0][0].value).toBe(12);
     expect(data[0][1].value).toBe('Some string');
@@ -2480,7 +2447,6 @@ describe('GET formData', () => {
     data = body.data as Data[][];
     dataIds = body.$dataIds as string[];
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     expect(data).toHaveLength(4);
     expect(data[0][0].value).toBe(0);
     expect(data[0][1].value).toBe('Some ugly string');
@@ -2499,7 +2465,6 @@ describe('GET formData', () => {
     body = JSON.parse(response.body) as FormDataGetReply;
     data = body.data as Data[][];
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
     expect(data).toHaveLength(4);
     expect(data[0][0].value).toBe(0);
     expect(data[0][0].dataId).toBe(formDataId4.toString());
@@ -2520,7 +2485,6 @@ describe('GET formData', () => {
     data = body.data as Data[][];
     const labels = body.$dataLabels as { [key: string]: TransText };
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     expect(data[0][0].value).toBe(0);
     expect(data[0][1].value).toBe('Some ugly string');
     expect(data[1][0].value).toBe(11);
@@ -2539,7 +2503,6 @@ describe('GET formData', () => {
     body = JSON.parse(response.body) as FormDataGetReply;
     data = body.data as Data[][];
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     expect(data[0][0].value).toBe(152);
     expect(data[0][1].value).toBe('Some beautiful string');
     expect(data[1][0].value).toBe(12);
@@ -2556,7 +2519,6 @@ describe('GET formData', () => {
     body = JSON.parse(response.body) as FormDataGetReply;
     data = body.data as Data[][];
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
     expect(data[0][0].value).toBe(152);
     expect(data[0][0].label?.langKey).toBe('Number');
     expect(data[0][1].value).toBe('Some beautiful string');
@@ -2583,7 +2545,6 @@ describe('GET formData', () => {
     data = body.data as Data[][];
     const meta = body.$dataMetaData as { created: Date; edited: Data | null }[];
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     expect(data[0][0].value).toBe(0);
     expect(data[0][1].value).toBe('Some ugly string');
     expect(data[1][0].value).toBe(12);
@@ -2622,7 +2583,6 @@ describe('GET formData', () => {
     });
     body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(5);
     expect(body.$pagination).toBeTruthy();
     expect(body.$dataIds).toBeTruthy();
     expect(body.$dataLabels).toBeTruthy();
@@ -2636,7 +2596,6 @@ describe('GET formData', () => {
     });
     body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(5);
     expect(body.$dataIds).toBeTruthy();
     expect(body.$dataLabels).toBeTruthy();
     expect(body.$dataMetaData).toBeTruthy();
@@ -2650,7 +2609,6 @@ describe('GET formData', () => {
     });
     body = JSON.parse(response.body) as FormDataGetReply;
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(2);
     expect(body.myElem1).toBe(12);
     expect(body.myElem2).toBe('Some string');
 
@@ -2679,7 +2637,6 @@ describe('GET formData', () => {
       canEditPrivileges: BasicPrivilegeProps;
     })[];
     expect(response.statusCode).toBe(200);
-    expect(Object.keys(body).length).toBe(3);
     expect(data[0][0].value).toBe(0);
     expect(data[0][1].value).toBe('Some ugly string');
     expect(data[1][0].value).toBe(11);

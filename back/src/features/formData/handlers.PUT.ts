@@ -77,7 +77,7 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       $and: [
         { formId: form.simpleId },
         ...(dataIdAll ? [] : [{ _id: { $in: dataId } }]),
-        ...dataPrivilegesQuery('edit', userData, csrfIsGood),
+        ...dataPrivilegesQuery(userData, csrfIsGood, 'edit'),
       ],
     });
     if (!dataSets?.length) {

@@ -14,7 +14,11 @@ import type {
 } from '../dbModels/_modelTypePartials';
 import DBFormDataModel from '../dbModels/formData';
 import DBPrivilegeModel from '../dbModels/privilege';
-import { emptyFormDataPrivileges, emptyPrivilege } from '../utils/userAndPrivilegeChecks';
+import {
+  emptyFormDataPrivileges,
+  emptyPrivilege,
+  type UserData,
+} from '../utils/userAndPrivilegeChecks';
 import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting';
 import { createUrlTokenAndId } from '../utils/token';
 
@@ -574,3 +578,13 @@ export const updateSystemSetting = async (simpleId: string, value: unknown) => {
 
   return newSavedSetting._id;
 };
+
+export const createUserData = (overwrite?: Partial<UserData>): UserData => ({
+  isSignedIn: false,
+  userId: null,
+  userGroups: [],
+  isSysAdmin: false,
+  requiredActions: null,
+  lang: 'en',
+  ...overwrite,
+});

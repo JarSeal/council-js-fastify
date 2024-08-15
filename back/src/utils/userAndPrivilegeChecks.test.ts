@@ -3,7 +3,13 @@ import mongoose, { Types } from 'mongoose';
 
 import { isPrivBlocked, getUserData } from './userAndPrivilegeChecks';
 import { closeDB, initDB } from '../core/db';
-import { createGroup, createSysAdmin, createSysDocuments, createUser } from '../test/utils';
+import {
+  createGroup,
+  createSysAdmin,
+  createSysDocuments,
+  createUser,
+  createUserData,
+} from '../test/utils';
 import type { AllPrivilegeProps } from '../dbModels/_modelTypePartials';
 import { isCsrfGood } from '../hooks/csrf';
 import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../core/config';
@@ -26,25 +32,13 @@ describe('userAndPrivilegeChecks', () => {
     // ***********************************
     let req = {} as FastifyRequest;
     let userData = await getUserData(req);
-    expect(userData).toStrictEqual({
-      isSignedIn: false,
-      userId: null,
-      userGroups: [],
-      isSysAdmin: false,
-      requiredActions: null,
-    });
+    expect(userData).toStrictEqual(createUserData());
 
     req = {
       session: { isSignedIn: true, userId: dummyUserId },
     } as FastifyRequest;
     userData = await getUserData(req);
-    expect(userData).toStrictEqual({
-      isSignedIn: true,
-      userId: dummyUserId,
-      userGroups: [],
-      isSysAdmin: false,
-      requiredActions: null,
-    });
+    expect(userData).toStrictEqual(createUserData({ isSignedIn: true, userId: dummyUserId }));
 
     const adminId = await createSysAdmin();
     const adminGroupId = await createGroup('sysAdmins');
@@ -52,13 +46,14 @@ describe('userAndPrivilegeChecks', () => {
       session: { isSignedIn: true, userId: adminId },
     } as FastifyRequest;
     userData = await getUserData(req);
-    expect(userData).toStrictEqual({
-      isSignedIn: true,
-      userId: adminId,
-      userGroups: [adminGroupId],
-      isSysAdmin: true,
-      requiredActions: null,
-    });
+    expect(userData).toStrictEqual(
+      createUserData({
+        isSignedIn: true,
+        userId: adminId,
+        userGroups: [adminGroupId],
+        isSysAdmin: true,
+      })
+    );
 
     const basicUsersGroupId = await createGroup('basicUsers');
     const userId = await createUser('testuser1', { groupIds: [basicUsersGroupId] });
@@ -66,13 +61,9 @@ describe('userAndPrivilegeChecks', () => {
       session: { isSignedIn: true, userId: userId },
     } as FastifyRequest;
     userData = await getUserData(req);
-    expect(userData).toStrictEqual({
-      isSignedIn: true,
-      userId: userId,
-      userGroups: [basicUsersGroupId],
-      isSysAdmin: false,
-      requiredActions: null,
-    });
+    expect(userData).toStrictEqual(
+      createUserData({ isSignedIn: true, userId: userId, userGroups: [basicUsersGroupId] })
+    );
   });
 
   it('should check privilege: CSRF and public', async () => {

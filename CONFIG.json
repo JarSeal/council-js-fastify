@@ -25,6 +25,11 @@
     "maxEmails": 2
   },
   "appGeneral": {
-    "appName": "Council"
+    "appName": "Council",
+    "defaultLang": "en",
+    "languages": {
+      "en": { "shortName": "Eng", "name": "English" },
+      "fi": { "shortName": "Fin", "name": "Finnish" }
+    }
   }
 }

@@ -27,6 +27,7 @@ import { initDB } from './db';
 import { sessionStore } from './sessionStore';
 import { errors } from './errors';
 import { addMonitorCount } from '../utils/monitorUtils';
+import { createIndexHtml } from './createIndexHtml';
 
 export const apiRoot = '/api';
 
@@ -101,11 +102,13 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
   // API routes
   await app.register(apis, { prefix: apiRoot });
 
+  // @TODO: Cache routes
+  // await cacheRoutes(session)
+
   // Static files
-  let publicPath = path.join(__dirname, '../../../public');
+  const publicPath = path.join(__dirname, '../../dist/public');
   if (!fs.existsSync(publicPath)) {
-    // For development
-    publicPath = path.join(__dirname, '../../../shared/public');
+    throw new Error(`Could not find public path (${publicPath}), build the project first.`);
   }
   await app.register(fastifyStatic, {
     root: publicPath,
@@ -113,7 +116,7 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
   });
 
   // Client routes (all GET routes, except the GET API routes)
-  app.get('*', (_, res) => res.sendFile('index.html'));
+  app.get('*', createIndexHtml);
 
   // Export logger
   logger = app.log;

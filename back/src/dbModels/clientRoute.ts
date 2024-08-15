@@ -1,6 +1,11 @@
 import { Schema, type Types, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema, allPrivilegePropsSchema } from './_schemaPartials';
+import {
+  simpleIdDBSchema,
+  dateDBSchema,
+  allPrivilegePropsSchema,
+  transTextDbSchema,
+} from './_schemaPartials';
 import type { AllPrivilegeProps, Edited, TransText } from './_modelTypePartials';
 
 export interface DBClientRoute {
@@ -24,6 +29,13 @@ export interface DBClientRoute {
 
   systemDocument: boolean;
 
+  // The component to represent this view / page
+  componentId: string;
+
+  // The layout / wrapper component for the view component
+  layoutWrapperId?: string;
+
+  // Route path
   path: string;
 
   name?: string;
@@ -32,8 +44,7 @@ export interface DBClientRoute {
 
   privileges?: Partial<AllPrivilegeProps>;
 
-  componentId?: string;
-
+  // View / page metadata information
   meta?: {
     title?: TransText;
     description?: TransText;
@@ -58,14 +69,15 @@ const clientRouteSchema = new Schema<DBClientRoute>({
     date: dateDBSchema,
   },
   systemDocument: { type: Boolean, default: false },
+  componentId: { type: String, required: true },
+  layoutWrapperId: { type: String },
   path: { type: String, required: true, unique: true },
   name: { type: String },
   description: { type: String },
   privileges: allPrivilegePropsSchema,
-  componentId: { type: String },
   meta: {
-    title: { type: String },
-    description: { type: String },
+    title: transTextDbSchema,
+    description: transTextDbSchema,
   },
 });
 
@@ -77,6 +89,6 @@ clientRouteSchema.set('toJSON', {
   },
 });
 
-const DBSystemSettingModel = model<DBClientRoute>('ClientRoute', clientRouteSchema, 'clientRoutes');
+const DBClientRouteModel = model<DBClientRoute>('ClientRoute', clientRouteSchema, 'clientRoutes');
 
-export default DBSystemSettingModel;
+export default DBClientRouteModel;

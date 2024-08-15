@@ -304,10 +304,11 @@ const systemSettingsFormElems = [
       category: 'security',
       publicSetting: true,
       description: {
-        langKey: 'How are the users required to identify when requiring a forgot password.',
+        langKey:
+          'How are the users required to identify when requiring a forgotten / new password.',
       },
     },
-    label: { langKey: 'Forgot password identification method' },
+    label: { langKey: 'Forgot Password Identification Method' },
   },
   {
     elemId: 'forgotPassSessionAgeInMin',
@@ -324,10 +325,10 @@ const systemSettingsFormElems = [
       publicSetting: true,
       description: {
         langKey:
-          'How long is the two-factor authentication session in minutes. This is the time the 2FA code is valid. Requires that the setting "Email enabled" is turned ON and all email settings are configured correctly.',
+          'How long is the forgot password session in minutes. This is the time the forgot password link is valid. Requires that the setting "Forgot password identification method" is not "disabled" and all email settings are configured correctly.',
       },
     },
-    label: { langKey: 'Two-Factor Authentication (2FA) Code Expiration Time' },
+    label: { langKey: 'Forgot Password Link Expiration Time' },
   },
   {
     elemId: 'allowedHostNames',
@@ -560,6 +561,25 @@ const systemSettingsFormElems = [
       },
     },
     label: { langKey: 'Application Name' },
+  },
+  {
+    elemId: 'defaultLang',
+    elemType: 'inputDropDown',
+    valueType: 'string',
+    elemData: {
+      defaultValue: config?.appGeneral?.appName || 'en',
+      options: [
+        // ISO 639-1 Language Codes: https://www.w3schools.com/tags/ref_language_codes.asp
+        { label: { langKey: 'English' }, value: 'en' },
+        { label: { langKey: 'Finnish' }, value: 'fi' },
+      ],
+      category: 'appGeneral',
+      description: {
+        langKey:
+          "Application's default language. This applies for users that haven't selected a language.",
+      },
+    },
+    label: { langKey: 'Default Language' },
   },
   // appGeneral CATEGORY [/END]
 ];

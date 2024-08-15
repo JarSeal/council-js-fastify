@@ -7,7 +7,7 @@ module.exports = [
     description: 'Council system login view path for signing in.',
     privileges: { public: 'true' },
     componentId: 'sysLoginView',
-    meta: { title: 'Login' },
+    meta: { title: { langKey: 'Login' } },
   },
   {
     simpleId: 'newPassRequestPath',
@@ -16,7 +16,7 @@ module.exports = [
     description: 'New password request view path.',
     privileges: { public: 'true' },
     componentId: 'newPassRequestView',
-    meta: { title: 'Request a new password' },
+    meta: { title: { langKey: 'Request a new password' } },
   },
   {
     simpleId: 'newPassPath',
@@ -25,7 +25,7 @@ module.exports = [
     description: 'New password creation view path.',
     privileges: { public: 'true' },
     componentId: 'newPassView',
-    meta: { title: 'Create a new password' },
+    meta: { title: { langKey: 'Create a new password' } },
   },
   {
     simpleId: 'verifyEmailPath',
@@ -34,7 +34,7 @@ module.exports = [
     description: 'Verify user email view path.',
     privileges: { public: 'true' },
     componentId: 'verifyEmailView',
-    meta: { title: 'Verify your E-mail' },
+    meta: { title: { langKey: 'Verify your E-mail' } },
   },
   {
     simpleId: 'publicSignUpPath',
@@ -43,7 +43,7 @@ module.exports = [
     description: 'Sign up (register) a new user view path.',
     privileges: { public: 'true' },
     componentId: 'publicSignUpView',
-    meta: { title: 'Sign up as a new user' },
+    meta: { title: { langKey: 'Sign up as a new user' } },
   },
 
   // signed in views, user related
@@ -54,7 +54,7 @@ module.exports = [
     description: 'Council system home view path.',
     privileges: { public: 'false' },
     componentId: 'sysHomeView',
-    meta: { title: 'Council home' },
+    meta: { title: { langKey: 'Council home' } },
   },
   {
     simpleId: 'myAccountPath',
@@ -64,7 +64,7 @@ module.exports = [
       'My account (current signed in user) view path. This view shows the Council account information such as username, emails, and usage data. In this view the user can also delete the account.',
     privileges: { public: 'false' },
     componentId: 'myAccountView',
-    meta: { title: 'My account' },
+    meta: { title: { langKey: 'My account' } },
   },
   {
     simpleId: 'editMyAccountPath',
@@ -74,7 +74,7 @@ module.exports = [
       'Edit "My account" (current signed in user) view path. In this view the user can edit their own account data (emails, password).',
     privileges: { public: 'false' },
     componentId: 'editMyAccountView',
-    meta: { title: 'Edit my account' },
+    meta: { title: { langKey: 'Edit my account' } },
   },
   {
     simpleId: 'myProfilePath',
@@ -84,7 +84,7 @@ module.exports = [
       'My profile (current signed in user) view path. This view shows the customizable user information. By default it is the optional description of the user but it can be exteded with the user data model.',
     privileges: { public: 'false' },
     componentId: 'myProfileView',
-    meta: { title: 'My profile' },
+    meta: { title: { langKey: 'My profile' } },
   },
   {
     simpleId: 'editMyProfilePath',
@@ -94,7 +94,7 @@ module.exports = [
       'Edit "My profile" (current signed in user) view path. In this view the user can edit their own customizable user information.',
     privileges: { public: 'false' },
     componentId: 'editMyProfileView',
-    meta: { title: 'Edit my profile' },
+    meta: { title: { langKey: 'Edit my profile' } },
   },
   {
     simpleId: 'mySettingsPath',
@@ -104,7 +104,7 @@ module.exports = [
       'My settings (current signed in user) view path. This shows available settings to edit for the user.',
     privileges: { public: 'false' },
     componentId: 'mySettingsView',
-    meta: { title: 'My settings' },
+    meta: { title: { langKey: 'My settings' } },
   },
   {
     simpleId: 'editMySettingsPath',
@@ -114,7 +114,7 @@ module.exports = [
       'Edit "My settings" (current signed in user) view path. In this view the user can edit the user specific settings.',
     privileges: { public: 'false' },
     componentId: 'editMySettingsView',
-    meta: { title: 'Edit my settings' },
+    meta: { title: { langKey: 'Edit my settings' } },
   },
 
   // user management
@@ -125,7 +125,7 @@ module.exports = [
     description: 'This view shows all the users that the current viewer can see.',
     privileges: { public: 'false' },
     componentId: 'usersListView',
-    meta: { title: 'Users' },
+    meta: { title: { langKey: 'Users' } },
   },
   {
     simpleId: 'userViewPath',
@@ -134,7 +134,7 @@ module.exports = [
     description: 'This view shows the user data.',
     privileges: { public: 'false' },
     componentId: 'userView',
-    meta: { title: 'User' },
+    meta: { title: { langKey: 'User' } },
   },
   {
     simpleId: 'editUserViewPath',
@@ -143,7 +143,7 @@ module.exports = [
     description: 'This view is the form to edit a user.',
     privileges: { public: 'false' },
     componentId: 'editUserView',
-    meta: { title: 'Edit user' },
+    meta: { title: { langKey: 'Edit user' } },
   },
   {
     simpleId: 'createUserViewPath',
@@ -152,7 +152,7 @@ module.exports = [
     description: 'This view is the form to create a user.',
     privileges: { public: 'false' },
     componentId: 'createUserView',
-    meta: { title: 'Create user' },
+    meta: { title: { langKey: 'Create user' } },
   },
 
   // group management
@@ -163,7 +163,7 @@ module.exports = [
     description: 'This view shows all the groups that the current viewer can see.',
     privileges: { public: 'false' },
     componentId: 'groupsListView',
-    meta: { title: 'Groups' },
+    meta: { title: { langKey: 'Groups' } },
   },
   {
     simpleId: 'groupViewPath',
@@ -172,7 +172,7 @@ module.exports = [
     description: 'This view shows the group data.',
     privileges: { public: 'false' },
     componentId: 'groupView',
-    meta: { title: 'Group' },
+    meta: { title: { langKey: 'Group' } },
   },
   {
     simpleId: 'editGroupViewPath',
@@ -181,7 +181,7 @@ module.exports = [
     description: 'This view is the form to edit a group.',
     privileges: { public: 'false' },
     componentId: 'editGroupView',
-    meta: { title: 'Edit group' },
+    meta: { title: { langKey: 'Edit group' } },
   },
   {
     simpleId: 'createGroupViewPath',
@@ -190,7 +190,7 @@ module.exports = [
     description: 'This view is the form to create a group.',
     privileges: { public: 'false' },
     componentId: 'createGroupView',
-    meta: { title: 'Create group' },
+    meta: { title: { langKey: 'Create group' } },
   },
 
   // form management
@@ -201,7 +201,7 @@ module.exports = [
     description: 'Forms list view path.',
     privileges: { public: 'false' },
     componentId: 'formsListView',
-    meta: { title: 'Forms' },
+    meta: { title: { langKey: 'Forms' } },
   },
   {
     simpleId: 'formViewPath',
@@ -210,7 +210,7 @@ module.exports = [
     description: 'View one form view path.',
     privileges: { public: 'false' },
     componentId: 'formView',
-    meta: { title: 'Form' },
+    meta: { title: { langKey: 'Form' } },
   },
   {
     simpleId: 'editFormPath',
@@ -219,7 +219,7 @@ module.exports = [
     description: 'Edit one form view path.',
     privileges: { public: 'false' },
     componentId: 'editFormView',
-    meta: { title: 'Edit form' },
+    meta: { title: { langKey: 'Edit form' } },
   },
   {
     simpleId: 'createFormPath',
@@ -228,7 +228,7 @@ module.exports = [
     description: 'Create a form view path.',
     privileges: { public: 'false' },
     componentId: 'createFormView',
-    meta: { title: 'Create form' },
+    meta: { title: { langKey: 'Create form' } },
   },
 
   // formData management
@@ -239,7 +239,7 @@ module.exports = [
     description: 'Form data list view path.',
     privileges: { public: 'false' },
     componentId: 'formDataListView',
-    meta: { title: 'Form data' },
+    meta: { title: { langKey: 'Form data' } },
   },
   {
     simpleId: 'formDataViewPath',
@@ -248,7 +248,7 @@ module.exports = [
     description: 'View one form data item view path.',
     privileges: { public: 'false' },
     componentId: 'formDataView',
-    meta: { title: 'Form data item' },
+    meta: { title: { langKey: 'Form data item' } },
   },
   {
     simpleId: 'editFormDataPath',
@@ -257,7 +257,7 @@ module.exports = [
     description: 'Edit one form data item view path.',
     privileges: { public: 'false' },
     componentId: 'editFormDataView',
-    meta: { title: 'Edit form data item' },
+    meta: { title: { langKey: 'Edit form data item' } },
   },
   {
     simpleId: 'createFormDataPath',
@@ -266,7 +266,7 @@ module.exports = [
     description: 'Create one form data item view path.',
     privileges: { public: 'false' },
     componentId: 'createFormDataView',
-    meta: { title: 'Create form data item' },
+    meta: { title: { langKey: 'Create form data item' } },
   },
 
   // privilege management
@@ -277,7 +277,7 @@ module.exports = [
     description: 'Privileges list view path.',
     privileges: { public: 'false' },
     componentId: 'privilegesListView',
-    meta: { title: 'Privileges' },
+    meta: { title: { langKey: 'Privileges' } },
   },
   {
     simpleId: 'privilegeViewPath',
@@ -286,7 +286,7 @@ module.exports = [
     description: 'View one privilege view path.',
     privileges: { public: 'false' },
     componentId: 'privilegeView',
-    meta: { title: 'Privilege' },
+    meta: { title: { langKey: 'Privilege' } },
   },
   {
     simpleId: 'editPrivilegePath',
@@ -295,7 +295,7 @@ module.exports = [
     description: 'Edit one privilege view path.',
     privileges: { public: 'false' },
     componentId: 'editPrivilegeView',
-    meta: { title: 'Edit privilege' },
+    meta: { title: { langKey: 'Edit privilege' } },
   },
   {
     simpleId: 'createPrivilegePath',
@@ -304,7 +304,7 @@ module.exports = [
     description: 'Create one privilege view path.',
     privileges: { public: 'false' },
     componentId: 'createPrivilegeView',
-    meta: { title: 'Create privilege' },
+    meta: { title: { langKey: 'Create privilege' } },
   },
 
   // clientRoute management
@@ -315,7 +315,7 @@ module.exports = [
     description: 'Client routes list view path.',
     privileges: { public: 'false' },
     componentId: 'clientRoutesListView',
-    meta: { title: 'Client routes' },
+    meta: { title: { langKey: 'Client routes' } },
   },
   {
     simpleId: 'clientRouteViewPath',
@@ -324,7 +324,7 @@ module.exports = [
     description: 'View one client route view path.',
     privileges: { public: 'false' },
     componentId: 'clientRouteView',
-    meta: { title: 'Client route' },
+    meta: { title: { langKey: 'Client route' } },
   },
   {
     simpleId: 'editClientRoutePath',
@@ -333,7 +333,7 @@ module.exports = [
     description: 'Edit one client route view path.',
     privileges: { public: 'false' },
     componentId: 'editClientRouteView',
-    meta: { title: 'Edit client route' },
+    meta: { title: { langKey: 'Edit client route' } },
   },
   {
     simpleId: 'createClientRoutePath',
@@ -342,7 +342,7 @@ module.exports = [
     description: 'Create one client route view path.',
     privileges: { public: 'false' },
     componentId: 'createClientRouteView',
-    meta: { title: 'Create client route' },
+    meta: { title: { langKey: 'Create client route' } },
   },
 
   // email management
@@ -353,7 +353,7 @@ module.exports = [
     description: 'Emails list view path.',
     privileges: { public: 'false' },
     componentId: 'emailsListView',
-    meta: { title: 'Emails' },
+    meta: { title: { langKey: 'Emails' } },
   },
   {
     simpleId: 'emailViewPath',
@@ -362,7 +362,7 @@ module.exports = [
     description: 'View one email view path.',
     privileges: { public: 'false' },
     componentId: 'emailView',
-    meta: { title: 'Email' },
+    meta: { title: { langKey: 'Email' } },
   },
   {
     simpleId: 'editEmailPath',
@@ -371,7 +371,7 @@ module.exports = [
     description: 'Edit one email view path.',
     privileges: { public: 'false' },
     componentId: 'editEmailView',
-    meta: { title: 'Edit email' },
+    meta: { title: { langKey: 'Edit email' } },
   },
   {
     simpleId: 'createEmailPath',
@@ -380,7 +380,7 @@ module.exports = [
     description: 'Create one email view path.',
     privileges: { public: 'false' },
     componentId: 'createEmailView',
-    meta: { title: 'Create email' },
+    meta: { title: { langKey: 'Create email' } },
   },
 
   // localization management
@@ -391,7 +391,7 @@ module.exports = [
     description: 'Localizations list view path.',
     privileges: { public: 'false' },
     componentId: 'localizationsListView',
-    meta: { title: 'Localizations' },
+    meta: { title: { langKey: 'Localizations' } },
   },
   {
     simpleId: 'emailLocalizationPath',
@@ -400,7 +400,7 @@ module.exports = [
     description: 'View one localization view path.',
     privileges: { public: 'false' },
     componentId: 'localizationView',
-    meta: { title: 'Localization' },
+    meta: { title: { langKey: 'Localization' } },
   },
   {
     simpleId: 'editLocalizationPath',
@@ -409,7 +409,7 @@ module.exports = [
     description: 'Edit one localization view path.',
     privileges: { public: 'false' },
     componentId: 'editLocalizationView',
-    meta: { title: 'Edit localization' },
+    meta: { title: { langKey: 'Edit localization' } },
   },
   {
     simpleId: 'createLocalizationPath',
@@ -418,7 +418,7 @@ module.exports = [
     description: 'Create one localization view path.',
     privileges: { public: 'false' },
     componentId: 'createLocalizationView',
-    meta: { title: 'Create localization' },
+    meta: { title: { langKey: 'Create localization' } },
   },
 
   // system admins
@@ -429,7 +429,7 @@ module.exports = [
     description: 'Council system settings view path.',
     privileges: { public: 'false' },
     componentId: 'sysSettingsView',
-    meta: { title: 'System settings' },
+    meta: { title: { langKey: 'System settings' } },
   },
   {
     simpleId: 'editSysSettingPath',
@@ -438,7 +438,7 @@ module.exports = [
     description: 'Edit a system setting view path.',
     privileges: { public: 'false' },
     componentId: 'editSysSettingView',
-    meta: { title: 'Edit system setting' },
+    meta: { title: { langKey: 'Edit system setting' } },
   },
   {
     simpleId: 'createSysSettingPath',
@@ -447,7 +447,7 @@ module.exports = [
     description: 'Create a edit system setting view path.',
     privileges: { public: 'false' },
     componentId: 'createSysSettingView',
-    meta: { title: 'Create system setting' },
+    meta: { title: { langKey: 'Create system setting' } },
   },
   {
     simpleId: 'sysMonitorPath',
@@ -456,6 +456,6 @@ module.exports = [
     description: 'Council system monitor view path.',
     privileges: { public: 'false' },
     componentId: 'sysMonitorView',
-    meta: { title: 'System monitor' },
+    meta: { title: { langKey: 'System monitor' } },
   },
 ];

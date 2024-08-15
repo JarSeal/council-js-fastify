@@ -9,7 +9,7 @@
     "start": "cross-env node ./dist/back/src/server.js",
     "dev": "yarn migrate && cross-env ts-node-dev --files ./src/server.ts",
     "build": "rm -rf dist && tsc -p tsconfig.json && yarn build:public",
-    "build:public": "cp -a ./../shared/public/. ./dist/public",
+    "build:public": "rm -rf ./dist/public/assets && mkdir -p ./dist/public/assets && mkdir -p ./../front/dist/assets && cp -rf ./../front/dist/assets ./dist/public",
     "lint": "eslint .",
     "test": "yarn migrate && cross-env NODE_ENV=test TZ=UTC jest --verbose --runInBand --detectOpenHandles --logHeapUsage",
     "test:watch": "cross-env NODE_ENV=test TZ=UTC jest --watchAll --runInBand --detectOpenHandles",

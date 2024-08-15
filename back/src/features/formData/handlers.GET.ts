@@ -299,7 +299,7 @@ export const getFormData = async (
           $and: [
             { formId: form.simpleId },
             ...(isMultipleDataIds ? [{ _id: { $in: dataObjectIds } }] : []),
-            ...dataPrivilegesQuery('read', userData, csrfIsGood),
+            ...dataPrivilegesQuery(userData, csrfIsGood, 'read'),
             ...searchQuery,
             ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
           ],
@@ -315,7 +315,7 @@ export const getFormData = async (
         $and: [
           { formId: form.simpleId },
           { _id: dataId[0] },
-          ...dataPrivilegesQuery('read', userData, csrfIsGood),
+          ...dataPrivilegesQuery(userData, csrfIsGood, 'read'),
           ...(elemId ? [{ 'data.elemId': { $in: elemId } }] : []),
         ],
       }).populate(populate);

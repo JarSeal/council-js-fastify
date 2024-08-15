@@ -83,7 +83,7 @@ export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res
       $and: [
         { formId: form.simpleId },
         ...(dataIdAll ? [] : [{ _id: { $in: dataId } }]),
-        ...dataPrivilegesQuery('delete', userData, csrfIsGood),
+        ...dataPrivilegesQuery(userData, csrfIsGood, 'delete'),
       ],
     });
     if (!dataSets?.length) {
