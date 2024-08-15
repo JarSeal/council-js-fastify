@@ -1,0 +1,14 @@
+{
+  "__language": { "shortName": "Fin", "name": "Finnish" },
+  "One": "Yksi",
+  "Two": "Kaksi",
+  "Three": "Kolme",
+  "Interpolated example {{myParam}}": "Interpoloitu esimerkki {{myParam}}",
+  "Group1": {
+    "Cat": "Kissa",
+    "Dog": "Koira",
+    "Three": "Kolme",
+    "Different key and value": "Avain on eri kuin arvo -esimerkki.",
+    "Interpolated with multiple values: {{myParam1}} {{myParam2}} and {{myParam1}}": "Interpoloitu useammalla arvolla: {{myParam1}} {{myParam2}} ja {{myParam1}}"
+  }
+}

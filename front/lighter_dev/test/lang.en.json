@@ -1,0 +1,14 @@
+{
+  "__language": { "shortName": "Eng", "name": "English" },
+  "One": "One",
+  "Two": "Two",
+  "Three": "Three",
+  "Interpolated example {{myParam}}": "Interpolated example {{myParam}}",
+  "Group1": {
+    "Cat": "Cat",
+    "Dog": "Dog",
+    "Three": "3",
+    "Different key and value": "Key is different from value example.",
+    "Interpolated with multiple values: {{myParam1}} {{myParam2}} and {{myParam1}}": "Interpolated with multiple values: {{myParam1}} {{myParam2}} and {{myParam1}}"
+  }
+}
