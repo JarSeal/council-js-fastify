@@ -4,6 +4,8 @@
   "Two": "Two",
   "Three": "Three",
   "Interpolated example {{myParam}}": "Interpolated example {{myParam}}",
+  "This is missing from the other translations": "This is missing from the other translations",
+  "someKey": "Just some text with a simple key that is missing from other translations",
   "Group1": {
     "Cat": "Cat",
     "Dog": "Dog",

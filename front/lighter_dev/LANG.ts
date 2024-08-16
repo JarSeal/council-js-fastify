@@ -88,6 +88,8 @@ export const setDefaultLanguage = (lang?: string | null, fallbackToDefaultLang?:
   }
   if (lang && !getLanguage()) setLanguage(lang);
 };
+export const useDefaultLangAsFallback = (useDefaultAsFallback: boolean) =>
+  (fallbackToDefault = useDefaultAsFallback);
 export const getLanguages = () => languages;
 export const setLanguages = (langs: AllLanguages) => (languages = langs);
 
@@ -109,11 +111,20 @@ export type TR_langKey = TransText | null | undefined;
 export type TR_opts = {
   language?: string | null;
   params?: { [key: string]: string };
-  group?: string;
+  group?: string | null;
   sanitize?: boolean;
+  sanitizeParams?: boolean;
 };
 
 export const TEXT_MISSING_STRING = '[!text]';
+
+/**
+ * For creating base options for that particular TR function.
+ * For example, the group can be set, so that whenever that TR function is used,
+ * it always uses the same group. Example: const TR = getTRFunction({ group: 'MyGroup' });.
+ */
+export const getTRFunction = (baseOpts?: TR_opts) => (languageKey: TR_langKey, opts?: TR_opts) =>
+  TR(languageKey, { ...baseOpts, ...opts });
 
 // (TR)anslate the text
 export const TR = (languageKey: TR_langKey, opts?: TR_opts) => {
@@ -123,12 +134,19 @@ export const TR = (languageKey: TR_langKey, opts?: TR_opts) => {
   const defaultLanguage = getDefaultLanguage();
   const langTextKey = getLangTextKey(languageKey);
 
+  const returnResult = (value: string, opts?: TR_opts) => {
+    if (opts?.sanitize && globalSettings?.sanitizer) {
+      return globalSettings.sanitizer(_interpolateLangParams(value, opts?.params));
+    }
+    return _interpolateLangParams(value, opts?.params, opts?.sanitizeParams);
+  };
+
   if (isObject(languageKey)) {
-    return _interpolateLangParams(langTextKey, opts?.params, opts?.sanitize);
+    return returnResult(langTextKey, opts);
   }
 
   if (!lang || (!languageData[lang] && defaultLanguage && !languageData[defaultLanguage])) {
-    return _interpolateLangParams(langTextKey, opts?.params, opts?.sanitize);
+    return returnResult(langTextKey, opts);
   }
 
   let rawTranslation = null;
@@ -145,6 +163,7 @@ export const TR = (languageKey: TR_langKey, opts?: TR_opts) => {
   };
 
   rawTranslation = getRawTranslation(languageData[lang]);
+  if (rawTranslation) return returnResult(rawTranslation, opts);
 
   // If rawTranslation not found, check possible default language as fallback (if enabled)
   if (
@@ -159,7 +178,7 @@ export const TR = (languageKey: TR_langKey, opts?: TR_opts) => {
 
   // If still no rawTranslation is found, return the langTextKey
   if (!rawTranslation) rawTranslation = langTextKey;
-  return _interpolateLangParams(rawTranslation, opts?.params, opts?.sanitize);
+  return returnResult(rawTranslation, opts);
 };
 
 export const getLangTextKey = (transText?: TransText | null, language?: string) => {

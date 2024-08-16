@@ -7,11 +7,14 @@ import {
   getLanguage,
   getLanguageDataKeys,
   getLanguages,
+  getTRFunction,
   setDefaultLanguage,
   setLanguage,
   setLanguageData,
   setLanguages,
   TEXT_MISSING_STRING,
+  TR,
+  useDefaultLangAsFallback,
   type TransText,
 } from './LANG';
 import { setSanitizer } from './CMP';
@@ -107,13 +110,14 @@ test('getLangTextKey', () => {
   result = getLangTextKey(transTextKey, 'sv');
   expect(result).toBe(TEXT_MISSING_STRING);
 
-  setDefaultLanguage(undefined, true);
+  useDefaultLangAsFallback(true);
   transTextKey = { en: 'Some string', fi: 'Joku teksti' };
   result = getLangTextKey(transTextKey, 'sv');
   expect(result).toBe('Some string');
 
   setLanguage(null);
   setDefaultLanguage(null);
+  useDefaultLangAsFallback(false);
 });
 
 test('setters and getters', () => {
@@ -153,8 +157,8 @@ test('setters and getters', () => {
 
 test('setLanguageData, clearLanguageData, getLanguages', () => {
   clearLanguageData();
-
   setLanguageData({ en: englishData, fi: finnishData });
+
   let result = getLanguageDataKeys();
   expect(result).toStrictEqual(['en', 'fi']);
   let languages = getLanguages();
@@ -199,5 +203,52 @@ test('TR function', () => {
   clearLanguageData();
   setLanguageData({ en: englishData, fi: finnishData });
 
-  // @TODO: tests
+  // setLanguage and TR
+  setLanguage('en');
+  let translation = TR('One');
+  expect(translation).toBe('One');
+  setLanguage('fi');
+  translation = TR('One');
+  expect(translation).toBe('Yksi');
+
+  // opts.params
+  setLanguage('en');
+  translation = TR('Interpolated example {{myParam}}');
+  expect(translation).toBe('Interpolated example {{myParam}}');
+  translation = TR('Interpolated example {{myParam}}', { params: { myParam: 'test' } });
+  expect(translation).toBe('Interpolated example test');
+
+  // opts.language
+  setLanguage('en');
+  translation = TR('Three', { language: 'fi' });
+  expect(translation).toBe('Kolme');
+  setLanguage('fi');
+  translation = TR('Three');
+  expect(translation).toBe('Kolme');
+  translation = TR('Three', { language: 'en' });
+  expect(translation).toBe('Three');
+  useDefaultLangAsFallback(true);
+  translation = TR('someKey');
+  expect(translation).toBe(
+    'Just some text with a simple key that is missing from other translations'
+  );
+  useDefaultLangAsFallback(false);
+  translation = TR('someKey');
+  expect(translation).toBe('someKey');
+
+  // opts.group (getTRFunction)
+  setLanguage('fi');
+  translation = TR(
+    'Interpolated with multiple values: {{myParam1}} {{myParam2}} and {{myParam1}}',
+    { group: 'Group1', params: { myParam1: '34', myParam2: '200,000' } }
+  );
+  expect(translation).toBe('Interpoloitu useammalla arvolla: 34 200,000 ja 34');
+  const groupTR = getTRFunction({ group: 'Group1' });
+  translation = groupTR('Cat');
+  expect(translation).toBe('Kissa');
+  translation = groupTR('Cat', { language: 'en' });
+  expect(translation).toBe('Cat');
+
+  // opts.sanitize
+  // @TODO: opts.sanitize should be for the whole output and opts.sanitizeParams only for the params
 });
