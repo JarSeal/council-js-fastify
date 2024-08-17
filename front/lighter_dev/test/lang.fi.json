@@ -4,6 +4,7 @@
   "Two": "Kaksi",
   "Three": "Kolme",
   "Interpolated example {{myParam}}": "Interpoloitu esimerkki {{myParam}}",
+  "Some escapable <content /> and {{myParam}}": "Jotain escapetettavaa <content /> ja {{myParam}}",
   "Group1": {
     "Cat": "Kissa",
     "Dog": "Koira",

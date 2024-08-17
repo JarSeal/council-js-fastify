@@ -249,6 +249,24 @@ test('TR function', () => {
   translation = groupTR('Cat', { language: 'en' });
   expect(translation).toBe('Cat');
 
-  // opts.sanitize
-  // @TODO: opts.sanitize should be for the whole output and opts.sanitizeParams only for the params
+  // opts.sanitize and opts.sanitizeParams
+  setSanitizer(encodeURI);
+  setLanguage('en');
+  translation = TR('Some escapable <content /> and {{myParam}}', {
+    params: { myParam: '<morecontent />' },
+    sanitizeParams: false,
+  });
+  expect(translation).toBe('Some escapable <content /> and <morecontent />');
+  translation = TR('Some escapable <content /> and {{myParam}}', {
+    params: { myParam: '<morecontent />' },
+    sanitizeParams: true, // This is default
+  });
+  expect(translation).toBe('Some escapable <content /> and %3Cmorecontent%20/%3E');
+  translation = TR('Some escapable <content /> and {{myParam}}', {
+    params: { myParam: '<morecontent />' },
+    sanitize: true,
+  });
+  expect(translation).toBe(
+    'Some%20escapable%20%3Ccontent%20/%3E%20and%20%253Cmorecontent%2520/%253E'
+  );
 });
