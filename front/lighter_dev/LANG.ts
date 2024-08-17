@@ -152,14 +152,16 @@ export const TR = (languageKey: TR_langKey, opts?: TR_opts) => {
   let rawTranslation = null;
   const getRawTranslation = (
     data: Exclude<LanguageData[keyof LanguageData], { __language: LanguageItem }>
-  ) => {
-    if (opts?.group && data[opts.group] && typeof data[opts.group] !== 'string') {
-      const groupData = data[opts.group] as { [langKey: string]: string } | undefined;
-      const result = groupData && groupData[langTextKey];
+  ): string | null => {
+    const groupData =
+      opts?.group && (data[opts.group] as { [langKey: string]: string } | undefined);
+    if (groupData && typeof groupData !== 'string') {
+      const result = groupData[langTextKey];
       return result || null;
-    } else if (!opts?.group && typeof data[langTextKey] === 'string') {
-      return data[langTextKey] || null;
+    } else if (!groupData && typeof data[langTextKey] === 'string') {
+      return (data[langTextKey] as string) || null;
     }
+    return null;
   };
 
   rawTranslation = getRawTranslation(languageData[lang]);
