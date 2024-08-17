@@ -59,11 +59,11 @@ test('_interpolateLangParams', () => {
       str: 'Unsanitized {{myParam}}',
       params: { myParam: '<div>Div content</div>' },
       expect: 'Unsanitized <div>Div content</div>',
-      sanitize: false,
+      sanitizeParams: false,
     },
   ];
   testData.forEach((data) => {
-    const interpolated = _interpolateLangParams(data.str, data.params, data.sanitize);
+    const interpolated = _interpolateLangParams(data.str, data.params, data.sanitizeParams);
     expect(interpolated).toBe(data.expect);
   });
   setSanitizer(null);
