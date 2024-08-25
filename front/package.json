@@ -10,7 +10,7 @@
     "dev": "vite serve --port 8080 --host",
     "lint": "eslint .",
     "test": "vitest",
-    "build": "tsc && vite build && rm -rf ./../back/dist/public/assets && mkdir -p ./../back/dist/public/assets && cp -rf -u ./dist/assets ./../back/dist/public"
+    "build": "tsc && vite build && rm -rf ./../back/dist/public/assets && mkdir -p ./../back/dist/public/assets && cp -rf ./dist/assets/* ./../back/dist/public/assets"
   },
   "dependencies": {
     "@council/shared": "file:../shared"
