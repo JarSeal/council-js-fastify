@@ -13,12 +13,11 @@
     "build": "tsc && vite build && rm -rf ./../back/dist/public/assets && mkdir -p ./../back/dist/public/assets && cp -rf -u ./dist/assets ./../back/dist/public"
   },
   "dependencies": {
-    "uuid": "10.0.0"
+    "@council/shared": "file:../shared"
   },
   "devDependencies": {
     "@types/eslint__js": "8.42.3",
     "@types/node": "22.2.0",
-    "@types/uuid": "10.0.0",
     "@typescript-eslint/eslint-plugin": "8.0.1",
     "eslint": "9.9.0",
     "eslint-config-prettier": "9.1.0",

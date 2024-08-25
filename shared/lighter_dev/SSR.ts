@@ -10,3 +10,9 @@ export const ssrMetadata = (curRoute: Route) => {
 // CSS Stylesheet file link
 export const ssrCSSLink = (href: string) =>
   `<link rel="stylesheet" type="text/css" href="${href}" />`;
+
+// Get view data
+export const ssrGetViewData = () => {
+  const html = '<div id="root"></div>';
+  return html;
+};

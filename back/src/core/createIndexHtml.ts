@@ -23,23 +23,29 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
 
   let jsTag = '',
     cssTag = '';
-  const JS_PATH = path.join(__dirname, '../../dist/public/assets/');
-  try {
-    const assets = fs.readdirSync(JS_PATH);
-    for (let i = 0; i < assets.length; i++) {
-      // Check if js file available
-      if (assets[i].endsWith('.js')) {
-        jsTag = `<script>self.lighterSSR = ${JSON.stringify(ssrObject)};</script>
-      <script src="/public/assets/${assets[i]}"></script>`;
-      }
 
-      // @TODO: Check if css file available
-      if (assets[i].endsWith('.css')) {
-        cssTag = ``;
+  const query = req.query as { [key: string]: unknown };
+  if ('_ssrCouncil' in query) {
+    jsTag = '<script type="module" src="./index.ts"></script>';
+  } else {
+    try {
+      const JS_PATH = path.join(__dirname, '../../dist/public/assets/');
+      const assets = fs.readdirSync(JS_PATH);
+      for (let i = 0; i < assets.length; i++) {
+        // Check if js file available
+        if (assets[i].endsWith('.js')) {
+          jsTag = `<script>self.lighterSSR = ${JSON.stringify(ssrObject)};</script>
+      <script src="/public/assets/${assets[i]}"></script>`;
+        }
+
+        // @TODO: Check if css file available
+        if (assets[i].endsWith('.css')) {
+          cssTag = ``;
+        }
       }
+    } catch (err) {
+      jsTag = 'Error: could not locate asset files.';
     }
-  } catch (err) {
-    jsTag = 'Error: could not locate asset files.';
   }
 
   // @TODO: Create metadata

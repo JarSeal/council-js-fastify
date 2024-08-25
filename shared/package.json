@@ -1,0 +1,38 @@
+{
+  "name": "@council/shared",
+  "version": "0.0.0",
+  "main": "./dist/index.js",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "private": true,
+  "scripts": {
+    "build:clean": "rm -rf dist",
+    "build": "yarn build:clean && tsc",
+    "dev": "tsc -w --preserveWatchOutput",
+    "linking": "yarn link && yarn --cwd ../back/ link @council/shared && yarn --cwd ../front/ link @council/shared",
+    "unlinking": "yarn --cwd ../back/ unlink @council/shared && yarn --cwd ../front/ unlink @council/shared && yarn unlink",
+    "lint": "eslint \"{src,test}/**/*.{tsx,ts}\"",
+    "test": "vitest"
+  },
+  "packageManager": "yarn@1.22.15",
+  "engines": {
+    "node": "=22.1.0",
+    "yarn": ">=1.22.15"
+  },
+  "dependencies": {
+    "uuid": "10.0.0"
+  },
+  "devDependencies": {
+    "@types/eslint__js": "8.42.3",
+    "@types/node": "22.2.0",
+    "@types/uuid": "10.0.0",
+    "@typescript-eslint/eslint-plugin": "8.0.1",
+    "eslint": "9.9.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-prettier": "5.2.1",
+    "prettier": "3.3.3",
+    "typescript": "5.5.4",
+    "typescript-eslint": "8.0.1",
+    "vitest": "2.0.5"
+  }
+}

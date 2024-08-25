@@ -80,7 +80,7 @@ export type TProps = {
   idAttr?: boolean;
 
   /** Root component's attach to element. */
-  attach?: HTMLElement;
+  attach?: HTMLElement | 'ssr';
 
   /** Element text content. */
   text?: string;
@@ -270,7 +270,7 @@ export const CMP = (
   cmp.listeners = listeners;
 
   // Check if props have attach and attach to element
-  if (props?.attach) {
+  if (props?.attach && props?.attach !== 'ssr') {
     if (props?.settings?.sanitizer) globalSettings.sanitizer = props?.settings.sanitizer;
     if (props?.settings?.sanitizeAll) globalSettings.sanitizeAll = props?.settings.sanitizeAll;
     if (props?.settings?.doCheckIsInDom !== undefined)
@@ -287,6 +287,8 @@ export const CMP = (
     cmp.parent = null;
     cmp.isRoot = true;
     runAnims(cmp);
+  } else if (props?.attach === 'ssr') {
+    // @TODO: add SSR functionality
   }
 
   // Add cmp to list

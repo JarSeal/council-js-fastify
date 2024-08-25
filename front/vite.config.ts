@@ -1,4 +1,7 @@
+import http from 'node:http';
 import { defineConfig } from 'vite';
+
+const BACK_BASE_URL = 'http://localhost:4004';
 
 export default defineConfig({
   root: './src',
@@ -11,17 +14,46 @@ export default defineConfig({
     manifest: true,
     minify: true,
     reportCompressedSize: true,
-    // rollupOptions: {
-    //   // overwrite default .html entry
-    //   input: './src/index.ts',
-    // },
+    rollupOptions: {
+      // overwrite default .html entry
+      input: './src/index.ts',
+    },
   },
   server: {
     fs: {
       strict: false,
     },
+    proxy: {
+      '/api': `${BACK_BASE_URL}/api`,
+    },
   },
-  test: {
-    root: './',
-  },
+  plugins: [
+    {
+      name: 'my-plugin-for-index-html-build-replacement',
+      transformIndexHtml: {
+        order: 'pre',
+        handler: async (_, ctx) => {
+          const getHtmlResult = () =>
+            new Promise<string>((resolve, reject) => {
+              let path = ctx.originalUrl;
+              if (path?.includes('?')) {
+                path += '&_ssrCouncil=1';
+              } else {
+                path += '?_ssrCouncil=1';
+              }
+              http.get(`${BACK_BASE_URL}${path}`, (res) => {
+                res.setEncoding('utf8');
+                res.on('data', function (chunk) {
+                  resolve(chunk);
+                });
+                res.on('error', function (err) {
+                  reject(err);
+                });
+              });
+            });
+          return await getHtmlResult();
+        },
+      },
+    },
+  ],
 });
