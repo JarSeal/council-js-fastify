@@ -361,7 +361,7 @@ const createElem = (cmp: TCMP, props?: TProps) => {
   if (props?.html) {
     if (typeof props.html === 'string' && props.html.includes('</cmp>')) {
       throw new Error(
-        'CMP html prop must be a function definition when it has inline CMPs defined (now it is a string). For example: \n\nconst html = () => `Icon ${Icon()}`;\nconst myComponent = CMP({ html }});\n'
+        'CMP html prop must be a function definition when it has inline CMPs defined (now it is a string). For example: \n\nconst html = () => `Icon ${Icon()}`;\nconst myComponent = CMP({ html });\n'
       );
     }
     const template = document.createElement('template');

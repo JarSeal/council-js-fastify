@@ -15,5 +15,4 @@ export const AppCmp = () =>
     text: 'CMP3',
   });
 
-console.log('FRONT END CODE7!', window.lighterSSR);
 document.addEventListener('DOMContentLoaded', () => AppCmp());

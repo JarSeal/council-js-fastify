@@ -7,18 +7,21 @@
   "private": false,
   "type": "module",
   "scripts": {
-    "dev": "vite serve --port 8080 --host",
+    "dev": "cross-env vite serve --port 8080 --host",
+    "dev-ssr": "cross-env SSR=build vite serve --port 8080 --host",
     "lint": "eslint .",
     "test": "vitest",
     "build": "tsc && vite build && rm -rf ./../back/dist/public/assets && mkdir -p ./../back/dist/public/assets && cp -rf ./dist/assets/* ./../back/dist/public/assets"
   },
   "dependencies": {
-    "@council/shared": "file:../shared"
+    "@council/shared": "file:../shared",
+    "dotenv": "16.4.5"
   },
   "devDependencies": {
     "@types/eslint__js": "8.42.3",
     "@types/node": "22.2.0",
     "@typescript-eslint/eslint-plugin": "8.0.1",
+    "cross-env": "7.0.3",
     "eslint": "9.9.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-prettier": "5.2.1",

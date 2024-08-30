@@ -1,7 +1,11 @@
+import { config } from 'dotenv';
 import http from 'node:http';
 import { defineConfig } from 'vite';
 
-const BACK_BASE_URL = 'http://localhost:4004';
+config();
+
+const BACK_BASE_URL = process.env.BACK_BASE_URL || 'http://localhost:4004';
+const SSR = process.env.SSR || '1';
 
 export default defineConfig({
   root: './src',
@@ -37,9 +41,9 @@ export default defineConfig({
             new Promise<string>((resolve, reject) => {
               let path = ctx.originalUrl;
               if (path?.includes('?')) {
-                path += '&_ssrCouncil=1';
+                path += `&_ssrDevServer=${SSR}`;
               } else {
-                path += '?_ssrCouncil=1';
+                path += `?_ssrDevServer=${SSR}`;
               }
               http.get(`${BACK_BASE_URL}${path}`, (res) => {
                 res.setEncoding('utf8');

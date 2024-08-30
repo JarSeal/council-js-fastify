@@ -1,3 +1,5 @@
+// import { JSDOM } from 'jsdom';
+
 import { TR } from './LANG';
 import type { Route } from './RTR';
 
@@ -14,5 +16,26 @@ export const ssrCSSLink = (href: string) =>
 // Get view data
 export const ssrGetViewData = () => {
   const html = '<div id="root"></div>';
+  return html;
+};
+
+export const SSR_RENDER_CONTENT_WRAPPER_ID: string = '__wrapper_id__';
+export const ssrRenderContentHtml = async (
+  jsParser: (template: string) => Promise<string>,
+  jsFileContents: string,
+  rootId: string
+): Promise<string> => {
+  const htmlTemplate = `<!DOCTYPE html>
+<html>
+  <head>
+    <script>${jsFileContents}</script>
+  </head>
+  <body>
+    <div id="${SSR_RENDER_CONTENT_WRAPPER_ID}">
+      <div id="${rootId}"></div>
+    </div>
+  </body>
+</html>`;
+  const html = await jsParser(htmlTemplate);
   return html;
 };
