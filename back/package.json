@@ -5,6 +5,7 @@
   "author": "JarSeal",
   "license": "MIT",
   "private": false,
+  "type": "module",
   "scripts": {
     "start": "cross-env node ./dist/back/src/server.js",
     "dev": "yarn migrate && cross-env NODE_ENV=development ts-node-dev --files ./src/server.ts",
@@ -38,6 +39,9 @@
     "modulePathIgnorePatterns": [
       "database"
     ],
+    "moduleNameMapper": {
+      "^@council/(.*)$": "<rootDir>/../shared/src/index.ts"
+    },
     "testEnvironment": "node",
     "testTimeout": 30000
   },

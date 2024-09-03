@@ -5,7 +5,7 @@ import {
   fastify as _fastify,
   type FastifyInstance as RealFastifyInstance,
 } from 'fastify';
-import type { Fastify } from '@fastify/restartable';
+import type { ApplicationFactory, Fastify } from '@fastify/restartable';
 import type { FastifyInstance } from '@fastify/restartable/node_modules/fastify';
 import fastifyCors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
@@ -124,7 +124,7 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
   return app;
 };
 
-export const createRestartableApp = async (fastify: Fastify) => {
+export const createRestartableApp: ApplicationFactory = async (fastify: Fastify) => {
   const app = await initApp(fastify);
   return app as unknown as FastifyInstance;
 };

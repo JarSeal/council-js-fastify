@@ -1,18 +1,20 @@
 {
   "name": "@council/shared",
   "version": "0.0.0",
-  "main": "./src/index.ts",
+  "main": "./dist/src/index.js",
   "module": "./src/index.ts",
   "types": "./src/index.ts",
   "private": true,
+  "type": "module",
   "scripts": {
     "build:clean": "rm -rf dist",
-    "build": "yarn build:clean && tsc",
+    "build": "yarn build:clean && tsc -p tsconfig.json",
     "dev": "tsc -w --preserveWatchOutput",
     "linking": "yarn link && yarn --cwd ../back/ link @council/shared && yarn --cwd ../front/ link @council/shared",
     "unlinking": "yarn --cwd ../back/ unlink @council/shared && yarn --cwd ../front/ unlink @council/shared && yarn unlink",
     "lint": "eslint \"{src,test}/**/*.{tsx,ts}\"",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest watch"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {

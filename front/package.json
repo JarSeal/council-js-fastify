@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "cross-env vite serve --port 8080 --host",
     "dev-ssr": "cross-env SSR=build vite serve --port 8080 --host",
-    "lint": "eslint .",
+    "lint": "eslint . --ignore-pattern \"dist\"",
     "test": "vitest",
     "build": "tsc && vite build && rm -rf ./../back/dist/public/assets && mkdir -p ./../back/dist/public/assets && cp -rf ./dist/assets/* ./../back/dist/public/assets"
   },

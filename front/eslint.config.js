@@ -10,7 +10,7 @@ export default [
   ...tsEslint.configs.recommended,
   {
     files: ['**/*.ts'],
-    ignores: ['dist', 'node_modules'],
+    ignores: ['dist'],
     plugins: { typescriptEslint: typescriptEslintPlugin, prettier: prettierPlugin },
     rules: {
       ...prettierPlugin.configs.rules,
@@ -27,7 +27,6 @@ export default [
         commonjs: true,
         browser: true,
         es6: true,
-        jest: true,
       },
       parserOptions: {
         requireConfigFile: false,

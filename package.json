@@ -7,6 +7,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
+    "_conc": "concurrently --names \"SHARED,BACK,FRONT\" -c \"blue,yellow,magenta\"",
     "start": "yarn --cwd ./back/ start",
     "setup": "yarn install && oneenv && yarn setup:shared && yarn setup:back && yarn setup:front",
     "setup:back": "yarn --cwd ./back/ install && yarn --cwd ./back/migrate/ install && yarn --cwd ./back/ build && yarn --cwd ./back/ migrate",
@@ -16,13 +17,18 @@
     "dev": "yarn dev:back",
     "dev:back": "yarn --cwd ./back/ dev",
     "dev:front": "yarn --cwd ./front/ dev",
-    "build": "yarn build:back",
+    "build": "yarn _conc \"yarn build:shared\" \"yarn build:back\" \"yarn build:front\"",
+    "build:shared": "yarn --cwd ./shared/ build",
     "build:back": "yarn --cwd ./back/ build",
     "build:front": "yarn --cwd ./front/ build",
-    "lint": "yarn lint:back",
+    "lint": "yarn _conc \"yarn lint:shared\" \"yarn lint:back\" \"yarn lint:front\"",
+    "lint:shared": "yarn --cwd ./shared/ lint",
     "lint:back": "yarn --cwd ./back/ lint",
-    "test": "yarn test:back",
+    "lint:front": "yarn --cwd ./front/ lint",
+    "test": "yarn _conc \"yarn test:shared\" \"yarn test:back\" \"yarn test:front\"",
+    "test:shared": "yarn --cwd ./shared/ test",
     "test:back": "yarn --cwd ./back/ test",
+    "test:front": "echo 'No tests yet..'",
     "dbstart": "yarn --cwd ./back/ dbstart",
     "dbstop": "yarn --cwd ./back/ dbstop",
     "dbcli": "yarn --cwd ./back/ dbcli",
@@ -39,6 +45,7 @@
     "yarn": ">=1.22.15"
   },
   "devDependencies": {
+    "concurrently": "8.2.2",
     "oneenv": "0.9.9",
     "pino-pretty": "10.0.0"
   }

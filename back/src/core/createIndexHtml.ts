@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fs from 'fs';
 import path from 'path';
@@ -42,11 +43,13 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
 
   const query = req.query as { [key: string]: unknown };
   if (IS_DEVELOPMENT && '_ssrDevServer' in query && query._ssrDevServer === 'build') {
-    // Development mode
+    // Development mode (SSR)
 
     // Build frontend and copy to back dist
-    console.log('Build frontend..');
-    const stdout = execSync('yarn --cwd ../ build:front');
+    console.log('Build SSR frontend..');
+    let stdout = execSync('yarn --cwd ../ build:front');
+    console.log(stdout.toString());
+    stdout = execSync('yarn --cwd ../back/ build:public');
     console.log(stdout.toString());
 
     try {
@@ -66,7 +69,7 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
         'Error: could not locate asset files or an error occurred while reading and/or serializing.';
     }
   } else if (IS_DEVELOPMENT && '_ssrDevServer' in query) {
-    // Development mode
+    // Development mode (without SSR)
     jsTags = `<script>self.lighterSSR = ${JSON.stringify(ssrObject)};</script>
     <script type="module" src="./index.ts"></script>`;
   } else {
