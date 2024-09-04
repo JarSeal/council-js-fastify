@@ -1,4 +1,5 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs';
 import {
   type FastifyBaseLogger,
@@ -106,6 +107,8 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
   // await cacheRoutes(session)
 
   // Static files
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
   const publicPath = path.join(__dirname, '../../dist/public');
   if (!fs.existsSync(publicPath)) {
     throw new Error(`Could not find public path (${publicPath}), build the project first.`);

@@ -11,7 +11,7 @@
     "allowJs": false,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strict": true,
@@ -20,8 +20,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
-  "exclude": ["node_modules", "dist"],
-  "ts-node": {
-    "files": true
-  }
+  "exclude": ["node_modules", "dist"]
 }
