@@ -121,7 +121,6 @@ describe('parsingAndConverting', () => {
         ],
       },
     } as DBForm;
-    form;
 
     let s = ['(myelem0):search string'];
     let sOper = undefined;

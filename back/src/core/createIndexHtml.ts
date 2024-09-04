@@ -67,7 +67,7 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
         }
       }
       ssrHTML = await ssrRenderContentHtml(parser, jsTagsSerialized, CLIENT_ROOT_ELEM_ID);
-    } catch (err) {
+    } catch (_) {
       jsTags =
         'Error: could not locate asset files or an error occurred while reading and/or serializing.';
     }
@@ -93,7 +93,7 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
           cssTags += ``;
         }
       }
-    } catch (err) {
+    } catch (_) {
       jsTags =
         'Error: could not locate asset files or an error occurred while reading and/or serializing.';
     }

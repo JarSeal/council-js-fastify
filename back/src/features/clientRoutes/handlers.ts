@@ -19,10 +19,6 @@ export const getUserClientRoutes = async (
   csrfIsGood: boolean,
   currentPath: string
 ) => {
-  userData;
-  csrfIsGood;
-  currentPath;
-
   // @TODO: create a user specific cache for the routes (store it in the session)
 
   const rawRoutes = await DBClientRouteModel.find<DBClientRoute>({

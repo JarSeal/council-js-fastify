@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 import { createDecoder, createSigner, createVerifier } from 'fast-jwt';
 import type {
   DecoderOptions,

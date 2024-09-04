@@ -221,13 +221,13 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
             ...(newElem.privileges.read && Object.keys(newElem.privileges.read).length
               ? { read: newElem.privileges.read }
               : oldElem?.privileges?.read && Object.keys(oldElem.privileges.read).length
-              ? { read: oldElem.privileges.read }
-              : {}),
+                ? { read: oldElem.privileges.read }
+                : {}),
             ...(newElem.privileges.edit && Object.keys(newElem.privileges.edit).length
               ? { edit: newElem.privileges.edit }
               : oldElem?.privileges?.edit && Object.keys(oldElem.privileges.edit).length
-              ? { edit: oldElem.privileges.edit }
-              : {}),
+                ? { edit: oldElem.privileges.edit }
+                : {}),
           };
         } else if (oldElem?.privileges) {
           privileges = oldElem.privileges;
@@ -251,18 +251,18 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
         ...(body.privileges?.read
           ? { read: body.privileges.read }
           : dataSets[i].privileges?.read
-          ? { read: dataSets[i].privileges?.read }
-          : {}),
+            ? { read: dataSets[i].privileges?.read }
+            : {}),
         ...(body.privileges?.edit
           ? { edit: body.privileges.edit }
           : dataSets[i].privileges?.edit
-          ? { edit: dataSets[i].privileges?.edit }
-          : {}),
+            ? { edit: dataSets[i].privileges?.edit }
+            : {}),
         ...(body.privileges?.delete
           ? { delete: body.privileges.delete }
           : dataSets[i].privileges?.delete
-          ? { delete: dataSets[i].privileges?.delete }
-          : {}),
+            ? { delete: dataSets[i].privileges?.delete }
+            : {}),
       };
       bulkWrite.push({
         updateOne: {
@@ -417,13 +417,13 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
           ...(newElem.privileges.read && Object.keys(newElem.privileges.read).length
             ? { read: newElem.privileges.read }
             : oldElem?.privileges?.read && Object.keys(oldElem.privileges.read).length
-            ? { read: oldElem.privileges.read }
-            : {}),
+              ? { read: oldElem.privileges.read }
+              : {}),
           ...(newElem.privileges.edit && Object.keys(newElem.privileges.edit).length
             ? { edit: newElem.privileges.edit }
             : oldElem?.privileges?.edit && Object.keys(oldElem.privileges.edit).length
-            ? { edit: oldElem.privileges.edit }
-            : {}),
+              ? { edit: oldElem.privileges.edit }
+              : {}),
         };
       } else if (oldElem?.privileges) {
         privileges = oldElem.privileges;
@@ -460,18 +460,18 @@ export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {
       ...(body.privileges?.read
         ? { read: body.privileges.read }
         : dataSet.privileges?.read
-        ? { read: dataSet.privileges.read }
-        : {}),
+          ? { read: dataSet.privileges.read }
+          : {}),
       ...(body.privileges?.edit
         ? { edit: body.privileges.edit }
         : dataSet.privileges?.edit
-        ? { edit: dataSet.privileges.edit }
-        : {}),
+          ? { edit: dataSet.privileges.edit }
+          : {}),
       ...(body.privileges?.delete
         ? { delete: body.privileges.delete }
         : dataSet.privileges?.delete
-        ? { delete: dataSet.privileges.delete }
-        : {}),
+          ? { delete: dataSet.privileges.delete }
+          : {}),
     };
     const updateResult = await DBFormDataModel.updateOne(
       { _id: dataSet._id },
