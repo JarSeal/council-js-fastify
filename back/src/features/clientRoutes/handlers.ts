@@ -1,6 +1,6 @@
-import { dataPrivilegesQuery, type UserData } from '../../utils/userAndPrivilegeChecks';
-import DBClientRouteModel, { type DBClientRoute } from '../../dbModels/clientRoute';
-import type { TransText } from '../../dbModels/_modelTypePartials';
+import { dataPrivilegesQuery, type UserData } from '../../utils/userAndPrivilegeChecks.js';
+import DBClientRouteModel, { type DBClientRoute } from '../../dbModels/clientRoute.js';
+import type { TransText } from '../../dbModels/_modelTypePartials.js';
 
 // @TODO: make this a shared type
 export type Route = {

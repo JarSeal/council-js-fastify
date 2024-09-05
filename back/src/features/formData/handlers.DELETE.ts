@@ -1,22 +1,22 @@
 import type { RouteHandler } from 'fastify';
 import { type Types, isObjectIdOrHexString } from 'mongoose';
 
-import type { FormDataDeleteRoute, FormDataPutAndDeleteReply } from './routes';
+import type { FormDataDeleteRoute, FormDataPutAndDeleteReply } from './routes.js';
 import {
   combinePrivileges,
   dataPrivilegesQuery,
   getUserData,
   isPrivBlocked,
-} from '../../utils/userAndPrivilegeChecks';
-import { isCsrfGood } from '../../hooks/csrf';
-import getFormDataModel from '../../dbModels/formData/index';
-import { errors } from '../../core/errors';
-import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
-import DBFormModel, { type DBForm } from '../../dbModels/form';
-import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
-import { getFormData } from './handlers.GET';
-import { afterFns } from '../../customFunctions/afterFn';
-import { getRequiredActions } from '../../utils/requiredLoginChecks';
+} from '../../utils/userAndPrivilegeChecks.js';
+import { isCsrfGood } from '../../hooks/csrf.js';
+import getFormDataModel from '../../dbModels/formData/index.js';
+import { errors } from '../../core/errors.js';
+import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting.js';
+import DBFormModel, { type DBForm } from '../../dbModels/form.js';
+import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege.js';
+import { getFormData } from './handlers.GET.js';
+import { afterFns } from '../../customFunctions/afterFn/index.js';
+import { getRequiredActions } from '../../utils/requiredLoginChecks.js';
 
 // Delete (DELETE)
 export const formDataDelete: RouteHandler<FormDataDeleteRoute> = async (req, res) => {

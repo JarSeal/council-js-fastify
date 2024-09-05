@@ -1,7 +1,7 @@
 import { type Types, Schema, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema, mongoIdArraySchema } from './_schemaPartials';
-import type { Edited } from './_modelTypePartials';
+import { simpleIdDBSchema, dateDBSchema, mongoIdArraySchema } from './_schemaPartials.js';
+import type { Edited } from './_modelTypePartials.js';
 
 export interface DBGroup {
   // Mongo Id

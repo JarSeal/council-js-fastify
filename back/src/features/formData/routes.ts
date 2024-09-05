@@ -1,16 +1,16 @@
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 import { type Static, Type } from '@sinclair/typebox';
 
-import { formDataGet } from './handlers.GET';
-import { formDataPost } from './handlers.POST';
+import { formDataGet } from './handlers.GET.js';
+import { formDataPost } from './handlers.POST.js';
 import {
   allPrivilegePropsSchema,
   basicPrivilegePropsSchema,
   formElemPublicSchema,
   transTextSchema,
-} from '../../@types/form';
-import { formDataPut } from './handlers.PUT';
-import { formDataDelete } from './handlers.DELETE';
+} from '../../@types/form.js';
+import { formDataPut } from './handlers.PUT.js';
+import { formDataDelete } from './handlers.DELETE.js';
 
 export const formDataErrorSchema = Type.Object({
   errorId: Type.String(),

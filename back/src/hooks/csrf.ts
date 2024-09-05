@@ -1,7 +1,7 @@
 import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 
-import { errors } from '../core/errors';
-import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../core/config';
+import { errors } from '../core/errors.js';
+import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from '../core/config.js';
 
 export const csrfHook = async (req: FastifyRequest, res: FastifyReply) => {
   const csrfError = csrfCheck(req);

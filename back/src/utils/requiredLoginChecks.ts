@@ -1,11 +1,11 @@
 import type { FastifyRequest } from 'fastify';
 
-import { type DBFormData } from '../dbModels/formData';
-import DBFormModel, { type DBForm } from '../dbModels/form';
-import { DBUserDataModel } from '../dbModels/formData/index';
-import { getUserData, type UserData } from './userAndPrivilegeChecks';
-import { validateFormDataInput } from './validation';
-import DBUserModel, { type DBUser } from '../dbModels/user';
+import { type DBFormData } from '../dbModels/formData.js';
+import DBFormModel, { type DBForm } from '../dbModels/form.js';
+import { DBUserDataModel } from '../dbModels/formData/index.js';
+import { getUserData, type UserData } from './userAndPrivilegeChecks.js';
+import { validateFormDataInput } from './validation.js';
+import DBUserModel, { type DBUser } from '../dbModels/user.js';
 
 export const getRequiredActionsFromUser = async (userData: UserData) => {
   if (!userData.isSignedIn || !userData.userId) return null;

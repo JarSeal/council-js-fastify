@@ -6,31 +6,31 @@ import type {
   SendNewPasswordRoute,
   SendVerificationEmailRoute,
   VerifyEmailRoute,
-} from './routes';
-import DBUserModel, { type DBUser } from '../../dbModels/user';
-import { errors } from '../../core/errors';
+} from './routes.js';
+import DBUserModel, { type DBUser } from '../../dbModels/user.js';
+import { errors } from '../../core/errors.js';
 import {
   AUDIENCE,
   ISSUER,
   SUBJECT_URL_TOKEN,
   createUrlTokenAndId,
   verifyUrlToken,
-} from '../../utils/token';
-import { updateDBUser } from '../login/handlers';
+} from '../../utils/token.js';
+import { updateDBUser } from '../login/handlers.js';
 import {
   HASH_SALT_ROUNDS,
   MAX_FORGOT_PASSWORD_RESENDS,
   getAppName,
   getSysSetting,
-} from '../../core/config';
-import { sendEmail } from '../../core/email';
-import { isCsrfGood } from '../../hooks/csrf';
-import { isEmailEnabled } from '../../utils/common';
-import { getTimestampFromDate } from '../../utils/timeAndDate';
-import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
-import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
-import DBFormModel, { type DBForm } from '../../dbModels/form';
-import { validateFormDataInput } from '../../utils/validation';
+} from '../../core/config.js';
+import { sendEmail } from '../../core/email.js';
+import { isCsrfGood } from '../../hooks/csrf.js';
+import { isEmailEnabled } from '../../utils/common.js';
+import { getTimestampFromDate } from '../../utils/timeAndDate.js';
+import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege.js';
+import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks.js';
+import DBFormModel, { type DBForm } from '../../dbModels/form.js';
+import { validateFormDataInput } from '../../utils/validation.js';
 
 // VERIFY EMAIL ROUTE
 // ********************************

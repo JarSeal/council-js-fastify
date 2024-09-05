@@ -5,8 +5,8 @@ import {
   dateDBSchema,
   basicPrivilegePropsSchema,
   allPrivilegePropsSchema,
-} from './_schemaPartials';
-import type { AllPrivilegeProps, Edited } from './_modelTypePartials';
+} from './_schemaPartials.js';
+import type { AllPrivilegeProps, Edited } from './_modelTypePartials.js';
 
 export interface DBPrivilege {
   // Mongo Id

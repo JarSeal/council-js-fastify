@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox';
 import type { Static } from '@sinclair/typebox';
 import type { RouteGenericInterface, FastifyError } from 'fastify';
 
-import { formDataErrorSchema } from '../formData/routes';
+import { formDataErrorSchema } from '../formData/routes.js';
 
 export const bodySchema = Type.Object({
   username: Type.String(),

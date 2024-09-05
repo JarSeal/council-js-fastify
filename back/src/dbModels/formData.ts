@@ -5,8 +5,13 @@ import {
   basicPrivilegePropsSchema,
   dateDBSchema,
   formDataPrivilegesSchema,
-} from './_schemaPartials';
-import type { BasicPrivilegeProps, Edited, FormDataPrivileges, UserId } from './_modelTypePartials';
+} from './_schemaPartials.js';
+import type {
+  BasicPrivilegeProps,
+  Edited,
+  FormDataPrivileges,
+  UserId,
+} from './_modelTypePartials.js';
 
 export interface DBFormData {
   // Mongo ID

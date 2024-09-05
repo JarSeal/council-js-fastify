@@ -11,13 +11,14 @@
     "lib": ["ES2021", "DOM"],
     "module": "ESNext",
     "outDir": "./dist",
-    "esModuleInterop": true,
     "moduleResolution": "node",
-    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node"],
+    "esModuleInterop": true,
+    "experimentalDecorators": true
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
   "exclude": ["node_modules", "dist", "db"]

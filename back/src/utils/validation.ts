@@ -1,10 +1,10 @@
 import type { FastifyError } from 'fastify';
 
-import { errors } from '../core/errors';
-import { getSysSetting } from '../core/config';
-import type { FormElem, TransText } from '../dbModels/_modelTypePartials';
-import { customValidators } from '../customFunctions/validation';
-import type { LoginMethods } from '../features/login/schemas';
+import { errors } from '../core/errors.js';
+import { getSysSetting } from '../core/config.js';
+import type { FormElem, TransText } from '../dbModels/_modelTypePartials.js';
+import { customValidators } from '../customFunctions/validation/index.js';
+import type { LoginMethods } from '../features/login/schemas.js';
 
 export type ValidationError = FastifyError | null;
 

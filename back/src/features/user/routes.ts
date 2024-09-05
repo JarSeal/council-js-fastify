@@ -1,8 +1,8 @@
 import { type Static, Type } from '@sinclair/typebox';
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 
-import { forgotPassword, resetPassword, sendVerificationEmail, verifyEmail } from './handlers';
-import { formDataErrorSchema } from '../formData/routes';
+import { forgotPassword, resetPassword, sendVerificationEmail, verifyEmail } from './handlers.js';
+import { formDataErrorSchema } from '../formData/routes.js';
 
 const justOkReplySchema = Type.Object({
   ok: Type.Boolean(),

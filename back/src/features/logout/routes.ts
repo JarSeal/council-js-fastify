@@ -1,8 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import { bodySchema, replySchema } from './schemas';
-import type { LogoutRoute } from './schemas';
-import { logout } from './handlers';
+import { bodySchema, replySchema } from './schemas.js';
+import type { LogoutRoute } from './schemas.js';
+import { logout } from './handlers.js';
 
 const logoutRoute: FastifyPluginAsync = (instance) => {
   instance.route<LogoutRoute>({

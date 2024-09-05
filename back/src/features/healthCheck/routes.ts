@@ -1,7 +1,7 @@
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 import { Type } from '@sinclair/typebox';
 
-import { healthCheck, healthCheckDB } from './handlers';
+import { healthCheck, healthCheckDB } from './handlers.js';
 
 export interface HealthCheckRoute extends RouteGenericInterface {
   readonly Reply: { ok: boolean } | FastifyError;

@@ -1,18 +1,18 @@
 import type { FastifyRequest, RouteHandler } from 'fastify';
 
-import type { FormDataPostBody, FormDataPostReply, FormDataPostRoute } from './routes';
-import DBFormModel, { type DBForm } from '../../dbModels/form';
-import { type DBFormData } from '../../dbModels/formData';
-import getFormDataModel from '../../dbModels/formData/index';
-import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
-import { errors } from '../../core/errors';
-import { isCsrfGood } from '../../hooks/csrf';
+import type { FormDataPostBody, FormDataPostReply, FormDataPostRoute } from './routes.js';
+import DBFormModel, { type DBForm } from '../../dbModels/form.js';
+import { type DBFormData } from '../../dbModels/formData.js';
+import getFormDataModel from '../../dbModels/formData/index.js';
+import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege.js';
+import { errors } from '../../core/errors.js';
+import { isCsrfGood } from '../../hooks/csrf.js';
 import {
   getUserData,
   isPrivBlocked,
   combinePrivileges,
   type UserData,
-} from '../../utils/userAndPrivilegeChecks';
+} from '../../utils/userAndPrivilegeChecks.js';
 import {
   addPossibleFillerToElemPrivs,
   addPossibleFillerToMainPrivs,
@@ -20,12 +20,12 @@ import {
   convertPrivilegeIdStringsToObjectIds,
   getApiPathFromReqUrl,
   getOwnerChangingObject,
-} from '../../utils/parsingAndConverting';
-import { validateFormDataInput } from '../../utils/validation';
-import { getFormData } from './handlers.GET';
-import { afterFns } from '../../customFunctions/afterFn';
-import { getRequiredActions } from '../../utils/requiredLoginChecks';
-import { encryptData } from '../../core/config';
+} from '../../utils/parsingAndConverting.js';
+import { validateFormDataInput } from '../../utils/validation.js';
+import { getFormData } from './handlers.GET.js';
+import { afterFns } from '../../customFunctions/afterFn/index.js';
+import { getRequiredActions } from '../../utils/requiredLoginChecks.js';
+import { encryptData } from '../../core/config.js';
 
 // Create (POST)
 export const formDataPost: RouteHandler<FormDataPostRoute> = async (req, res) => {

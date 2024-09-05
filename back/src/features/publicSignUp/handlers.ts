@@ -1,15 +1,15 @@
 import type { RouteHandler } from 'fastify';
 import { hash } from 'bcrypt';
 
-import { errors } from '../../core/errors';
-import { validateFormDataInput } from '../../utils/validation';
-import DBUserModel from '../../dbModels/user';
-import type { DBUser } from '../../dbModels/user';
-import type { PublicSignUpRoute } from './schemas';
-import { HASH_SALT_ROUNDS, getAppName, getSysSetting } from '../../core/config';
-import { createUrlTokenAndId } from '../../utils/token';
-import DBFormModel, { type DBForm } from '../../dbModels/form';
-import { sendEmail } from '../../core/email';
+import { errors } from '../../core/errors.js';
+import { validateFormDataInput } from '../../utils/validation.js';
+import DBUserModel from '../../dbModels/user.js';
+import type { DBUser } from '../../dbModels/user.js';
+import type { PublicSignUpRoute } from './schemas.js';
+import { HASH_SALT_ROUNDS, getAppName, getSysSetting } from '../../core/config.js';
+import { createUrlTokenAndId } from '../../utils/token.js';
+import DBFormModel, { type DBForm } from '../../dbModels/form.js';
+import { sendEmail } from '../../core/email.js';
 
 export const publicSignUp: RouteHandler<PublicSignUpRoute> = async (req, res) => {
   const body = req.body;

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
 
-import { ENVIRONMENT, MONGODB_URI, MONGODB_URI_TEST } from './config';
+import { ENVIRONMENT, MONGODB_URI, MONGODB_URI_TEST } from './config.js';
 
 export const initDB = async (app?: FastifyInstance) => {
   const dbURI = ENVIRONMENT !== 'test' ? MONGODB_URI : MONGODB_URI_TEST;

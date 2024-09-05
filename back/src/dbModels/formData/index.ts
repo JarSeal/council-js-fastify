@@ -1,6 +1,6 @@
 import { type PaginateModel, model } from 'mongoose';
 
-import DBFormDataModel, { type DBFormData, formDataSchema } from '../formData';
+import DBFormDataModel, { type DBFormData, formDataSchema } from '../formData.js';
 
 // All non-default formData models:
 // ********************************

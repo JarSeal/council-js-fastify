@@ -1,8 +1,8 @@
 import { Schema, model } from 'mongoose';
 import type { Types } from 'mongoose';
 
-import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './_schemaPartials';
-import type { Edited, Token } from './_modelTypePartials';
+import { simpleIdDBSchema, emailDBSchema, dateDBSchema, tokenDbSchema } from './_schemaPartials.js';
+import type { Edited, Token } from './_modelTypePartials.js';
 
 export interface DBUser {
   // Mongo Id

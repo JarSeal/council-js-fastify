@@ -1,9 +1,9 @@
 import type { FastifyError, FastifyRequest } from 'fastify';
 
-import type { DBForm } from '../../dbModels/form';
-import type { TransText } from '../../dbModels/_modelTypePartials';
-import type { UserData } from '../../utils/userAndPrivilegeChecks';
-import { checkAndSetRequiredActions } from './checkAndSetRequiredActions';
+import type { DBForm } from '../../dbModels/form.js';
+import type { TransText } from '../../dbModels/_modelTypePartials.js';
+import type { UserData } from '../../utils/userAndPrivilegeChecks.js';
+import { checkAndSetRequiredActions } from './checkAndSetRequiredActions.js';
 
 export type AfterFnsProps = {
   dataId: string | string[] | undefined;

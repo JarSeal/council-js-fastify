@@ -37,10 +37,7 @@ export const mongoIdArraySchema = [
   },
 ];
 
-export const transTextDbSchema = {
-  langs: { type: Object },
-  langKey: { type: String },
-};
+export const transTextDbSchema = Schema.Types.Mixed;
 
 export const basicPrivilegePropsSchema = {
   users: { type: [{ ...mongoIdArraySchema[0], ref: 'User' }], default: undefined },

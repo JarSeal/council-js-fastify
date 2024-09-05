@@ -5,11 +5,11 @@ import {
   type Types as MongooseTypes,
 } from 'mongoose';
 
-import { apiVersion } from '../core/apis';
-import { apiRoot } from '../core/app';
-import type { DBForm } from '../dbModels/form';
-import DBUserModel from '../dbModels/user';
-import { getFormDataElemPrivilegesQuery, type UserData } from './userAndPrivilegeChecks';
+import { apiVersion } from '../core/apis.js';
+import { apiRoot } from '../core/app.js';
+import type { DBForm } from '../dbModels/form.js';
+import DBUserModel from '../dbModels/user.js';
+import { getFormDataElemPrivilegesQuery, type UserData } from './userAndPrivilegeChecks.js';
 import type {
   AllPrivilegeProps,
   AllPrivilegePropsAsStringIds,
@@ -17,8 +17,8 @@ import type {
   FormDataPrivileges,
   FormDataPrivilegesAsStringIds,
   UserId,
-} from '../dbModels/_modelTypePartials';
-import { getConfig, getSysSetting } from '../core/config';
+} from '../dbModels/_modelTypePartials.js';
+import { getConfig, getSysSetting } from '../core/config.js';
 
 export const getApiPathFromReqUrl = (reqUrl: string) =>
   reqUrl.split('?')[0].replace(apiRoot + apiVersion, '');

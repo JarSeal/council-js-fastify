@@ -23,7 +23,8 @@ export type TransText =
       langs?: { [key: string]: string };
       langKey: string;
       params?: { [key: string]: string };
-    };
+    }
+  | string;
 export type FormElemType =
   | 'text'
   | 'button'

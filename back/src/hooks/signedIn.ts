@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-import { errors } from '../core/errors';
-import { getRequiredActions } from '../utils/requiredLoginChecks';
+import { errors } from '../core/errors.js';
+import { getRequiredActions } from '../utils/requiredLoginChecks.js';
 
 export const signedInHook = async (req: FastifyRequest, res: FastifyReply) => {
   if (!req.session.isSignedIn) {

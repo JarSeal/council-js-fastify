@@ -1,14 +1,14 @@
 import type { FastifyRequest, RouteHandler } from 'fastify';
 import { Types } from 'mongoose';
 
-import type { FormDataGetRoute, FormDataGetReply, GetQuerystring } from './routes';
-import DBFormModel, { type DBForm } from '../../dbModels/form';
-import { type DBFormData } from '../../dbModels/formData';
-import getFormDataModel from '../../dbModels/formData/index';
-import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
-import type { AllPrivilegeProps, FormElem, UserId } from '../../dbModels/_modelTypePartials';
-import { errors } from '../../core/errors';
-import { isCsrfGood } from '../../hooks/csrf';
+import type { FormDataGetRoute, FormDataGetReply, GetQuerystring } from './routes.js';
+import DBFormModel, { type DBForm } from '../../dbModels/form.js';
+import { type DBFormData } from '../../dbModels/formData.js';
+import getFormDataModel from '../../dbModels/formData/index.js';
+import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege.js';
+import type { AllPrivilegeProps, FormElem, UserId } from '../../dbModels/_modelTypePartials.js';
+import { errors } from '../../core/errors.js';
+import { isCsrfGood } from '../../hooks/csrf.js';
 import {
   type UserData,
   getUserData,
@@ -17,17 +17,17 @@ import {
   combinePrivileges,
   emptyPrivilege,
   combineBasicPrivileges,
-} from '../../utils/userAndPrivilegeChecks';
+} from '../../utils/userAndPrivilegeChecks.js';
 import {
   createPaginationPayload,
   getApiPathFromReqUrl,
   parseFormDataSortStringFromQueryString,
   parseSearchQuery,
-} from '../../utils/parsingAndConverting';
-import { decryptData, getSysSetting } from '../../core/config';
-import type { TransText } from '../../@types/form';
-import { afterFns } from '../../customFunctions/afterFn';
-import { getRequiredActions } from '../../utils/requiredLoginChecks';
+} from '../../utils/parsingAndConverting.js';
+import { decryptData, getSysSetting } from '../../core/config.js';
+import type { TransText } from '../../@types/form.js';
+import { afterFns } from '../../customFunctions/afterFn/index.js';
+import { getRequiredActions } from '../../utils/requiredLoginChecks.js';
 
 export type Data = {
   elemId: string;

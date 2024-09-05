@@ -1,8 +1,8 @@
 import type { FastifyRequest } from 'fastify';
 
-import type { TransText } from '../dbModels/_modelTypePartials';
-import { getUserData } from './userAndPrivilegeChecks';
-import { getConfig, getSysSetting } from '../core/config';
+import type { TransText } from '../dbModels/_modelTypePartials.js';
+import { getUserData } from './userAndPrivilegeChecks.js';
+import { getConfig, getSysSetting } from '../core/config.js';
 import type * as CONFIG from '../../../CONFIG.json';
 
 // @TODO: move the Lang type to shared
@@ -18,13 +18,22 @@ export type Lang = keyof (typeof CONFIG)['appGeneral']['languages'];
 
 // Translate a langObject
 export const TR = async (langObject?: TransText, opts?: { lang?: Lang; req?: FastifyRequest }) => {
-  const curLang: Lang = opts?.lang || (await getLanguage(opts?.req));
   if (!langObject) return `[missing langObject]`;
-  if (langObject.langKey) return langObject.langKey; // @TODO: actually get the translation object from the translation files (placed in shared folder)
-  if (langObject.langs && curLang) {
+  const isString = typeof langObject === 'string';
+  if (isString) return langObject; // @TODO: actually get the translation object from the translation files (placed in shared folder)
+  if (!isString && langObject.langKey) return langObject.langKey; // @TODO: actually get the translation object from the translation files (placed in shared folder)
+  const curLang: Lang = opts?.lang || (await getLanguage(opts?.req));
+  if (!isString && langObject.langs && curLang) {
     return langObject.langs[curLang] || `[missing langs key (${curLang})]`;
   }
   return `[missing langKey/langs props]`;
+};
+
+export const getLanguageKey = (langObject?: TransText) => {
+  if (!langObject) return null;
+  if (typeof langObject === 'string') return langObject;
+  if (langObject.langKey) return langObject.langKey;
+  return null;
 };
 
 export const getLanguage = async (req?: FastifyRequest) => {

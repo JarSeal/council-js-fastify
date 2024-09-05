@@ -2,8 +2,8 @@ import { config } from 'dotenv';
 import crypto from 'crypto';
 
 import * as CONFIG from '../../../CONFIG.json';
-import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting';
-import DBFormModel, { type DBForm } from '../dbModels/form';
+import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting.js';
+import DBFormModel, { type DBForm } from '../dbModels/form.js';
 
 config();
 

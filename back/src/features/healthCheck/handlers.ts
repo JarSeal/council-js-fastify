@@ -1,7 +1,7 @@
 import type { RouteHandler } from 'fastify';
 
-import type { HealthCheckRoute } from './routes';
-import { addMonitorCount } from '../../utils/monitorUtils';
+import type { HealthCheckRoute } from './routes.js';
+import { addMonitorCount } from '../../utils/monitorUtils.js';
 
 export const healthCheck: RouteHandler<HealthCheckRoute> = async (_, res) => {
   const addMonitorResult = await addMonitorCount('apiHealthCheck');

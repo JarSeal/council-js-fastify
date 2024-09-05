@@ -7,7 +7,7 @@ import {
   formDataPrivilegesSchema,
   transTextDbSchema,
   basicPrivilegePropsSchema,
-} from './_schemaPartials';
+} from './_schemaPartials.js';
 import type {
   BasicPrivilegeProps,
   Edited,
@@ -15,7 +15,7 @@ import type {
   FormElem,
   TransText,
   UserId,
-} from './_modelTypePartials';
+} from './_modelTypePartials.js';
 
 export interface DBForm {
   // Mongo ID

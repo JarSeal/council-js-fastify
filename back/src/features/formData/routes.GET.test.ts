@@ -23,6 +23,7 @@ import { SESSION_COOKIE_NAME } from '../../core/config';
 import type { PaginationData } from '../../utils/parsingAndConverting';
 import { emptyFormDataPrivileges } from '../../utils/userAndPrivilegeChecks';
 import type { Data } from './handlers.GET';
+import { getLanguageKey } from '../../utils/language';
 
 describe('GET formData', () => {
   let app: FastifyInstance;
@@ -2494,8 +2495,8 @@ describe('GET formData', () => {
     expect(data[2][1].value).toBe('Some string');
     expect(data[3][0].value).toBe(152);
     expect(data[3][1].value).toBe('Some beautiful string');
-    expect(labels.myElem1.langKey).toBe('Number');
-    expect(labels.myElem2.langKey).toBe('Text');
+    expect(getLanguageKey(labels.myElem1)).toBe('Number');
+    expect(getLanguageKey(labels.myElem2)).toBe('Text');
     response = await app.inject({
       method: 'GET',
       path: `/api/v1${url}?dataId=all&includeLabels=true&sort=-0`,
