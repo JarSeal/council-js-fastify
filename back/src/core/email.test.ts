@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { replaceTemplateVars, validateTemplateVars } from './email';
 
 describe('email', () => {

@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import mongoose, { Types } from 'mongoose';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import { getRequiredActions, getRequiredActionsFromUser } from './requiredLoginChecks';
 import type { UserData } from './userAndPrivilegeChecks';

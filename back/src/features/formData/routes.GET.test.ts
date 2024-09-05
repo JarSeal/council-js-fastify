@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import initApp from '../../core/app';
 import type { FormDataGetReply, GetFormReply } from './routes';

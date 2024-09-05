@@ -3,7 +3,7 @@ import type { FastifyRequest, RouteHandler } from 'fastify';
 import type { FormDataPostBody, FormDataPostReply, FormDataPostRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import { type DBFormData } from '../../dbModels/formData';
-import getFormDataModel from '../../dbModels/formData/';
+import getFormDataModel from '../../dbModels/formData/index';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';

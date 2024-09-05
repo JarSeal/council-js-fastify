@@ -1,5 +1,6 @@
 import type { FastifyRequest } from 'fastify';
 import mongoose, { Types } from 'mongoose';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { isPrivBlocked, getUserData } from './userAndPrivilegeChecks';
 import { closeDB, initDB } from '../core/db';
@@ -36,7 +37,7 @@ describe('userAndPrivilegeChecks', () => {
 
     req = {
       session: { isSignedIn: true, userId: dummyUserId },
-    } as FastifyRequest;
+    } as unknown as FastifyRequest;
     userData = await getUserData(req);
     expect(userData).toStrictEqual(createUserData({ isSignedIn: true, userId: dummyUserId }));
 
@@ -44,7 +45,7 @@ describe('userAndPrivilegeChecks', () => {
     const adminGroupId = await createGroup('sysAdmins');
     req = {
       session: { isSignedIn: true, userId: adminId },
-    } as FastifyRequest;
+    } as unknown as FastifyRequest;
     userData = await getUserData(req);
     expect(userData).toStrictEqual(
       createUserData({
@@ -59,7 +60,7 @@ describe('userAndPrivilegeChecks', () => {
     const userId = await createUser('testuser1', { groupIds: [basicUsersGroupId] });
     req = {
       session: { isSignedIn: true, userId: userId },
-    } as FastifyRequest;
+    } as unknown as FastifyRequest;
     userData = await getUserData(req);
     expect(userData).toStrictEqual(
       createUserData({ isSignedIn: true, userId: userId, userGroups: [basicUsersGroupId] })

@@ -1,5 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 import type { FastifyInstance } from 'fastify';
+import { describe, it, expect } from 'vitest';
 
 import type { DBForm } from '../dbModels/form';
 import {
@@ -123,7 +124,7 @@ describe('parsingAndConverting', () => {
     } as DBForm;
 
     let s = ['(myelem0):search string'];
-    let sOper = undefined;
+    let sOper: 'or' | undefined = undefined;
     let userData: UserData = {
       isSignedIn: false,
       userId: null,

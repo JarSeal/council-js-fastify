@@ -1,5 +1,6 @@
 import type { FastifyError, FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 import initApp from '../../core/app';
 import { createForm, createSysAdmin, createUser, csrfHeader, validAgentId } from '../../test/utils';

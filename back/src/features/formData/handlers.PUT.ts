@@ -3,7 +3,7 @@ import { type Types, isObjectIdOrHexString } from 'mongoose';
 
 import type { FormDataPutAndDeleteReply, FormDataPutRoute } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
-import getFormDataModel from '../../dbModels/formData/';
+import getFormDataModel from '../../dbModels/formData/index';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import { errors } from '../../core/errors';
 import { isCsrfGood } from '../../hooks/csrf';

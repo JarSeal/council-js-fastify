@@ -9,7 +9,7 @@ import {
   isPrivBlocked,
 } from '../../utils/userAndPrivilegeChecks';
 import { isCsrfGood } from '../../hooks/csrf';
-import getFormDataModel from '../../dbModels/formData/';
+import getFormDataModel from '../../dbModels/formData/index';
 import { errors } from '../../core/errors';
 import { getApiPathFromReqUrl } from '../../utils/parsingAndConverting';
 import DBFormModel, { type DBForm } from '../../dbModels/form';

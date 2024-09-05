@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { createSysDocuments } from '../test/utils';
 import { closeDB, initDB } from './db';

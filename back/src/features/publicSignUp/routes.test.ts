@@ -1,5 +1,6 @@
 import type { FastifyError, FastifyInstance } from 'fastify';
 import mongoose from 'mongoose';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import initApp from '../../core/app';
 import type { PublicSignUpRoute, Reply } from './schemas';

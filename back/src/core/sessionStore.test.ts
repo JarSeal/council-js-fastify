@@ -1,5 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 import type { FastifyInstance, Session } from 'fastify';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 
 import { sessionStore } from './sessionStore';
 import initApp from './app';

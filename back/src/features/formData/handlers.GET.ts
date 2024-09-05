@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import type { FormDataGetRoute, FormDataGetReply, GetQuerystring } from './routes';
 import DBFormModel, { type DBForm } from '../../dbModels/form';
 import { type DBFormData } from '../../dbModels/formData';
-import getFormDataModel from '../../dbModels/formData/';
+import getFormDataModel from '../../dbModels/formData/index';
 import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
 import type { AllPrivilegeProps, FormElem, UserId } from '../../dbModels/_modelTypePartials';
 import { errors } from '../../core/errors';

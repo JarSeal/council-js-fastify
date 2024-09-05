@@ -2,7 +2,7 @@ import type { FastifyRequest } from 'fastify';
 
 import { type DBFormData } from '../dbModels/formData';
 import DBFormModel, { type DBForm } from '../dbModels/form';
-import { DBUserDataModel } from '../dbModels/formData/';
+import { DBUserDataModel } from '../dbModels/formData/index';
 import { getUserData, type UserData } from './userAndPrivilegeChecks';
 import { validateFormDataInput } from './validation';
 import DBUserModel, { type DBUser } from '../dbModels/user';
