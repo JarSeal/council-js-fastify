@@ -20,6 +20,6 @@
     "esModuleInterop": true,
     "experimentalDecorators": true
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"],
+  "include": ["src/**/*.ts", "test/**/*.ts", "../CONFIG.json"],
   "exclude": ["node_modules", "dist", "db"]
 }

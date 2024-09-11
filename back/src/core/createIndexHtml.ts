@@ -2,7 +2,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fs from 'fs';
 import path from 'path';
-// import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { SSR_RENDER_CONTENT_WRAPPER_ID, ssrRenderContentHtml } from '@council/shared';
 import { JSDOM } from 'jsdom';
@@ -40,8 +40,8 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
     jsTagsSerialized = '',
     cssTags = '',
     ssrHTML = `<div id="${CLIENT_ROOT_ELEM_ID}"></div>`;
-  // const __filename = fileURLToPath(import.meta.url);
-  // const __dirname = path.dirname(__filename);
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
   const JS_PATH = path.join(__dirname, '../../dist/public/assets/');
 
   const query = req.query as { [key: string]: unknown };

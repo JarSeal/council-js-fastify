@@ -1,7 +1,7 @@
 // import { JSDOM } from 'jsdom';
 
-import { TR } from './LANG';
-import type { Route } from './RTR';
+import { TR } from './LANG.js';
+import type { Route } from './RTR.js';
 
 // Create metadata
 export const ssrMetadata = (curRoute: Route) => {

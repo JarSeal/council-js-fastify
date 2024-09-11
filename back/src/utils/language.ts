@@ -3,7 +3,8 @@ import type { FastifyRequest } from 'fastify';
 import type { TransText } from '../dbModels/_modelTypePartials.js';
 import { getUserData } from './userAndPrivilegeChecks.js';
 import { getConfig, getSysSetting } from '../core/config.js';
-import type * as CONFIG from '../../../CONFIG.json';
+// import type * as CONFIG from '../../../CONFIG.json';
+// import type { CONFIG } from '@council/shared';
 
 // @TODO: move the Lang type to shared
 const SYS_DEFAULT_LANG_CODE = 'en';
@@ -12,9 +13,9 @@ const SYS_DEFAULT_LANG_NAME = 'English';
 const defaultLanguageItem = {
   [SYS_DEFAULT_LANG_CODE]: { shortName: SYS_DEFAULT_LANG_SHORT_NAME, name: SYS_DEFAULT_LANG_NAME },
 };
-export type LanguagesList = (typeof CONFIG)['appGeneral']['languages'] | typeof defaultLanguageItem;
+export type LanguagesList = { [key: string]: { shortName: string; name: string } };
 export const allLanguages = getConfig<LanguagesList>('appGeneral.languages', defaultLanguageItem);
-export type Lang = keyof (typeof CONFIG)['appGeneral']['languages'];
+export type Lang = string;
 
 // Translate a langObject
 export const TR = async (langObject?: TransText, opts?: { lang?: Lang; req?: FastifyRequest }) => {

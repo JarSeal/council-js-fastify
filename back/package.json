@@ -1,13 +1,13 @@
 {
   "name": "council-fastify-back",
   "version": "1.0.0",
-  "main": "./dist/back/server.js",
+  "main": "./dist/back/sserver.js",
   "author": "JarSeal",
   "license": "MIT",
   "private": false,
   "type": "module",
   "scripts": {
-    "start": "cross-env node ./dist/back/src/server.js",
+    "start": "cross-env node --experimental-json-modules ./dist/server.js",
     "dev": "yarn migrate && cross-env NODE_ENV=development tsx --watch ./src/server.ts",
     "build": "rm -rf dist && tsc -p tsconfig-build.json && yarn build:public",
     "build:public": "rm -rf ./dist/public/assets && mkdir -p ./dist/public/assets && mkdir -p ./../front/dist/assets && cp -rf ./../front/dist/assets ./dist/public",

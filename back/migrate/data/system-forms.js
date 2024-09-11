@@ -1,14 +1,15 @@
 // FORMS:
 const timeNow = new Date();
-const { simpleIdRegExp } = require('../../dist/back/src/utils/validation');
+// const { simpleIdRegExp } = require('../../dist/utils/validation');
+const { simpleIdRegExp } = import('../../dist/utils/validation.js');
 const systemSettingsFormElems = require('./system-forms-settings');
 
-if (!simpleIdRegExp) {
-  console.error(
-    'Build the project before running migrations (in the project root run: "yarn build").'
-  );
-  throw new Error('Build files not found!');
-}
+// if (!simpleIdRegExp) {
+//   console.error(
+//     'Build the project before running migrations (in the project root run: "yarn build").'
+//   );
+//   throw new Error('Build files not found!');
+// }
 
 const getForms = async (db) => {
   const result = await db.collection('groups').findOne({ simpleId: 'basicUsers' });

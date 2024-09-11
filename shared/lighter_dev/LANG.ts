@@ -1,4 +1,4 @@
-import { globalSettings } from './CMP';
+import { globalSettings } from './CMP.js';
 
 export type LanguageItem = { code: string; shortName?: string; name?: string };
 export type AllLanguages = LanguageItem[];

@@ -1,7 +1,12 @@
 import { config } from 'dotenv';
 import crypto from 'crypto';
 
-import * as CONFIG from '../../../CONFIG.json';
+// import * as CONFIG from '../../../CONFIG.json' with { type: 'json' };
+// import * as CONFIG from '../../../CONFIG.json';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+var CONFIG = require('../../../CONFIG.json');
+// import { CONFIG } from '@council/shared' assert { type: 'json' };
 import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting.js';
 import DBFormModel, { type DBForm } from '../dbModels/form.js';
 

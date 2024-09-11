@@ -5,7 +5,7 @@ const {
 } = require('../data/utils');
 const systemGroups = require('../data/system-groups');
 const getSystemForms = require('../data/system-forms');
-const { encryptData } = require('../../dist/back/src/core/config');
+const { encryptData } = import('../../dist/core/config.js');
 const getEmails = require('../data/system-emails');
 const routes = require('../data/system-routes');
 
