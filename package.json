@@ -11,7 +11,7 @@
     "_conc2": "concurrently --names \"BACK,FRONT\" -c \"yellow,magenta\"",
     "start": "yarn --cwd ./back/ start",
     "setup": "yarn install && oneenv && yarn setup:shared && yarn setup:back && yarn setup:front",
-    "setup:back": "yarn --cwd ./back/ install && yarn --cwd ./back/migrate/ install && yarn --cwd ./back/ build && yarn --cwd ./back/ migrate",
+    "setup:back": "yarn --cwd ./back/ install && yarn --cwd ./back/dbMigration/ install && yarn --cwd ./back/ build && yarn --cwd ./back/ migrate",
     "setup:front": "yarn --cwd ./front/ install && yarn --cwd ./front/ build",
     "setup:shared": "yarn --cwd ./shared/ install && yarn --cwd ./shared/ linking",
     "oneenv": "oneenv",
