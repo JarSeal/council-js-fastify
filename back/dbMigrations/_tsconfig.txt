@@ -1,0 +1,10 @@
+{
+  "base": "../",
+  "extends": "../tsconfig.json",
+  "include": ["src/**/*.ts", "dbMigration/**/*.ts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "allowImportingTsExtensions": false,
+    "noEmit": false
+  }
+}

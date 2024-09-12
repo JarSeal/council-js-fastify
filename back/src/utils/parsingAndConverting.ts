@@ -4,6 +4,7 @@ import {
   type PaginateResult,
   type Types as MongooseTypes,
 } from 'mongoose';
+import { hash } from 'bcrypt';
 
 import { apiVersion } from '../core/apis.js';
 import { apiRoot } from '../core/app.js';
@@ -18,7 +19,7 @@ import type {
   FormDataPrivilegesAsStringIds,
   UserId,
 } from '../dbModels/_modelTypePartials.js';
-import { getConfig, getSysSetting } from '../core/config.js';
+import { getConfig, getSysSetting, HASH_SALT_ROUNDS } from '../core/config.js';
 
 export const getApiPathFromReqUrl = (reqUrl: string) =>
   reqUrl.split('?')[0].replace(apiRoot + apiVersion, '');
@@ -504,3 +505,5 @@ export const getOwnerChangingObject = (curOwner: UserId, userData: UserData, new
   }
   return {};
 };
+
+export const hashString = async (str: string) => await hash(str, HASH_SALT_ROUNDS);

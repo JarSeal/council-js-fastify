@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Council migrations",
   "author": "JarSeal",
+  "main": "index.ts",
   "license": "MIT",
   "private": false,
   "type": "module",

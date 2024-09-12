@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["**/*.test.ts"],
+  "exclude": ["**/*.test.ts", "dbMigrations"],
   "include": ["src/**/*.ts"],
   "compilerOptions": {
     "allowImportingTsExtensions": false,
