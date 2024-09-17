@@ -1,17 +1,16 @@
 import { type DBEmail } from '../../src/dbModels/email';
 
-const getEmails = (): Partial<DBEmail>[] => {
-  return [
-    // Main wrapper [START]
-    {
-      simpleId: 'mainSysEmailWrapper',
-      name: { langKey: 'Main system email wrapper' },
-      description: { langKey: 'Wrapper for all system emails.' },
-      systemDocument: true,
-      isHtmlTemplateWrapper: true,
-      templateVarKeys: ['wrapperContent', 'appName'],
-      subject: '',
-      template: `
+const getEmails = (): Partial<DBEmail>[] => [
+  // Main wrapper [START]
+  {
+    simpleId: 'mainSysEmailWrapper',
+    name: { langKey: 'Main system email wrapper' },
+    description: { langKey: 'Wrapper for all system emails.' },
+    systemDocument: true,
+    isHtmlTemplateWrapper: true,
+    templateVarKeys: ['wrapperContent', 'appName'],
+    subject: '',
+    template: `
 <div style="margin:0;padding:0;" bgcolor="#f7f7f7">
   <style type="text/css">
       p, ol, ul, li, a, b, strong {
@@ -71,19 +70,19 @@ const getEmails = (): Partial<DBEmail>[] => {
   </table>
 </div>
       `,
-    },
-    // Main wrapper [/END]
+  },
+  // Main wrapper [/END]
 
-    // Welcome email [START]
-    {
-      simpleId: 'welcomeEmail',
-      name: { langKey: 'Welcome email' },
-      description: { langKey: 'Welcome email template for newly registered users.' },
-      systemDocument: true,
-      wrapperTemplateId: 'mainSysEmailWrapper',
-      templateVarKeys: ['username', 'sysLoginUrl', 'newPassRequestUrl'],
-      subject: 'Welcome to {{appName}}',
-      template: `
+  // Welcome email [START]
+  {
+    simpleId: 'welcomeEmail',
+    name: { langKey: 'Welcome email' },
+    description: { langKey: 'Welcome email template for newly registered users.' },
+    systemDocument: true,
+    wrapperTemplateId: 'mainSysEmailWrapper',
+    templateVarKeys: ['username', 'sysLoginUrl', 'newPassRequestUrl'],
+    subject: 'Welcome to {{appName}}',
+    template: `
 Welcome
 -------
 
@@ -99,21 +98,21 @@ Create a new password URL: {{newPassRequestUrl}}
 
 Do not reply to this email, thank you.
       `,
-    },
-    // Welcome email [/END]
+  },
+  // Welcome email [/END]
 
-    // Verify email [START]
-    {
-      simpleId: 'verifyEmail',
-      name: { langKey: 'Verify email' },
-      description: {
-        langKey: "Verify user's primary email template that has the tokenized verification URL.",
-      },
-      systemDocument: true,
-      wrapperTemplateId: 'mainSysEmailWrapper',
-      templateVarKeys: ['username', 'verifyEmailUrl'],
-      subject: 'Verify account email',
-      template: `
+  // Verify email [START]
+  {
+    simpleId: 'verifyEmail',
+    name: { langKey: 'Verify email' },
+    description: {
+      langKey: "Verify user's primary email template that has the tokenized verification URL.",
+    },
+    systemDocument: true,
+    wrapperTemplateId: 'mainSysEmailWrapper',
+    templateVarKeys: ['username', 'verifyEmailUrl'],
+    subject: 'Verify account email',
+    template: `
 Almost there, {{username}}, please verify your E-mail
 -----------------------------------------------------
 
@@ -125,21 +124,21 @@ Please verify your account's E-mail by clicking this link:
 
 Do not reply to this email, thank you.
       `,
-    },
-    // Verify email [/END]
+  },
+  // Verify email [/END]
 
-    // New pass link email [START]
-    {
-      simpleId: 'newPassLinkEmail',
-      name: { langKey: 'New password link email' },
-      description: {
-        langKey: 'New password link email template that has the tokenized new password URL.',
-      },
-      systemDocument: true,
-      wrapperTemplateId: 'mainSysEmailWrapper',
-      templateVarKeys: ['username', 'newPassUrl', 'linkLifeInMinutes'],
-      subject: 'Reset password link',
-      template: `
+  // New pass link email [START]
+  {
+    simpleId: 'newPassLinkEmail',
+    name: { langKey: 'New password link email' },
+    description: {
+      langKey: 'New password link email template that has the tokenized new password URL.',
+    },
+    systemDocument: true,
+    wrapperTemplateId: 'mainSysEmailWrapper',
+    templateVarKeys: ['username', 'newPassUrl', 'linkLifeInMinutes'],
+    subject: 'Reset password link',
+    template: `
 Your Reset Password Link is Ready, {{username}}
 -----------------------------------------------
 
@@ -153,19 +152,19 @@ If you did not request this link, you can ignore this (only you have this messag
 
 Do not reply to this email, thank you.
       `,
-    },
-    // New pass link email [/END]
+  },
+  // New pass link email [/END]
 
-    // Pass changed notification email [START]
-    {
-      simpleId: 'passChangedEmail',
-      name: { langKey: 'Password changed notification email' },
-      description: { langKey: "Notification email template for a user's password change." },
-      systemDocument: true,
-      wrapperTemplateId: 'mainSysEmailWrapper',
-      templateVarKeys: ['username'],
-      subject: 'Your password has been changed',
-      template: `
+  // Pass changed notification email [START]
+  {
+    simpleId: 'passChangedEmail',
+    name: { langKey: 'Password changed notification email' },
+    description: { langKey: "Notification email template for a user's password change." },
+    systemDocument: true,
+    wrapperTemplateId: 'mainSysEmailWrapper',
+    templateVarKeys: ['username'],
+    subject: 'Your password has been changed',
+    template: `
 Your password was changed, {{username}}
 ---------------------------------------
 
@@ -173,19 +172,19 @@ This is a notification that your password was changed.
 
 Do not reply to this email, thank you.
       `,
-    },
-    // Pass changed notification email [/END]
+  },
+  // Pass changed notification email [/END]
 
-    // 2FA code email [START]
-    {
-      simpleId: '2FACodeEmail',
-      name: { langKey: '2FA code email' },
-      description: { langKey: '2-factor authorization email that has the code to login.' },
-      systemDocument: true,
-      wrapperTemplateId: 'mainSysEmailWrapper',
-      templateVarKeys: ['twoFactorCode', 'twoFactorLifeInMinutes'],
-      subject: 'Login Code [{{twoFactorCode}}]',
-      template: `
+  // 2FA code email [START]
+  {
+    simpleId: '2FACodeEmail',
+    name: { langKey: '2FA code email' },
+    description: { langKey: '2-factor authorization email that has the code to login.' },
+    systemDocument: true,
+    wrapperTemplateId: 'mainSysEmailWrapper',
+    templateVarKeys: ['twoFactorCode', 'twoFactorLifeInMinutes'],
+    subject: 'Login Code [{{twoFactorCode}}]',
+    template: `
 Welcome back!
 -------------
 
@@ -199,19 +198,19 @@ If you are not trying to log in, you can ignore this (only you have this message
 
 Do not reply to this email, thank you.
       `,
-    },
-    // 2FA code email [/END]
+  },
+  // 2FA code email [/END]
 
-    // Delete own account email [START]
-    {
-      simpleId: 'deleteOwnAccountEmail',
-      name: { langKey: 'Delete own account email' },
-      description: { langKey: 'Email to send to user after they have deleted their own account.' },
-      systemDocument: true,
-      wrapperTemplateId: 'mainSysEmailWrapper',
-      templateVarKeys: ['username'],
-      subject: 'Account deleted',
-      template: `
+  // Delete own account email [START]
+  {
+    simpleId: 'deleteOwnAccountEmail',
+    name: { langKey: 'Delete own account email' },
+    description: { langKey: 'Email to send to user after they have deleted their own account.' },
+    systemDocument: true,
+    wrapperTemplateId: 'mainSysEmailWrapper',
+    templateVarKeys: ['username'],
+    subject: 'Account deleted',
+    template: `
 Goodbye
 -------
 
@@ -222,9 +221,8 @@ Thank you for being a user with us!
 
 Do not reply to this email, thank you.
       `,
-    },
-    // Delete own account email [/END]
-  ];
-};
+  },
+  // Delete own account email [/END]
+];
 
 export default getEmails;

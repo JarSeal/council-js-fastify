@@ -160,6 +160,7 @@ export async function up(): Promise<void> {
   // Create client routes
   for (let i = 0; i < systemRoutes.length; i++) {
     if (!systemRoutes[i].simpleId || !systemRoutes[i].path) {
+      // eslint-disable-next-line no-console
       console.warn('Client route items must have a simpleId and path defined.');
       continue;
     }
