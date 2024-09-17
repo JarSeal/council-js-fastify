@@ -16,7 +16,7 @@ import {
   TR,
   useDefaultLangAsFallback,
   type TransText,
-} from './LANG';
+} from './LNG';
 import { setSanitizer } from './CMP';
 import englishData from './test/lang.en.json';
 import finnishData from './test/lang.fi.json';

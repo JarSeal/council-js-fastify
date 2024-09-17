@@ -1,4 +1,4 @@
-import type { TransText } from './LANG.js';
+import type { TransText } from './LNG.js';
 
 export type Route = {
   path: string;

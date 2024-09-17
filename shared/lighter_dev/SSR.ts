@@ -1,6 +1,6 @@
 // import { JSDOM } from 'jsdom';
 
-import { TR } from './LANG.js';
+import { TR } from './LNG.js';
 import type { Route } from './RTR.js';
 
 // Create metadata
