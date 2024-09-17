@@ -22,7 +22,6 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
   const csrfIsGood = isCsrfGood(req);
   const routePath = getApiPathFromReqUrl(req.url);
   const routes = await getUserClientRoutes(userData, csrfIsGood, routePath);
-  console.log('ROUTES', routes);
 
   const ssrObject = { isSSR: true, routes, rootId: 'root' };
 
