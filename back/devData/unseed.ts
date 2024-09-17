@@ -1,7 +1,8 @@
-const { initDB, closeDB } = require('../dist/back/src/core/db.js');
-const { removeForms } = require('./data/forms.js');
-const { removeGroups } = require('./data/groups.js');
-const { removeUsers } = require('./data/users.js');
+/* eslint-disable no-console */
+import { initDB, closeDB } from '../src/core/db.js';
+import { removeForms } from './data/forms.js';
+import { removeGroups } from './data/groups.js';
+import { removeUsers } from './data/users.js';
 
 const removeSeedData = async () => {
   await removeForms();

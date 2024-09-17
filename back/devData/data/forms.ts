@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
 const randomIntFromInterval = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
-const { default: DBFormModel } = require('../../dist/back/src/dbModels/form');
-const { default: DBFormDataModel } = require('../../dist/back/src/dbModels/formData');
-const { default: DBPrivilegeModel } = require('../../dist/back/src/dbModels/privilege');
-const { getSuperAdminId, getBasicUsersGroupId, getBasicUserId } = require('./_config');
+import { FormDataValueType, FormElem, FormElemType } from '../../src/dbModels/_modelTypePartials';
+import DBFormModel, { DBForm } from '../../src/dbModels/form';
+import DBFormDataModel from '../../src/dbModels/formData';
+import DBPrivilegeModel from '../../src/dbModels/privilege';
+import { getSuperAdminId, getBasicUsersGroupId, getBasicUserId } from './_config';
 
 let formDataCount = 0;
 
@@ -332,7 +334,7 @@ const getFormConfigs = async () => {
   ];
 };
 
-const removeForms = async () => {
+export const removeForms = async () => {
   console.log('\nFORMS:');
   console.log('Check and remove forms, formData items, and form privileges...');
 
@@ -358,13 +360,13 @@ const removeForms = async () => {
   );
 };
 
-const createForms = async () => {
+export const createForms = async () => {
   await removeForms();
   console.log('Create forms...');
 
   const formConfigs = await getFormConfigs();
   let privilegesAdded = 0;
-  const forms = [];
+  const forms: Partial<DBForm>[] = [];
   for (let i = 0; i < formConfigs.length; i++) {
     forms.push(
       await createRandomForm(
@@ -378,7 +380,7 @@ const createForms = async () => {
 
     // Create possible privileges
     if (formConfigs[i].opts?.privileges?.length) {
-      const privileges = formConfigs[i].opts.privileges;
+      const privileges = formConfigs[i].opts?.privileges || [];
       for (let j = 0; j < privileges.length; j++) {
         const simpleId = `${privileges[j].priCategoryId}__${privileges[j].priTargetId}__${privileges[j].priAccessId}`;
         const privilege = new DBPrivilegeModel({
@@ -390,14 +392,6 @@ const createForms = async () => {
           systemDocument: false,
           privilegeViewAccess: { users: [], groups: [], excludeUsers: [], excludeGroups: [] },
           privilegeEditAccess: { users: [], groups: [], excludeUsers: [], excludeGroups: [] },
-          privilegeAccess: {
-            public: 'false',
-            requireCsrfHeader: true,
-            users: [],
-            groups: [],
-            excludeUsers: [],
-            excludeGroups: [],
-          },
           ...privileges[j],
         });
         await privilege.save();
@@ -430,14 +424,12 @@ const formElemTypes = [
 ];
 
 // valueType
-const createValueType = (elemType) => {
+const createValueType = (elemType: string): FormDataValueType => {
   switch (elemType) {
     case 'text':
       return 'none';
     case 'inputCheckbox':
       return 'boolean';
-    case 'inputCheckboxGroup':
-      return 'stringArray';
     case 'inputRadioGroup':
       return 'string';
     case 'inputDropdown':
@@ -447,6 +439,7 @@ const createValueType = (elemType) => {
     case 'inputNumber':
       return 'number';
     case 'hidden':
+    default:
       return 'string';
   }
 };
@@ -487,15 +480,16 @@ const createElemData = (elemType) => {
     case 'inputNumber':
       return {}; // @TODO: add some random configs
     case 'hidden':
+    default:
       return {};
   }
 };
 
 // opts = { owner: UserId, formDataOwner: UserId, formDataPrivileges: FormDataPrivileges }
-const createRandomForm = async (formId, formName, formDescription, url, opts) => {
+export const createRandomForm = async (formId, formName, formDescription, url, opts) => {
   const superAdminId = await getSuperAdminId();
 
-  const form = {
+  const form: Partial<DBForm> = {
     simpleId: formId,
     name: formName,
     description: formDescription,
@@ -510,7 +504,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
   };
 
   // Form elements
-  let formElems = [];
+  let formElems: FormElem[] = [];
   let formElemCount = 0;
   if (opts?.formElems?.length) {
     // Pre-configured formElems
@@ -524,7 +518,7 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
       const formElem = {
         elemId: 'testElem' + i,
         orderNr: i,
-        elemType: formElemTypes[formElemIndex],
+        elemType: formElemTypes[formElemIndex] as FormElemType,
         valueType: createValueType(formElemTypes[formElemIndex]),
         elemData: createElemData(formElemTypes[formElemIndex]),
         label: { langKey: 'Label ' + (i + 1) },
@@ -564,7 +558,6 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
   };
 
   if (opts?.formDataOwner) form.formDataOwner = opts.formDataOwner;
-  if (opts?.hasElemPrivileges) form.hasElemPrivileges = opts.hasElemPrivileges;
   const privileges = {
     read: {
       public: 'false',
@@ -623,5 +616,3 @@ const createRandomForm = async (formId, formName, formDescription, url, opts) =>
 
   return form;
 };
-
-module.exports = { createForms, removeForms };

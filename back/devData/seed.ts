@@ -1,7 +1,8 @@
-const { initDB, closeDB } = require('../dist/back/src/core/db.js');
-const { createForms } = require('./data/forms.js');
-const { createGroups } = require('./data/groups.js');
-const { createUsers } = require('./data/users.js');
+/* eslint-disable no-console */
+import { initDB, closeDB } from '../src/core/db.js';
+import { createForms } from './data/forms.js';
+import { createGroups } from './data/groups.js';
+import { createUsers } from './data/users.js';
 
 const createSeedData = async () => {
   await createGroups();

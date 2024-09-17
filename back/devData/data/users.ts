@@ -1,25 +1,25 @@
-const { config } = require('dotenv');
-const { hash } = require('bcrypt');
-const { createUrlTokenAndId } = require('../../dist/back/src/utils/token');
-const {
+/* eslint-disable no-console */
+import { createUrlTokenAndId } from '../../src/utils/token';
+import {
   userCount,
   password,
   createUsername,
   createEmail,
   createGroupId,
   setBasicUserId,
-} = require('./_config');
-const { default: DBUserModel } = require('../../dist/back/src/dbModels/user');
-const { default: DBGroupModel } = require('../../dist/back/src/dbModels/group');
-
-config();
+} from './_config';
+import DBUserModel from '../../src/dbModels/user';
+import DBGroupModel from '../../src/dbModels/group';
+import { hashString } from '../../src/utils/parsingAndConverting';
+import { Token } from '../../src/dbModels/_modelTypePartials';
+import { type DBUser } from '../../src/dbModels/user';
 
 const extraUserCount = 2;
 
-const removeUsers = async () => {
+export const removeUsers = async () => {
   console.log('\nUSERS:');
   console.log('Check and remove users...');
-  const simpleIds = [];
+  const simpleIds: string[] = [];
   for (let i = 0; i < userCount + extraUserCount; i++) {
     const username = createUsername(i);
     simpleIds.push(username);
@@ -35,7 +35,21 @@ const removeUsers = async () => {
   console.log(`Removed ${result.deletedCount || 0} users.`);
 };
 
-const getUserObj = ({ i, isVerified, token, tokenId, dateNow, passwordHash }) => ({
+const getUserObj = ({
+  i,
+  isVerified,
+  token,
+  tokenId,
+  dateNow,
+  passwordHash,
+}: {
+  i: number;
+  isVerified: boolean;
+  token: Token['token'];
+  tokenId: Token['tokenId'];
+  dateNow: Date;
+  passwordHash: string;
+}) => ({
   simpleId: createUsername(i),
   emails: [
     {
@@ -59,21 +73,25 @@ const getUserObj = ({ i, isVerified, token, tokenId, dateNow, passwordHash }) =>
     isUnderCoolDown: false,
     lastLoginAttempts: [],
     lastLogins: [],
+    twoFA: {
+      code: null,
+      date: null,
+      resendDate: null,
+    },
   },
 });
 
-const createUsers = async () => {
-  if (userCount === 0) return;
+export const createUsers = async () => {
   await removeUsers();
   console.log('Create users...');
-  const users = [];
+  const users: Partial<DBUser>[] = [];
   const dateNow = new Date();
-  const passwordHash = await hash(password, Number(process.env.SALT_ROUNDS || 10));
+  const passwordHash = await hashString(password);
   const verifiedEmailsStart = 50;
   for (let i = 0; i < userCount; i++) {
     const isVerified = i + 1 > verifiedEmailsStart;
-    let token = null;
-    let tokenId = null;
+    let token: string | null = null;
+    let tokenId: string | null = null;
     if (!isVerified) {
       const tokenAndId = await createUrlTokenAndId('EMAIL_VERIFICATION');
       token = tokenAndId.token;
@@ -123,12 +141,14 @@ const createUsers = async () => {
   if (userCount > 50) {
     const user50username = createUsername(50);
     const user50 = await DBUserModel.findOne({ simpleId: user50username });
-    const group0Id = createGroupId(0);
-    await DBGroupModel.findOneAndUpdate(
-      { simpleId: group0Id },
-      { $addToSet: { members: user50._id } }
-    );
-    userAddedToCustomGroupMsg = ` Added "${user50username}" as a member to group "${group0Id}".`;
+    if (user50) {
+      const group0Id = createGroupId(0);
+      await DBGroupModel.findOneAndUpdate(
+        { simpleId: group0Id },
+        { $addToSet: { members: user50._id } }
+      );
+      userAddedToCustomGroupMsg = ` Added "${user50username}" as a member to group "${group0Id}".`;
+    }
   }
 
   console.log(
@@ -150,5 +170,3 @@ const createUsers = async () => {
     '- Emails: ' + createEmail(0) + (totalCount > 1 ? ' - ' + createEmail(totalCount - 1) : '')
   );
 };
-
-module.exports = { createUsers, removeUsers };

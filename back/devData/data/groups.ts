@@ -1,11 +1,12 @@
-const { default: mongoose } = require('mongoose');
-const { groupCount, createGroupId } = require('./_config');
-const { default: DBGroupModel } = require('../../dist/back/src/dbModels/group');
+/* eslint-disable no-console */
+import mongoose from 'mongoose';
+import { groupCount, createGroupId } from './_config';
+import DBGroupModel, { type DBGroup } from '../../src/dbModels/group';
 
-const removeGroups = async () => {
+export const removeGroups = async () => {
   console.log('\nGROUPS:');
   console.log('Check and remove groups...');
-  const simpleIds = [];
+  const simpleIds: string[] = [];
   for (let i = 0; i < groupCount; i++) {
     simpleIds.push(createGroupId(i));
   }
@@ -14,7 +15,7 @@ const removeGroups = async () => {
   console.log(`Removed ${result.deletedCount || 0} groups.`);
 };
 
-const getGroupObj = ({ i, dateNow }) => ({
+const getGroupObj = ({ i, dateNow }: { i: number; dateNow: Date }) => ({
   simpleId: createGroupId(i),
   name: `Test group ${createGroupId(i)}`,
   description: 'Only for testing purposes.',
@@ -25,11 +26,10 @@ const getGroupObj = ({ i, dateNow }) => ({
   members: [],
 });
 
-const createGroups = async () => {
-  if (groupCount === 0) return;
+export const createGroups = async () => {
   await removeGroups();
   console.log('Create groups...');
-  const groups = [];
+  const groups: Partial<DBGroup>[] = [];
   const dateNow = new Date();
   for (let i = 0; i < groupCount; i++) {
     groups.push(getGroupObj({ i, dateNow }));
@@ -44,5 +44,3 @@ const createGroups = async () => {
       (groupCount > 1 ? ' - ' + createGroupId(groupCount - 1) : '')
   );
 };
-
-module.exports = { removeGroups, createGroups };
