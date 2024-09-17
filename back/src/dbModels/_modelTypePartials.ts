@@ -92,14 +92,14 @@ export type FormElem = {
   // Form element ID (simpleId)
   elemId: string;
 
-  // Order number
-  orderNr: number;
-
   // Element type
   elemType: FormElemType;
 
   // Value type
   valueType: FormDataValueType;
+
+  // Order number
+  orderNr?: number;
 
   // Default value (will be converted from string to appropriate value)
   defaultValue?: string;

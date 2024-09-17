@@ -1,7 +1,9 @@
+import { type DBGroup } from '../../src/dbModels/group';
+
 // GROUPS:
 const timeNow = new Date();
 
-module.exports = [
+const systemGroups: DBGroup[] = [
   {
     simpleId: 'sysAdmins',
     name: 'System Administrators',
@@ -31,3 +33,5 @@ module.exports = [
     members: [],
   },
 ];
+
+export default systemGroups;

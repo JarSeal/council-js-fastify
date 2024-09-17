@@ -1,8 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import { publicSignUp } from './handlers.js';
-import { bodySchema, replySchema } from './schemas.js';
-import type { PublicSignUpRoute } from './schemas.js';
+import { publicSignUp } from './handlers';
+import { bodySchema, replySchema } from './schemas';
+import type { PublicSignUpRoute } from './schemas';
 
 const publicSignUpRoute: FastifyPluginAsync = (instance) => {
   instance.route<PublicSignUpRoute>({

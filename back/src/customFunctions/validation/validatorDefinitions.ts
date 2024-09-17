@@ -2,7 +2,7 @@ import {
   validateEmail,
   validatePhoneWithExtraChars,
   validateSimpleId,
-} from '../../utils/validation.js';
+} from '../../utils/validation';
 
 export const emailValidator = {
   name: { langKey: 'Email' },

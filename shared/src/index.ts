@@ -6,8 +6,8 @@
 // const confBuffer = await readFile(new URL('./../../CONFIG.json', import.meta.url));
 // const conf = JSON.parse(confBuffer.toString());
 
-// export * as CONFIG from '../../CONFIG.js';
+// export * as CONFIG from '../../CONFIG';
 // import { default as conf } from '../../CONFIG.json';
 
-export * from './sharedPackages/index.js';
+export * from './sharedPackages/index';
 // export const CONFIG = conf;

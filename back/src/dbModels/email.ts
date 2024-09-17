@@ -1,7 +1,7 @@
 import { type Types, Schema, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema, transTextDbSchema } from './_schemaPartials.js';
-import type { Edited, TransText } from './_modelTypePartials.js';
+import { simpleIdDBSchema, dateDBSchema, transTextDbSchema } from './_schemaPartials';
+import type { Edited, TransText } from './_modelTypePartials';
 
 export interface DBEmail {
   // Mongo Id

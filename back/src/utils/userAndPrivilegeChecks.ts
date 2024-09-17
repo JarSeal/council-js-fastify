@@ -1,16 +1,16 @@
 import type { FastifyError, FastifyRequest } from 'fastify';
 import { type Types } from 'mongoose';
 
-import DBGroupModel from '../dbModels/group.js';
+import DBGroupModel from '../dbModels/group';
 import type {
   AllPrivilegeProps,
   BasicPrivilegeProps,
   UserId,
-} from '../dbModels/_modelTypePartials.js';
-import { errors } from '../core/errors.js';
-import type { RequiredActions } from '../features/login/schemas.js';
-import { getSysSetting } from '../core/config.js';
-import type { Lang } from './language.js';
+} from '../dbModels/_modelTypePartials';
+import { errors } from '../core/errors';
+import type { RequiredActions } from '../features/login/schemas';
+import { getSysSetting } from '../core/config';
+import type { Lang } from './language';
 
 export const emptyPrivilege: AllPrivilegeProps = {
   public: 'false',

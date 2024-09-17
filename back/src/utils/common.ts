@@ -1,4 +1,4 @@
-import { IS_TEST, getSysSetting } from '../core/config.js';
+import { IS_TEST, getSysSetting } from '../core/config';
 
 export const isEmailEnabled = async () => {
   const useEmail = await getSysSetting<boolean>('useEmail');

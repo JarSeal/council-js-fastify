@@ -1,5 +1,4 @@
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 import {
   type FastifyBaseLogger,
@@ -21,14 +20,15 @@ import {
   SESSION_SECRET,
   SESSION_COOKIE_NAME,
   getSysSetting,
-} from './config.js';
-import type { Environment } from './config.js';
-import apis from './apis.js';
-import { initDB } from './db.js';
-import { sessionStore } from './sessionStore.js';
-import { errors } from './errors.js';
-import { addMonitorCount } from '../utils/monitorUtils.js';
-import { createIndexHtml } from './createIndexHtml.js';
+  IS_DEVELOPMENT,
+} from './config';
+import type { Environment } from './config';
+import apis from './apis';
+import { initDB } from './db';
+import { sessionStore } from './sessionStore';
+import { errors } from './errors';
+import { addMonitorCount } from '../utils/monitorUtils';
+import { createIndexHtml } from './createIndexHtml';
 
 export const apiRoot = '/api';
 
@@ -107,11 +107,13 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
   // await cacheRoutes(session)
 
   // Static files
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const publicPath = path.join(__dirname, '../../dist/public');
+  let publicRelativePath = '../../../../dist/back/public'; // Production
+  if (IS_DEVELOPMENT) publicRelativePath = '../../dist/back/public';
+  const publicPath = path.join(__dirname, publicRelativePath);
   if (!fs.existsSync(publicPath)) {
-    throw new Error(`Could not find public path (${publicPath}), build the project first.`);
+    throw new Error(
+      `Could not find public path (${publicPath}), build the project first. ${__dirname}`
+    );
   }
   await app.register(fastifyStatic, {
     root: publicPath,

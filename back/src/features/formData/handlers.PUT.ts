@@ -1,29 +1,29 @@
 import type { RouteHandler } from 'fastify';
 import { type Types, isObjectIdOrHexString } from 'mongoose';
 
-import type { FormDataPutAndDeleteReply, FormDataPutRoute } from './routes.js';
-import DBFormModel, { type DBForm } from '../../dbModels/form.js';
-import getFormDataModel from '../../dbModels/formData/index.js';
-import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege.js';
-import { errors } from '../../core/errors.js';
-import { isCsrfGood } from '../../hooks/csrf.js';
+import type { FormDataPutAndDeleteReply, FormDataPutRoute } from './routes';
+import DBFormModel, { type DBForm } from '../../dbModels/form';
+import getFormDataModel from '../../dbModels/formData/index';
+import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
+import { errors } from '../../core/errors';
+import { isCsrfGood } from '../../hooks/csrf';
 import {
   getUserData,
   isPrivBlocked,
   combinePrivileges,
   dataPrivilegesQuery,
   combineBasicPrivileges,
-} from '../../utils/userAndPrivilegeChecks.js';
+} from '../../utils/userAndPrivilegeChecks';
 import {
   createNewEditedArray,
   getApiPathFromReqUrl,
   getOwnerChangingObject,
-} from '../../utils/parsingAndConverting.js';
-import { validateFormDataInput } from '../../utils/validation.js';
-import { getFormData } from './handlers.GET.js';
-import { afterFns } from '../../customFunctions/afterFn/index.js';
-import { getRequiredActions } from '../../utils/requiredLoginChecks.js';
-import { encryptData } from '../../core/config.js';
+} from '../../utils/parsingAndConverting';
+import { validateFormDataInput } from '../../utils/validation';
+import { getFormData } from './handlers.GET';
+import { afterFns } from '../../customFunctions/afterFn/index';
+import { getRequiredActions } from '../../utils/requiredLoginChecks';
+import { encryptData } from '../../core/config';
 
 // Edit (PUT)
 export const formDataPut: RouteHandler<FormDataPutRoute> = async (req, res) => {

@@ -1,8 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import { loginBodySchema, replySchema, twoFactorLoginBodySchema } from './schemas.js';
-import type { LoginRoute, TwoFactorLoginRoute } from './schemas.js';
-import { login, twoFALogin } from './handlers.js';
+import { loginBodySchema, replySchema, twoFactorLoginBodySchema } from './schemas';
+import type { LoginRoute, TwoFactorLoginRoute } from './schemas';
+import { login, twoFALogin } from './handlers';
 
 const loginRoute: FastifyPluginAsync = (instance) => {
   instance.route<LoginRoute>({

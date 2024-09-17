@@ -1,6 +1,6 @@
-import { getUserData } from '../../utils/userAndPrivilegeChecks.js';
-import type { CustomAfterFn } from './index.js';
-import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks.js';
+import { getUserData } from '../../utils/userAndPrivilegeChecks';
+import type { CustomAfterFn } from './index';
+import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
 
 export const checkAndSetRequiredActions: CustomAfterFn = {
   name: { langKey: 'Check and set required actions to session' },

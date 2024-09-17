@@ -1,6 +1,6 @@
-import { errors } from '../core/errors.js';
-import type { DBMonitor } from '../dbModels/monitor.js';
-import DBMonitorModel from '../dbModels/monitor.js';
+import { errors } from '../core/errors';
+import type { DBMonitor } from '../dbModels/monitor';
+import DBMonitorModel from '../dbModels/monitor';
 
 export interface DBMonitorCounter extends DBMonitor {
   data: {

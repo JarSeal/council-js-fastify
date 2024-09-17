@@ -5,8 +5,8 @@ import {
   dateDBSchema,
   allPrivilegePropsSchema,
   transTextDbSchema,
-} from './_schemaPartials.js';
-import type { AllPrivilegeProps, Edited, TransText } from './_modelTypePartials.js';
+} from './_schemaPartials';
+import type { AllPrivilegeProps, Edited, TransText } from './_modelTypePartials';
 
 export interface DBClientRoute {
   // Mongo Id

@@ -1,10 +1,10 @@
 import nodemailer, { type Transporter } from 'nodemailer';
 import { marked } from 'marked';
 
-import { IS_TEST, decryptData, getSysSetting } from './config.js';
-import { logger } from './app.js';
-import DBEmailModel, { type DBEmail } from '../dbModels/email.js';
-import { isEmailEnabled } from '../utils/common.js';
+import { IS_TEST, decryptData, getSysSetting } from './config';
+import { logger } from './app';
+import DBEmailModel, { type DBEmail } from '../dbModels/email';
+import { isEmailEnabled } from '../utils/common';
 
 let transporter: Transporter;
 const createTransport = async () => {

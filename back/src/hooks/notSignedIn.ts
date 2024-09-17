@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-import { errors } from '../core/errors.js';
+import { errors } from '../core/errors';
 
 export const notSignedInHook = (req: FastifyRequest, res: FastifyReply) => {
   if (req.session.isSignedIn) {

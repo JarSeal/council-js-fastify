@@ -140,7 +140,7 @@ module.exports = {
     // Create client routes
     for (let i = 0; i < routes.length; i++) {
       if (!routes[i].simpleId || !routes[i].path) {
-        console.warn('Client route items must a simpleId and path defined.');
+        console.warn('Client route items must have a simpleId and path defined.');
         continue;
       }
       const foundRoute = await db

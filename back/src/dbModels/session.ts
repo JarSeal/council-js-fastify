@@ -1,7 +1,7 @@
 import mongoose, { Schema, type Types } from 'mongoose';
 
-import { simpleIdDBSchema } from './_schemaPartials.js';
-import { requiredActionsDBSchema, type RequiredActions } from '../features/login/schemas.js';
+import { simpleIdDBSchema } from './_schemaPartials';
+import { requiredActionsDBSchema, type RequiredActions } from '../features/login/schemas';
 
 export interface Session {
   cacheSetData?: Date;

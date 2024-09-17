@@ -1,7 +1,7 @@
 import type { Session } from 'fastify';
 
-import DBSessionModel, { type DBSession } from '../dbModels/session.js';
-import { errors } from './errors.js';
+import DBSessionModel, { type DBSession } from '../dbModels/session';
+import { errors } from './errors';
 
 export const sessionStore = {
   // *****************************************

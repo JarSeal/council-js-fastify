@@ -1,6 +1,7 @@
-const config = require('../../../CONFIG.json');
+import CONFIG from '../../../CONFIG';
+import { FormElem } from '../../src/dbModels/_modelTypePartials';
 
-const systemSettingsFormElems = [
+const systemSettingsFormElems: FormElem[] = [
   // security CATEGORY [START]
   {
     elemId: 'sessionMaxAge',
@@ -8,8 +9,8 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.sessionMaxAge >= 30
-          ? Math.round(Number(config.security.sessionMaxAge))
+        CONFIG?.security?.sessionMaxAge >= 30
+          ? Math.round(Number(CONFIG.security.sessionMaxAge))
           : 3600,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
@@ -68,7 +69,7 @@ const systemSettingsFormElems = [
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
-      defaultValue: config?.security?.sessionIsRolling === true,
+      defaultValue: CONFIG?.security?.sessionIsRolling === true,
       category: 'security',
       description: {
         langKey:
@@ -83,8 +84,8 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.maxLoginAttempts >= 1
-          ? Math.round(Number(config.security.maxLoginAttempts))
+        CONFIG?.security?.maxLoginAttempts >= 1
+          ? Math.round(Number(CONFIG.security.maxLoginAttempts))
           : 4,
       minValue: 1,
       precision: 0,
@@ -104,7 +105,7 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.coolDownAge >= 30 ? Math.round(Number(config.security.coolDownAge)) : 240,
+        CONFIG?.security?.coolDownAge >= 30 ? Math.round(Number(CONFIG.security.coolDownAge)) : 240,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
         { label: { langKey: '1 minute' }, value: 60 },
@@ -145,7 +146,7 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.maxLoginLogs >= 0 ? Math.round(Number(config.security.maxLoginLogs)) : 5,
+        CONFIG?.security?.maxLoginLogs >= 0 ? Math.round(Number(CONFIG.security.maxLoginLogs)) : 5,
       minValue: 0,
       precision: 0,
       step: 1,
@@ -162,8 +163,8 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.maxLoginAttemptLogs >= 0
-          ? Math.round(Number(config.security.maxLoginAttemptLogs))
+        CONFIG?.security?.maxLoginAttemptLogs >= 0
+          ? Math.round(Number(CONFIG.security.maxLoginAttemptLogs))
           : 5,
       minValue: 0,
       precision: 0,
@@ -181,8 +182,8 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.defaultEditedLogs >= 0
-          ? Math.round(Number(config.security.defaultEditedLogs))
+        CONFIG?.security?.defaultEditedLogs >= 0
+          ? Math.round(Number(CONFIG.security.defaultEditedLogs))
           : 5,
       minValue: 0,
       precision: 0,
@@ -206,8 +207,8 @@ const systemSettingsFormElems = [
         'USER_CHOOSES',
         'USER_CHOOSES_AND_SET_TO_DISABLED',
         'USER_CHOOSES_AND_SET_TO_ENABLED',
-      ].includes(config?.security?.use2FA)
-        ? config.security.use2FA
+      ].includes(CONFIG?.security?.use2FA)
+        ? CONFIG.security.use2FA
         : 'DISABLED',
       options: [
         { label: { langKey: 'Disabled' }, value: 'DISABLED' },
@@ -237,8 +238,8 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.twoFASessionAgeInMin >= 0
-          ? Number(config.security.twoFASessionAgeInMin)
+        CONFIG?.security?.twoFASessionAgeInMin >= 0
+          ? Number(CONFIG.security.twoFASessionAgeInMin)
           : 30,
       minValue: 0.5,
       unit: { single: { langKey: 'minute' }, multi: { langKey: 'minutes' } },
@@ -260,8 +261,8 @@ const systemSettingsFormElems = [
         'EMAIL_ONLY',
         'USER_CHOOSES_USERNAME_AS_DEFAULT',
         'USER_CHOOSES_EMAIL_AS_DEFAULT',
-      ].includes(config?.security?.loginMethod)
-        ? config.security.loginMethod
+      ].includes(CONFIG?.security?.loginMethod)
+        ? CONFIG.security.loginMethod
         : 'USERNAME_ONLY',
       options: [
         { label: { langKey: 'Username only' }, value: 'USERNAME_ONLY' },
@@ -290,9 +291,9 @@ const systemSettingsFormElems = [
     valueType: 'string',
     elemData: {
       defaultValue: ['DISABLED', 'EMAIL_ONLY', 'USERNAME_ONLY', 'EITHER', 'BOTH_REQUIRED'].includes(
-        config?.security?.forgotPassIdMethod
+        CONFIG?.security?.forgotPassIdMethod
       )
-        ? config.security.forgotPassIdMethod
+        ? CONFIG.security.forgotPassIdMethod
         : 'USERNAME_ONLY',
       options: [
         { label: { langKey: 'Forgot password is disabled' }, value: 'DISABLED' },
@@ -316,8 +317,8 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.forgotPassSessionAgeInMin >= 0
-          ? Number(config.security.forgotPassSessionAgeInMin)
+        CONFIG?.security?.forgotPassSessionAgeInMin >= 0
+          ? Number(CONFIG.security.forgotPassSessionAgeInMin)
           : 30,
       minValue: 0.5,
       unit: { single: { langKey: 'minute' }, multi: { langKey: 'minutes' } },
@@ -353,8 +354,8 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.dataItemsMaxLimit >= 1
-          ? Math.round(Number(config.security.dataItemsMaxLimit))
+        CONFIG?.data?.dataItemsMaxLimit >= 1
+          ? Math.round(Number(CONFIG.data.dataItemsMaxLimit))
           : 500,
       minValue: 1,
       precision: 0,
@@ -372,7 +373,7 @@ const systemSettingsFormElems = [
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
-      defaultValue: config?.security?.dataCollationLocale || 'en',
+      defaultValue: CONFIG?.data?.dataCollationLocale || 'en',
       options: [
         { label: { langKey: 'English' }, value: 'en' },
         { label: { langKey: 'English (United States)' }, value: 'en_US' },
@@ -405,8 +406,8 @@ const systemSettingsFormElems = [
     valueType: 'number',
     elemData: {
       defaultValue:
-        config?.security?.userGroupsCacheTime >= 30
-          ? Math.round(Number(config.security.userGroupsCacheTime))
+        CONFIG?.caches?.userGroupsCacheTime >= 30
+          ? Math.round(Number(CONFIG.caches.userGroupsCacheTime))
           : 180,
       options: [
         { label: { langKey: '30 seconds' }, value: 30 },
@@ -519,7 +520,7 @@ const systemSettingsFormElems = [
     elemType: 'inputCheckbox',
     valueType: 'boolean',
     elemData: {
-      defaultValue: config?.email?.forceEmailVerification === true,
+      defaultValue: CONFIG?.email?.forceEmailVerification === true,
       category: 'email',
       description: {
         langKey:
@@ -533,7 +534,7 @@ const systemSettingsFormElems = [
     elemType: 'inputNumber',
     valueType: 'number',
     elemData: {
-      defaultValue: config?.email?.maxEmails >= 1 ? Math.round(Number(config.email.maxEmails)) : 2,
+      defaultValue: CONFIG?.email?.maxEmails >= 1 ? Math.round(Number(CONFIG.email.maxEmails)) : 2,
       minValue: 1,
       precision: 0,
       step: 1,
@@ -553,7 +554,7 @@ const systemSettingsFormElems = [
     elemType: 'inputText',
     valueType: 'string',
     elemData: {
-      defaultValue: config?.appGeneral?.appName || 'Council',
+      defaultValue: CONFIG?.appGeneral?.appName || 'Council',
       category: 'appGeneral',
       publicSetting: true,
       description: {
@@ -567,7 +568,7 @@ const systemSettingsFormElems = [
     elemType: 'inputDropDown',
     valueType: 'string',
     elemData: {
-      defaultValue: config?.appGeneral?.appName || 'en',
+      defaultValue: CONFIG?.appGeneral?.appName || 'en',
       options: [
         // ISO 639-1 Language Codes: https://www.w3schools.com/tags/ref_language_codes.asp
         { label: { langKey: 'English' }, value: 'en' },
@@ -584,4 +585,4 @@ const systemSettingsFormElems = [
   // appGeneral CATEGORY [/END]
 ];
 
-module.exports = systemSettingsFormElems;
+export default systemSettingsFormElems;

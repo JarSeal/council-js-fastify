@@ -1,9 +1,5 @@
-import type { TransText } from '../../@types/form.js';
-import {
-  emailValidator,
-  phoneWithExtraValidator,
-  simpleIdValidator,
-} from './validatorDefinitions.js';
+import type { TransText } from '../../@types/form';
+import { emailValidator, phoneWithExtraValidator, simpleIdValidator } from './validatorDefinitions';
 
 type CustomValidator = {
   [key: string]: {

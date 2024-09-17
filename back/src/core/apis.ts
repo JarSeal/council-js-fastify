@@ -1,16 +1,16 @@
 import type { FastifyPluginAsync } from 'fastify';
 
-import healthCheckRoutes from '../features/healthCheck/routes.js';
-import publicSignUpRoute from '../features/publicSignUp/routes.js';
-import loginRoutes from '../features/login/routes.js';
-import logoutRoute from '../features/logout/routes.js';
-import formDataRoutes from '../features/formData/routes.js';
-import systemSettingsRoutes from '../features/systemSettings/routes.js';
-import { userPublicRoutes, userSignedInRoutes } from '../features/user/routes.js';
-import { signedInHook } from '../hooks/signedIn.js';
-import { notSignedInHook } from '../hooks/notSignedIn.js';
-import { csrfHook } from '../hooks/csrf.js';
-import { clientDataHook } from '../hooks/clientData.js';
+import healthCheckRoutes from '../features/healthCheck/routes';
+import publicSignUpRoute from '../features/publicSignUp/routes';
+import loginRoutes from '../features/login/routes';
+import logoutRoute from '../features/logout/routes';
+import formDataRoutes from '../features/formData/routes';
+import systemSettingsRoutes from '../features/systemSettings/routes';
+import { userPublicRoutes, userSignedInRoutes } from '../features/user/routes';
+import { signedInHook } from '../hooks/signedIn';
+import { notSignedInHook } from '../hooks/notSignedIn';
+import { csrfHook } from '../hooks/csrf';
+import { clientDataHook } from '../hooks/clientData';
 
 export const apiVersion = '/v1';
 const sysPrefixObj = { prefix: apiVersion + '/sys' };

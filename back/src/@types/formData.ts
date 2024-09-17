@@ -1,6 +1,6 @@
 import { Type, type Static } from '@sinclair/typebox';
 
-import { valueTypeSchema } from './form.js';
+import { valueTypeSchema } from './form';
 
 export const formDataSchema = Type.Object({
   dataId: Type.String(),

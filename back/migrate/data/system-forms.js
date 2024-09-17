@@ -1,7 +1,7 @@
 // FORMS:
 const timeNow = new Date();
-// const { simpleIdRegExp } = require('../../dist/utils/validation');
-const { simpleIdRegExp } = import('../../dist/utils/validation.js');
+const { simpleIdRegExp } = require('../../dist/utils/validation');
+// const { simpleIdRegExp } = import('../../dist/utils/validation.js');
 const systemSettingsFormElems = require('./system-forms-settings');
 
 // if (!simpleIdRegExp) {

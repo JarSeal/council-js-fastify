@@ -1,6 +1,6 @@
 import mongoose, { type Types } from 'mongoose';
 
-import { simpleIdDBSchema } from './_schemaPartials.js';
+import { simpleIdDBSchema } from './_schemaPartials';
 
 export interface DBMonitor {
   // Mongo Id

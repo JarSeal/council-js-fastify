@@ -2,17 +2,16 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { SSR_RENDER_CONTENT_WRAPPER_ID, ssrRenderContentHtml } from '@council/shared';
 import { JSDOM } from 'jsdom';
 
-import { getUserClientRoutes } from '../features/clientRoutes/handlers.js';
-import { getApiPathFromReqUrl } from '../utils/parsingAndConverting.js';
-import { getUserData } from '../utils/userAndPrivilegeChecks.js';
-import { isCsrfGood } from '../hooks/csrf.js';
-import { TR } from '../utils/language.js';
-import { CLIENT_ROOT_ELEM_ID, IS_DEVELOPMENT } from './config.js';
+import { getUserClientRoutes } from '../features/clientRoutes/handlers';
+import { getApiPathFromReqUrl } from '../utils/parsingAndConverting';
+import { getUserData } from '../utils/userAndPrivilegeChecks';
+import { isCsrfGood } from '../hooks/csrf';
+import { TR } from '../utils/language';
+import { CLIENT_ROOT_ELEM_ID, IS_DEVELOPMENT } from './config';
 
 export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) => {
   // @TODO: Get language
@@ -23,6 +22,7 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
   const csrfIsGood = isCsrfGood(req);
   const routePath = getApiPathFromReqUrl(req.url);
   const routes = await getUserClientRoutes(userData, csrfIsGood, routePath);
+  console.log('ROUTES', routes);
 
   const ssrObject = { isSSR: true, routes, rootId: 'root' };
 
@@ -39,10 +39,11 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
   let jsTags = '',
     jsTagsSerialized = '',
     cssTags = '',
-    ssrHTML = `<div id="${CLIENT_ROOT_ELEM_ID}"></div>`;
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const JS_PATH = path.join(__dirname, '../../dist/public/assets/');
+    statusCode = routes.curRoute.path.startsWith('/sys/error/')
+      ? Number(routes.curRoute.path.split('/error/')[1] || 400)
+      : 200,
+    ssrHTML = `<div id="${CLIENT_ROOT_ELEM_ID}"></div>`,
+    JS_PATH = path.join(__dirname, '../../dist/back/public/assets/');
 
   const query = req.query as { [key: string]: unknown };
   if (IS_DEVELOPMENT && '_ssrDevServer' in query && query._ssrDevServer === 'build') {
@@ -62,29 +63,31 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
       const assets = fs.readdirSync(JS_PATH);
       for (let i = 0; i < assets.length; i++) {
         // Check if js files available
-        if (assets[i].endsWith('.js')) {
+        if (assets[i].endsWith('')) {
           jsTagsSerialized += fs.readFileSync(`${JS_PATH}${assets[i]}`, 'utf8');
         }
       }
       ssrHTML = await ssrRenderContentHtml(parser, jsTagsSerialized, CLIENT_ROOT_ELEM_ID);
     } catch (_) {
+      statusCode = 500;
       jsTags =
-        'Error: could not locate asset files or an error occurred while reading and/or serializing.';
+        'Error (DEVELOPMENT): could not locate asset files or an error occurred while reading and/or serializing.';
     }
   } else if (IS_DEVELOPMENT && '_ssrDevServer' in query) {
     // Development mode (without SSR)
     jsTags = `<script>self.lighterSSR = ${JSON.stringify(ssrObject)};</script>
     <script type="module" src="./index.ts"></script>`;
   } else {
-    // Build/production mode
+    // Build/production mode (or accessing the backend url/port directly in development mode)
+    if (!IS_DEVELOPMENT) JS_PATH = path.join(__dirname, '../../public/assets/');
     try {
-      jsTags = `<script>self.lighterSSR = ${JSON.stringify(ssrObject)};</script>`;
+      jsTags = `<script>self.lighterSSR = ${JSON.stringify(ssrObject)};</script>\n`;
       jsTagsSerialized = `self.lighterSSR = ${JSON.stringify(ssrObject)};`;
       const assets = fs.readdirSync(JS_PATH);
       for (let i = 0; i < assets.length; i++) {
         // Check if js files available
-        if (assets[i].endsWith('.js')) {
-          jsTags += `<script src="/public/assets/${assets[i]}"></script>\n`;
+        if (assets[i].endsWith('')) {
+          jsTags += `<script src="/public/assets/${assets[i]}"></script>`;
           jsTagsSerialized += fs.readFileSync(`${JS_PATH}${assets[i]}`, 'utf8');
         }
 
@@ -94,8 +97,8 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
         }
       }
     } catch (_) {
-      jsTags =
-        'Error: could not locate asset files or an error occurred while reading and/or serializing.';
+      statusCode = 500;
+      jsTags = `Error: could not locate asset files or an error occurred while reading and/or serializing.`;
     }
     ssrHTML = await ssrRenderContentHtml(parser, jsTagsSerialized, CLIENT_ROOT_ELEM_ID);
   }
@@ -103,7 +106,7 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
   // @TODO: Create metadata
   const metadata = `<title>${await TR(routes.curRoute.meta?.title)}</title>`;
 
-  return res.type('text/html').send(`<!DOCTYPE html>
+  return res.type('text/html').status(statusCode).send(`<!DOCTYPE html>
 <html lang="${lang}">
   <head>
     ${metadata}

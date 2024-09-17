@@ -1,9 +1,9 @@
 import fastify from 'fastify';
 import { restartable, type Fastify } from '@fastify/restartable';
 
-import { createRestartableApp, fastifyOptions } from './core/app.js';
-import { HOST, PORT } from './core/config.js';
-import { addMonitorCount } from './utils/monitorUtils.js';
+import { createRestartableApp, fastifyOptions } from './core/app';
+import { HOST, PORT } from './core/config';
+import { addMonitorCount } from './utils/monitorUtils';
 
 process.env.TZ = 'UTC';
 

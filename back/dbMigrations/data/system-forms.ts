@@ -1,19 +1,39 @@
 // FORMS:
+
+import { Types } from 'mongoose';
+import DBGroupModel, { DBGroup } from '../../src/dbModels/group';
+import { simpleIdRegExp } from '../../src/utils/validation';
+import { connectMongoose } from './utils';
+import systemSettingsFormElems from './system-forms-settings';
+import { type DBForm } from '../../src/dbModels/form';
+
 const timeNow = new Date();
-// const { simpleIdRegExp } = require('../../dist/utils/validation');
-const { simpleIdRegExp } = import('../../dist/utils/validation.js');
-const systemSettingsFormElems = require('./system-forms-settings');
 
-// if (!simpleIdRegExp) {
-//   console.error(
-//     'Build the project before running migrations (in the project root run: "yarn build").'
-//   );
-//   throw new Error('Build files not found!');
-// }
+export type MigrationPrivilege = {
+  simpleId: string;
+  priCategoryId: string;
+  priTargetId: string;
+  priAccessId: string;
+  name: string;
+  description: string;
+  created: Date;
+  privilegeAccess: {
+    public: string;
+    requireCsrfHeader: boolean;
+    users: Types.ObjectId[];
+    groups: Types.ObjectId[];
+    excludeUsers: Types.ObjectId[];
+    excludeGroups: Types.ObjectId[];
+  };
+};
 
-const getForms = async (db) => {
-  const result = await db.collection('groups').findOne({ simpleId: 'basicUsers' });
-  const basicUsersId = result._id;
+const getSystemForms = async (): Promise<(DBForm & { privileges?: MigrationPrivilege[] })[]> => {
+  await connectMongoose();
+
+  const basicGroupResult = await DBGroupModel.findOne<DBGroup>({ simpleId: 'basicUsers' });
+  if (!basicGroupResult?._id) throw new Error('Group "basicUsers" not found.');
+  const basicUsersId = basicGroupResult._id;
+
   return [
     // System login
     {
@@ -241,6 +261,7 @@ const getForms = async (db) => {
       systemDocument: true,
       owner: null,
       url: '/api/v1/sys/user/verify-email',
+      form: { formElems: [] },
       privileges: [
         // will be deleted from the form and set to privileges
         {
@@ -276,6 +297,7 @@ const getForms = async (db) => {
       systemDocument: true,
       owner: null,
       url: '/api/v1/sys/user/send-verification-email/:emailIndex',
+      form: { formElems: [] },
       privileges: [
         // will be deleted from the form and set to privileges
         {
@@ -778,4 +800,4 @@ const getForms = async (db) => {
   ];
 };
 
-module.exports = getForms;
+export default getSystemForms;

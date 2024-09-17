@@ -1,8 +1,8 @@
 import type { FastifyRequest } from 'fastify';
 
-import type { TransText } from '../dbModels/_modelTypePartials.js';
-import { getUserData } from './userAndPrivilegeChecks.js';
-import { getConfig, getSysSetting } from '../core/config.js';
+import type { TransText } from '../dbModels/_modelTypePartials';
+import { getUserData } from './userAndPrivilegeChecks';
+import { getConfig, getSysSetting } from '../core/config';
 // import type * as CONFIG from '../../../CONFIG.json';
 // import type { CONFIG } from '@council/shared';
 

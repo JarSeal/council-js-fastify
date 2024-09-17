@@ -1,12 +1,13 @@
 import { config } from 'dotenv';
 import crypto from 'crypto';
 
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-// eslint-disable-next-line no-var
-var CONFIG = require('../../../CONFIG.json'); // @TODO: try const for this (it needs to build and be able to run with yarn start)
-import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting.js';
-import DBFormModel, { type DBForm } from '../dbModels/form.js';
+import CONFIG from '../../../CONFIG';
+// import { createRequire } from 'module';
+// const require = createRequire(import.meta.url);
+// // eslint-disable-next-line no-var
+// var CONFIG = require('../../../CONFIG.json'); // @TODO: try const for this (it needs to build and be able to run with yarn start)
+import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting';
+import DBFormModel, { type DBForm } from '../dbModels/form';
 
 config();
 
@@ -32,7 +33,7 @@ export const CSRF_HEADER_NAME = 'x-council-csrf';
 export const CSRF_HEADER_VALUE = '1';
 export const CLIENT_ROOT_ELEM_ID = process.env.CLIENT_ROOT_ELEM_ID || 'root';
 
-export const HASH_SALT_ROUNDS = process.env.HASH_SALT_ROUNDS || 10;
+export const HASH_SALT_ROUNDS = Number(process.env.HASH_SALT_ROUNDS || 10);
 export const URL_TOKEN_SECRET =
   ENVIRONMENT === 'test' ? 'testsecret' : process.env.URL_TOKEN_SECRET || '123';
 export const SESSION_SECRET =

@@ -1,8 +1,8 @@
 import type { FastifyError, FastifyPluginAsync, RouteGenericInterface } from 'fastify';
 import { type Static, Type } from '@sinclair/typebox';
 
-import { systemSettingsGetRoute, systemSettingsPutRoute } from './handlers.js';
-import { editedSchema } from '../../@types/form.js';
+import { systemSettingsGetRoute, systemSettingsPutRoute } from './handlers';
+import { editedSchema } from '../../@types/form';
 
 const dataSchema = Type.Object({
   elemId: Type.String(),

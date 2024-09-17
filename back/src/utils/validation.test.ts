@@ -35,7 +35,7 @@ describe('validation util', () => {
     const result1 = validateEmail('');
     const result2 = validateEmail(null);
     const result3 = validateEmail('a');
-    const result4 = validateEmail('first.last@council.js');
+    const result4 = validateEmail('first.last@council');
     const result5 = validateEmail('a@a.a');
     const result6 = validateEmail('@x.x');
     const result7 = validateEmail('x@x.');
@@ -399,7 +399,7 @@ describe('validation util', () => {
     const formData11 = [
       {
         elemId: 'myElem1',
-        value: 'firstname.lastname@council.js',
+        value: 'firstname.lastname@council',
       },
     ];
     result = validateFormDataInput(formElems3, formData11);

@@ -1,10 +1,10 @@
 import type { FastifyError, FastifyRequest, RouteHandler } from 'fastify';
 import bcrypt from 'bcrypt';
 
-import type { LoginRoute, RequiredActions, TwoFactorLoginRoute } from './schemas.js';
-import DBUserModel from '../../dbModels/user.js';
-import type { DBUser } from '../../dbModels/user.js';
-import { errors } from '../../core/errors.js';
+import type { LoginRoute, RequiredActions, TwoFactorLoginRoute } from './schemas';
+import DBUserModel from '../../dbModels/user';
+import type { DBUser } from '../../dbModels/user';
+import { errors } from '../../core/errors';
 import {
   IS_TEST,
   TWOFA_RESEND_INTERVAL_IN_MINUTES,
@@ -12,14 +12,14 @@ import {
   getConfig,
   getPublicSysSettings,
   getSysSetting,
-} from '../../core/config.js';
-import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate.js';
-import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks.js';
-import { getUserData } from '../../utils/userAndPrivilegeChecks.js';
-import { validateLoginMethod } from '../../utils/validation.js';
-import { sendEmail } from '../../core/email.js';
-import { logger } from '../../core/app.js';
-import { is2FAEnabled } from '../../utils/common.js';
+} from '../../core/config';
+import { getTimestamp, getTimestampFromDate } from '../../utils/timeAndDate';
+import { getRequiredActionsFromUser } from '../../utils/requiredLoginChecks';
+import { getUserData } from '../../utils/userAndPrivilegeChecks';
+import { validateLoginMethod } from '../../utils/validation';
+import { sendEmail } from '../../core/email';
+import { logger } from '../../core/app';
+import { is2FAEnabled } from '../../utils/common';
 
 // BASIC LOGIN ROUTE
 // ********************************

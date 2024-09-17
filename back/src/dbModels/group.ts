@@ -1,7 +1,7 @@
 import { type Types, Schema, model } from 'mongoose';
 
-import { simpleIdDBSchema, dateDBSchema, mongoIdArraySchema } from './_schemaPartials.js';
-import type { Edited } from './_modelTypePartials.js';
+import { simpleIdDBSchema, dateDBSchema, mongoIdArraySchema } from './_schemaPartials';
+import type { Edited } from './_modelTypePartials';
 
 export interface DBGroup {
   // Mongo Id
@@ -21,7 +21,7 @@ export interface DBGroup {
   edited: Edited[];
   editedHistoryCount?: number;
   systemDocument?: boolean;
-  owner: Types.ObjectId;
+  owner: Types.ObjectId | null;
 
   // Group members' user Ids
   members: Types.ObjectId[];

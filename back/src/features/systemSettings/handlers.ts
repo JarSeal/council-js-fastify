@@ -1,16 +1,16 @@
 import type { RouteHandler } from 'fastify';
 
-import type { SystemSettingsGetRoute, SystemSettingsPutRoute } from './routes.js';
-import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks.js';
-import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege.js';
-import { isCsrfGood } from '../../hooks/csrf.js';
-import { errors } from '../../core/errors.js';
-import DBFormModel, { type DBForm } from '../../dbModels/form.js';
-import DBSystemSettingModel, { type DBSystemSetting } from '../../dbModels/systemSetting.js';
-import { validateFormDataInput } from '../../utils/validation.js';
-import { createNewEditedArray } from '../../utils/parsingAndConverting.js';
-import { decryptData, encryptData, setCachedSysSettings } from '../../core/config.js';
-import { restartApp } from '../../core/app.js';
+import type { SystemSettingsGetRoute, SystemSettingsPutRoute } from './routes';
+import { getUserData, isPrivBlocked } from '../../utils/userAndPrivilegeChecks';
+import DBPrivilegeModel, { type DBPrivilege } from '../../dbModels/privilege';
+import { isCsrfGood } from '../../hooks/csrf';
+import { errors } from '../../core/errors';
+import DBFormModel, { type DBForm } from '../../dbModels/form';
+import DBSystemSettingModel, { type DBSystemSetting } from '../../dbModels/systemSetting';
+import { validateFormDataInput } from '../../utils/validation';
+import { createNewEditedArray } from '../../utils/parsingAndConverting';
+import { decryptData, encryptData, setCachedSysSettings } from '../../core/config';
+import { restartApp } from '../../core/app';
 
 // Read (GET)
 export const systemSettingsGetRoute: RouteHandler<SystemSettingsGetRoute> = async (req, res) => {
