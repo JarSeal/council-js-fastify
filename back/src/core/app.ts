@@ -21,6 +21,7 @@ import {
   SESSION_COOKIE_NAME,
   getSysSetting,
   IS_DEVELOPMENT,
+  IS_TEST,
 } from './config';
 import type { Environment } from './config';
 import apis from './apis';
@@ -49,14 +50,14 @@ const envToLogger = {
   production: true,
   test: false,
 };
-export const fastifyOptions = {
+export const getFastifyOptions = () => ({
   logger: envToLogger[ENVIRONMENT as Environment],
-};
+});
 
 const initApp = async (fastify?: Fastify, opts?: unknown) => {
   // Fastify
   const f = fastify ? (fastify as unknown as _Fastify) : _fastify;
-  const app = f(opts || fastifyOptions).withTypeProvider<TypeBoxTypeProvider>();
+  const app = f(opts || getFastifyOptions()).withTypeProvider<TypeBoxTypeProvider>();
 
   // Database
   await initDB(app);
@@ -108,7 +109,9 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
 
   // Static files
   let publicRelativePath = '../../../../dist/back/public'; // Production
-  if (IS_DEVELOPMENT) publicRelativePath = '../../dist/back/public';
+  if (IS_DEVELOPMENT || IS_TEST) {
+    publicRelativePath = '../../dist/back/public';
+  }
   const publicPath = path.join(__dirname, publicRelativePath);
   if (!fs.existsSync(publicPath)) {
     throw new Error(
