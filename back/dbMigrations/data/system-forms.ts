@@ -6,6 +6,7 @@ import { simpleIdRegExp } from '../../src/utils/validation';
 import { connectMongoose } from './utils';
 import systemSettingsFormElems from './system-forms-settings';
 import { type DBForm } from '../../src/dbModels/form';
+import { AllPrivilegeProps, Edited } from '../../src/dbModels/_modelTypePartials';
 
 const timeNow = new Date();
 
@@ -25,6 +26,10 @@ export type MigrationPrivilege = {
     excludeUsers: Types.ObjectId[];
     excludeGroups: Types.ObjectId[];
   };
+  edited?: Edited[];
+  systemDocument?: boolean;
+  privilegeViewAccess?: AllPrivilegeProps;
+  privilegeEditAccess?: AllPrivilegeProps;
 };
 
 const getSystemForms = async (): Promise<(DBForm & { privileges?: MigrationPrivilege[] })[]> => {

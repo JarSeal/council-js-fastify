@@ -1,4 +1,6 @@
-const getEmails = () => {
+import { type DBEmail } from '../../src/dbModels/email';
+
+const getEmails = (): Partial<DBEmail>[] => {
   return [
     // Main wrapper [START]
     {
@@ -225,4 +227,4 @@ Do not reply to this email, thank you.
   ];
 };
 
-module.exports = getEmails;
+export default getEmails;

@@ -1,4 +1,6 @@
-module.exports = [
+import { type DBClientRoute } from '../../src/dbModels/clientRoute';
+
+const systemRoutes: Partial<DBClientRoute>[] = [
   // public
   {
     simpleId: 'sysLoginPath',
@@ -459,3 +461,5 @@ module.exports = [
     meta: { title: { langKey: 'System monitor' } },
   },
 ];
+
+export default systemRoutes;

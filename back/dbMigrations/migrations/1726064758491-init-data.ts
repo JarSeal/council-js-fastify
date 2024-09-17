@@ -13,6 +13,10 @@ import DBFormModel, { type DBForm } from '../../src/dbModels/form';
 import { encryptData } from '../../src/core/config';
 import { FormElem } from '../../src/dbModels/_modelTypePartials';
 import DBPrivilegeModel from '../../src/dbModels/privilege';
+import getEmails from '../data/system-emails';
+import DBEmailModel from '../../src/dbModels/email';
+import systemRoutes from '../data/system-routes';
+import DBClientRouteModel from '../../src/dbModels/clientRoute';
 
 // UP
 // **********************************************
@@ -116,38 +120,58 @@ export async function up(): Promise<void> {
     }
   }
 
-  // // Create system emails
-  // const emails = getEmails();
-  // for (let i = 0; i < emails.length; i++) {
-  //   const foundEmail = await db.collection('emails').findOne({ simpleId: emails[i].simpleId });
-  //   if (foundEmail) continue;
-  //   emails[i].edited = [];
-  //   if (emails[i].systemDocument === undefined) emails[i].systemDocument = true;
-  //   emails[i].created = {
-  //     user: superUser._id,
-  //     date: timeNow,
-  //   };
-  //   await db.collection('emails').insertOne(emails[i]);
-  // }
+  // Create system forms privileges
+  for (let i = 0; i < privileges.length; i++) {
+    privileges[i].edited = [];
+    if (privileges[i].systemDocument === undefined) privileges[i].systemDocument = true;
+    privileges[i].privilegeViewAccess = {
+      public: 'false',
+      requireCsrfHeader: true,
+      users: [],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    };
+    privileges[i].privilegeEditAccess = {
+      public: 'false',
+      requireCsrfHeader: true,
+      users: [],
+      groups: [],
+      excludeUsers: [],
+      excludeGroups: [],
+    };
+    const newPrivilege = new DBPrivilegeModel(privileges[i]);
+    await newPrivilege.save();
+  }
 
-  // // Create client routes
-  // for (let i = 0; i < routes.length; i++) {
-  //   if (!routes[i].simpleId || !routes[i].path) {
-  //     console.warn('Client route items must have a simpleId and path defined.');
-  //     continue;
-  //   }
-  //   const foundRoute = await db
-  //     .collection('clientRoutes')
-  //     .findOne({ simpleId: routes[i].simpleId });
-  //   if (foundRoute) continue;
-  //   routes[i].edited = [];
-  //   if (routes[i].systemDocument === undefined) routes[i].systemDocument = true;
-  //   routes[i].created = {
-  //     user: superUser._id,
-  //     date: timeNow,
-  //   };
-  //   await db.collection('clientRoutes').insertOne(routes[i]);
-  // }
+  // Create system emails
+  const emails = getEmails();
+  for (let i = 0; i < emails.length; i++) {
+    emails[i].edited = [];
+    if (emails[i].systemDocument === undefined) emails[i].systemDocument = true;
+    emails[i].created = {
+      user: superAdminId,
+      date: timeNow,
+    };
+    const newEmail = new DBEmailModel(emails[i]);
+    await newEmail.save();
+  }
+
+  // Create client routes
+  for (let i = 0; i < systemRoutes.length; i++) {
+    if (!systemRoutes[i].simpleId || !systemRoutes[i].path) {
+      console.warn('Client route items must have a simpleId and path defined.');
+      continue;
+    }
+    systemRoutes[i].edited = [];
+    if (systemRoutes[i].systemDocument === undefined) systemRoutes[i].systemDocument = true;
+    systemRoutes[i].created = {
+      user: superAdminId,
+      date: timeNow,
+    };
+    const newRoute = new DBClientRouteModel(systemRoutes[i]);
+    await newRoute.save();
+  }
 
   await disconnectMongoose();
 }
@@ -157,16 +181,14 @@ export async function up(): Promise<void> {
 export async function down(): Promise<void> {
   await connectMongoose();
 
-  // // Remove client routes
-  // for (let i = 0; i < routes.length; i++) {
-  //   await db.collection('clientRoutes').deleteOne({ simpleId: routes[i].simpleId });
-  // }
+  // Remove client routes
+  const routeIds = systemRoutes.map((route) => route.simpleId);
+  await DBClientRouteModel.deleteMany({ simpleId: { $in: routeIds } });
 
-  // // Remove system emails
-  // const emails = getEmails();
-  // for (let i = 0; i < emails.length; i++) {
-  //   await db.collection('emails').deleteOne({ simpleId: emails[i].simpleId });
-  // }
+  // Remove system emails
+  const emails = getEmails();
+  const emailIds = emails.map((email) => email.simpleId);
+  await DBEmailModel.deleteMany({ simpleId: { $in: emailIds } });
 
   // Remove system forms
   const formIds: string[] = [];
