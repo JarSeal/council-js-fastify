@@ -27,9 +27,7 @@
     "_migrate": "yarn --cwd ./migrate/ migrate",
     "_migrate:down": "yarn --cwd ./migrate/ migrate:down",
     "seed": "tsx ./devData/seed.ts",
-    "unseed": "tsx ./devData/unseed.ts",
-    "seed2": "yarn build && yarn migrate && node ./devData/seed.js",
-    "unseed2": "yarn build && node ./devData/unseed.js"
+    "unseed": "tsx ./devData/unseed.ts"
   },
   "packageManager": "yarn@1.22.15",
   "engines": {
