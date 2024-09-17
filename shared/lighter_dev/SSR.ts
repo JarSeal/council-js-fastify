@@ -28,7 +28,7 @@ export const ssrRenderContentHtml = async (
   const htmlTemplate = `<!DOCTYPE html>
 <html>
   <head>
-    <script>${jsFileContents}</script>
+    <script>self.ssrParser=true;${jsFileContents}</script>
   </head>
   <body>
     <div id="${SSR_RENDER_CONTENT_WRAPPER_ID}">

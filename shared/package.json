@@ -8,7 +8,7 @@
   "scripts": {
     "build:clean": "rm -rf dist",
     "build": "yarn build:clean && tsc -p tsconfig.json",
-    "dev": "tsc -w --preserveWatchOutput",
+    "dev": "tsc -w -p tsconfig.json",
     "linking": "yarn link && yarn --cwd ../back/ link @council/shared && yarn --cwd ../front/ link @council/shared",
     "unlinking": "yarn --cwd ../back/ unlink @council/shared && yarn --cwd ../front/ unlink @council/shared && yarn unlink",
     "lint": "eslint \"{src,test}/**/*.{tsx,ts}\"",
