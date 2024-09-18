@@ -1,11 +1,7 @@
 import { config } from 'dotenv';
 import crypto from 'crypto';
 
-import CONFIG from '../../../CONFIG';
-// import { createRequire } from 'module';
-// const require = createRequire(import.meta.url);
-// // eslint-disable-next-line no-var
-// var CONFIG = require('../../../CONFIG.json'); // @TODO: try const for this (it needs to build and be able to run with yarn start)
+import CONFIG from '../../CONFIG';
 import DBSystemSettingModel, { type DBSystemSetting } from '../dbModels/systemSetting';
 import DBFormModel, { type DBForm } from '../dbModels/form';
 

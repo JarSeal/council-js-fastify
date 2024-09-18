@@ -1,4 +1,4 @@
-import CONFIG from '../../../CONFIG';
+import CONFIG from '../../CONFIG';
 import { FormElem } from '../../src/dbModels/_modelTypePartials';
 
 const systemSettingsFormElems: FormElem[] = [

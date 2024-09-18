@@ -108,9 +108,9 @@ const initApp = async (fastify?: Fastify, opts?: unknown) => {
   // await cacheRoutes(session)
 
   // Static files
-  let publicRelativePath = '../../../../dist/back/public'; // Production
+  let publicRelativePath = '../../../dist/public'; // Production
   if (IS_DEVELOPMENT || IS_TEST) {
-    publicRelativePath = '../../dist/back/public';
+    publicRelativePath = '../../dist/public';
   }
   const publicPath = path.join(__dirname, publicRelativePath);
   if (!fs.existsSync(publicPath)) {

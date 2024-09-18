@@ -12,4 +12,5 @@ export default {
   uri: process.env.MONGODB_URI,
   migrationsPath: 'dbMigrations/migrations',
   collection: 'migrations_changelog',
+  autosync: true,
 };
