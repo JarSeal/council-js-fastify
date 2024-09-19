@@ -1,23 +1,12 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "allowJs": false,
-    "forceConsistentCasingInFileNames": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "target": "ES2021",
-    "useDefineForClassFields": true,
+    "outDir": "./dist",
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "module": "CommonJS",
-    "outDir": "./dist",
-    "esModuleInterop": true,
     "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "types": ["node"]
   },
-  "exclude": ["node_modules"],
-  "include": ["src", "lighter_dev"]
+  "include": ["src", "lighter_dev"],
+  "exclude": ["node_modules", "dist"]
 }
