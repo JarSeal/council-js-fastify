@@ -1,7 +1,13 @@
-// import { JSDOM } from 'jsdom';
-
 import { TR } from './LNG.js';
 import type { Route } from './RTR.js';
+
+export {};
+declare global {
+  interface Window {
+    lighterSSR: unknown;
+    ssrParser?: boolean;
+  }
+}
 
 // Create metadata
 export const ssrMetadata = (curRoute: Route) => {
@@ -19,6 +25,10 @@ export const ssrGetViewData = () => {
   return html;
 };
 
+// Determines whether the frontend code is run on server or client3
+export const IS_SERVER = typeof window !== 'undefined' ? Boolean(window.ssrParser) : false;
+
+// This is the template for the backend jsDom parserer
 export const SSR_RENDER_CONTENT_WRAPPER_ID: string = '__wrapper_id__';
 export const ssrRenderContentHtml = async (
   jsParser: (template: string) => Promise<string>,

@@ -1,8 +1,6 @@
-// /* eslint-disable no-console */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fs from 'fs';
 import path from 'path';
-// import { execSync } from 'child_process';
 import { SSR_RENDER_CONTENT_WRAPPER_ID, ssrRenderContentHtml } from '@council/shared';
 import { JSDOM } from 'jsdom';
 
@@ -47,14 +45,6 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
   const query = req.query as { [key: string]: unknown };
   if (IS_DEVELOPMENT && '_ssrDevServer' in query && query._ssrDevServer === 'build') {
     // Development mode (SSR)
-
-    // Build frontend and copy to back dist
-    // console.log('Build SSR frontend..');
-    // let stdout = execSync('yarn --cwd ../ build:front');
-    // console.log(stdout.toString());
-    // stdout = execSync('yarn --cwd ../back/ build:public');
-    // console.log(stdout.toString());
-
     try {
       jsTags = `<script>self.lighterSSR = ${JSON.stringify(ssrObject)};</script>
     <script type="module" src="./index.ts"></script>`;
