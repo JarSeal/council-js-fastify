@@ -10,20 +10,6 @@ config();
 const BACK_BASE_URL = process.env.BACK_BASE_URL || 'http://localhost:4004';
 const SSR = process.env.SSR || '1';
 
-let waitForServerCounter = 0;
-const waitForServer = (file: string) => {
-  if (!(file.endsWith('.ts') && file.includes('/shared/'))) return false;
-  console.log('TADAA', file, waitForServerCounter);
-  const now = new Date().getTime();
-  while (new Date().getTime() < now + (waitForServerCounter === 0 ? 1000 : 200)) {
-    // Sleep
-  }
-  waitForServerCounter++;
-  if (waitForServerCounter < 10) return waitForServer(file);
-  console.log('TADAA2', file.endsWith('.ts') && file.includes('/shared/'));
-  return true;
-};
-
 export default defineConfig({
   root: './src',
   build: {
@@ -37,7 +23,7 @@ export default defineConfig({
     reportCompressedSize: true,
     rollupOptions: {
       // overwrite default .html entry
-      input: './src/index.ts',
+      input: path.join(__dirname, 'src/index.ts'),
     },
   },
   server: {
@@ -63,26 +49,13 @@ export default defineConfig({
         run: ['yarn', 'build'],
         pattern: [path.join(__dirname, '**/*.ts')],
         // eslint-disable-next-line no-console
-        onFileChanged: (vite) => console.log('Building front..', vite.file, __dirname),
-      },
-      {
-        // Build the front on every front file change (and copy build files to backend)
-        startup: false,
-        build: false,
-        name: 'Build frontend on shared updates',
-        run: ['yarn', 'build'],
-        // pattern: [path.join(__dirname, '../shared/dist/**/*.js')],
-        onFileChanged: (vite) =>
-          // eslint-disable-next-line no-console
-          console.log('Building front (/shared updated)..', vite.file, __dirname),
-        condition: waitForServer,
-        delay: 2000,
-        throttle: 0,
+        onFileChanged: () => console.log('Building front..'),
       },
     ]),
     // Do a full reload when front build files update in backend
     FullReload('dist/public/**/*', { root: path.join(__dirname, '../back/') }),
     {
+      // Replaces the index.html output with server version
       name: 'Index html build replacement',
       transformIndexHtml: {
         order: 'pre',

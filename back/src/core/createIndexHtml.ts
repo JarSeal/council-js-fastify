@@ -12,7 +12,7 @@ import { TR } from '../utils/language';
 import { CLIENT_ROOT_ELEM_ID, IS_DEVELOPMENT } from './config';
 
 export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) => {
-  // @TODO: Get language
+  // @TODO: Get language from session data
   const lang = 'en';
 
   // Get current route path and client route data

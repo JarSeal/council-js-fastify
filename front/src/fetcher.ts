@@ -1,11 +1,9 @@
-import { CMP, IS_SERVER } from '@council/shared';
+import { CMP, FCH, IS_SERVER } from '@council/shared';
 
 export const fetcherCMP = async () => {
-  // const data = await fetch('http://localhost:4004/api/v1/sys/health');
-  // console.log('DATA', data);
-  const data = window.ssrParser;
-  console.log('SSR STATUS7', window.ssrParser, IS_SERVER);
+  const response = await FCH('http://localhost:4004/api/v1/sys/healths');
+  console.log('SSR STATUS8', response);
 
-  const fetcherCmp = CMP({ text: JSON.stringify(data) });
+  const fetcherCmp = CMP({ text: 'IS_SERVER: ' + JSON.stringify(IS_SERVER) });
   return fetcherCmp;
 };

@@ -25,7 +25,7 @@ export const ssrGetViewData = () => {
   return html;
 };
 
-// Determines whether the frontend code is run on server or client3
+// Determines whether the frontend code is run on server or client2
 export const IS_SERVER = typeof window !== 'undefined' ? Boolean(window.ssrParser) : false;
 
 // This is the template for the backend jsDom parserer
