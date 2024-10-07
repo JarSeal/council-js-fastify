@@ -1,4 +1,4 @@
-import { IS_SERVER } from './SSR';
+import { IS_SERVER, setServerFetchData } from './SSR';
 
 export type FCH_Response<R> = {
   data: R;
@@ -7,22 +7,20 @@ export type FCH_Response<R> = {
   errorMessage?: string;
 } | null;
 
-export const FCH = async <R, B>(
-  url: string,
-  opts?: {
-    /** Id for the SSR function in the backend */
-    ssrId?: string;
-    /** Force to use fetch also in the backend */
-    ssrForceFetch?: boolean;
-    /** Message body */
-    body?: B;
-    /** Fetch method ('GET' | 'POST' | 'PUT' | 'DELETE') */
-    method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  }
-): Promise<FCH_Response<R>> => {
-  if (opts?.ssrId && !opts?.ssrForceFetch && IS_SERVER) {
+export type FCH_OPTS = {
+  /** Force to use fetch also in the backend */
+  ssrForceFetch?: boolean;
+  /** Message body */
+  body?: unknown;
+  /** Fetch method ('GET' | 'POST' | 'PUT' | 'DELETE') */
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+};
+
+export const FCH = async <R>(url: string, opts?: FCH_OPTS): Promise<FCH_Response<R>> => {
+  if (!opts?.ssrForceFetch && IS_SERVER) {
     // Server side data fetching
     console.log('FCH SERVER', url, opts);
+    setServerFetchData(url, opts);
   } else if (opts?.ssrForceFetch || !IS_SERVER) {
     // Client side data fetching (or server side if opts.ssrForceFetch = true)
     const response = await fetch(url);

@@ -1,3 +1,4 @@
+import { FCH_OPTS } from './FCH.js';
 import { TR } from './LNG.js';
 import type { Route } from './RTR.js';
 
@@ -31,7 +32,7 @@ export const IS_SERVER = typeof window !== 'undefined' ? Boolean(window.ssrParse
 // This is the template for the backend jsDom parserer
 export const SSR_RENDER_CONTENT_WRAPPER_ID: string = '__wrapper_id__';
 export const ssrRenderContentHtml = async (
-  jsParser: (template: string) => Promise<string>,
+  jsParser: (template: string, jsFileContents: string) => Promise<string>,
   jsFileContents: string,
   rootId: string
 ): Promise<string> => {
@@ -46,6 +47,20 @@ export const ssrRenderContentHtml = async (
     </div>
   </body>
 </html>`;
-  const html = await jsParser(htmlTemplate);
+  const html = await jsParser(htmlTemplate, jsFileContents);
   return html;
+};
+
+export type ServerFetchParams = {
+  [key: string]: {
+    url: string;
+    opts?: FCH_OPTS;
+  };
+};
+export const serverFetchData: ServerFetchParams = {};
+export const createServerFetchKey = (url: string, opts?: unknown) =>
+  `${url}__${JSON.stringify(opts)}`;
+export const setServerFetchData = (url: string, opts?: FCH_OPTS) => {
+  const key = createServerFetchKey(url, opts);
+  serverFetchData[key] = { url, opts };
 };

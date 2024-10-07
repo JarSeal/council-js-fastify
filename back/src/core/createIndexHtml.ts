@@ -23,10 +23,18 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
 
   const ssrObject = { isSSR: true, routes, rootId: 'root' };
 
-  const parser = async (template: string) => {
+  const prefetchAndParse = async (template: string) => {
+    // Prefetch data
+    // @TODO
+    // const
+    // console.log('TADAA', );
+
+    // Parse content HTML
     const _window = new JSDOM(template, { runScripts: 'dangerously', resources: 'usable' }).window;
     const wrapperElem = _window.document.getElementById(SSR_RENDER_CONTENT_WRAPPER_ID);
     return new Promise<string>((resolve) => {
+      // @TODO: parse through html and do prefetching here
+      // const rootElem = wrapperElem?.children?.[0].outerHtml || '';
       _window.onload = () => {
         resolve(wrapperElem?.children?.[0].outerHTML || '');
       };
@@ -56,7 +64,7 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
           jsTagsSerialized += fs.readFileSync(`${JS_PATH}${assets[i]}`, 'utf8');
         }
       }
-      ssrHTML = await ssrRenderContentHtml(parser, jsTagsSerialized, CLIENT_ROOT_ELEM_ID);
+      ssrHTML = await ssrRenderContentHtml(prefetchAndParse, jsTagsSerialized, CLIENT_ROOT_ELEM_ID);
     } catch (_) {
       statusCode = 500;
       jsTags =
@@ -89,7 +97,7 @@ export const createIndexHtml = async (req: FastifyRequest, res: FastifyReply) =>
       statusCode = 500;
       jsTags = `Error: could not locate asset files or an error occurred while reading and/or serializing.`;
     }
-    ssrHTML = await ssrRenderContentHtml(parser, jsTagsSerialized, CLIENT_ROOT_ELEM_ID);
+    ssrHTML = await ssrRenderContentHtml(prefetchAndParse, jsTagsSerialized, CLIENT_ROOT_ELEM_ID);
   }
 
   // @TODO: Create metadata
